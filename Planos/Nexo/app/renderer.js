@@ -859,7 +859,8 @@ function atualizarTiles() {
   for (const [rotulo, stream] of [['tela', estado.streamTela], ['câmera', estado.streamCamera]]) {
     if (!stream || !stream.getVideoTracks().some(t => t.readyState === 'live')) continue;
     const tile = document.createElement('div');
-    tile.className = 'tile local' + (rotulo === 'tela' ? ' tela' : '');
+    // classe 'camera' (sem acento, pro CSS) ou 'tela' — controla espelhamento
+    tile.className = 'tile local ' + (rotulo === 'tela' ? 'tela' : 'camera');
     const v = document.createElement('video');
     v.autoplay = true; v.playsInline = true; v.muted = true;
     v.srcObject = stream;

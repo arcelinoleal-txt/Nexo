@@ -850,7 +850,13 @@ select {
   background: #000;
   display: block;
 }
-.tile.local video { object-fit: cover; transform: scaleX(-1); }
+/* câmera local: espelha (como um espelho) e preenche o quadrado */
+.tile.local video { object-fit: cover; }
+.tile.local.camera video { transform: scaleX(-1); }
+/* tela local: NUNCA espelha (mostra o que os outros veem) e mostra a tela
+   inteira — cover cortava pedaços. Sem transform, o Chromium bugava o
+   compositor e aparecia preto com artefatos verdes. */
+.tile.local.tela video { object-fit: contain; }
 
 .tile .rotulo-tile {
   position: absolute;
