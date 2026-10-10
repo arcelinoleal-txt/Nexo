@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; connect-src 'self' ws: wss: http: https:; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <title>Nexo</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="estilo.css" />
+</head>
+<body>
+
+  <!-- ============================ ENTRADA ============================ -->
+  <section id="tela-entrada" class="tela">
+    <!-- Titlebar customizada (arrastável, com controles de janela) -->
+    <header class="barra-topo arrastavel barra-entrada">
+      <div class="topo-esq">
+        <span class="logo-mini">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H13l-4 3.2V16H6.5A2.5 2.5 0 0 1 4 13.5v-8Z"/>
+          </svg>
+        </span>
+        <span class="nome-app">Nexo</span>
+      </div>
+      <div class="topo-dir arrastavel-nao">
+        <span class="controles-janela">
+          <button class="icone-btn" data-janela="minimizar" title="Minimizar"><svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M5 11h14v2H5z"/></svg></button>
+          <button class="icone-btn" data-janela="maximizar" title="Maximizar"><svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M4 4h16v16H4V4Zm2 2v12h12V6H6Z"/></svg></button>
+          <button class="icone-btn fechar" data-janela="fechar" title="Fechar"><svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/><path fill="currentColor" d="m17 5.7-1.4 1.4L18.3 7.1 19.7 5.7 17 5.7Z"/></svg></button>
+        </span>
+      </div>
+    </header>
+
+    <div class="cartao-entrada">
+      <div class="marca">
+        <span class="marca-icone">
+          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+            <path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H13l-4 3.2V16H6.5A2.5 2.5 0 0 1 4 13.5v-8Z"/>
+          </svg>
+        </span>
+        <div>
+          <h1>Nexo</h1>
+          <p>Salas de transmissão com voz, tela e chat</p>
+        </div>
+      </div>
+
+      <!-- ============================ CONTA ============================= -->
+      <!-- O servidor já sabia criar conta, entrar e recuperar senha desde o
+           começo — faltava a tela. Ela vem ANTES do nome da sala porque a
+           conta é quem você é; o nome da sala é só como aparece lá dentro.
+           Logado, o bloco encolhe para uma linha e não atrapalha quem já
+           só quer colar o convite. -->
+      <div class="bloco-conta" id="bloco-conta">
+        <div id="conta-deslogada">
+          <div class="abas-conta" role="tablist" aria-label="Conta">
+            <button type="button" class="aba-conta ativa" data-aba-conta="entrar">Entrar</button>
+            <button type="button" class="aba-conta" data-aba-conta="criar">Criar conta</button>
+          </div>
+
+          <form id="form-entrar" class="form-conta" novalidate>
+            <div class="campo">
+              <label for="in-email">E-mail</label>
+              <input id="in-email" type="email" maxlength="120" placeholder="voce@email.com"
+                     autocomplete="email" spellcheck="false" />
+            </div>
+            <div class="campo">
+              <label for="in-senha">Senha</label>
+              <input id="in-senha" type="password" maxlength="128" placeholder="Sua senha"
+                     autocomplete="current-password" />
+            </div>
+            <div class="linha-conta">
+              <button type="submit" class="btn gradiente">Entrar</button>
+              <button type="button" id="btn-esqueci" class="link-btn">Esqueci minha senha</button>
+            </div>
+          </form>
+
+          <form id="form-criar" class="form-conta" novalidate hidden>
+            <div class="campo">
+              <label for="in-usuario">Nome de usuário</label>
+              <input id="in-usuario" type="text" maxlength="24" placeholder="ex.: leal10"
+                     autocomplete="username" spellcheck="false" />
+              <small>De 3 a 24 caracteres: letras, números, ponto, hífen ou _. Sem espaço, é ele que
+                identifica você nas conversas e na busca de amigos.</small>
+            </div>
+            <div class="campo">
+              <label for="in-email-novo">E-mail</label>
+              <input id="in-email-novo" type="email" maxlength="120" placeholder="voce@email.com"
+                     autocomplete="email" spellcheck="false" />
+            </div>
+            <div class="campo">
+              <label for="in-senha-nova">Senha</label>
+              <input id="in-senha-nova" type="password" maxlength="128" placeholder="No mínimo 8 caracteres"
+                     autocomplete="new-password" />
+            </div>
+            <button type="submit" class="btn gradiente grande">Criar conta</button>
+          </form>
+
+          <p id="erro-conta" class="erro" hidden></p>
+          <p id="status-conta" class="status-entrada" hidden></p>
+        </div>
+
+        <!-- encolhe quando já tem sessão: não repete o formulário em quem
+             já entrou e não esconde o convite que é o assunto da tela -->
+        <div id="conta-logada" class="conta-logada" hidden>
+          <div class="conta-logada-linha">
+            <span id="conta-mini-avatar" class="mini-avatar" aria-hidden="true"></span>
+            <span class="conta-mini-txt">
+              <strong id="conta-mini-nome">—</strong>
+              <small id="conta-mini-sub">Conectado</small>
+            </span>
+            <span class="conta-mini-acoes">
+              <button id="btn-ver-suporte" class="link-btn" type="button">Código de suporte</button>
+              <button id="btn-sair-conta" class="link-btn" type="button">Sair</button>
+            </span>
+          </div>
+          <!-- O código de suporte é a única saída quando o e-mail também se
+               perde, então ele precisa ficar na tela tempo suficiente para
+               ser copiado — não some num aviso de 3 segundos. -->
+          <p id="conta-suporte-txt" class="codigo-suporte" hidden></p>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="in-nome">Como quer ser chamado</label>
+        <input id="in-nome" type="text" maxlength="24" placeholder="Seu nome" autocomplete="off" />
+      </div>
+
+      <div class="campo">
+        <label for="in-servidor">Servidor</label>
+        <input id="in-servidor" type="text" maxlength="200" placeholder="wss://seu-servidor.com" autocomplete="off" spellcheck="false" />
+        <small>No seu computador use <code>ws://localhost:3000</code>.</small>
+      </div>
+
+      <button id="btn-criar" class="btn gradiente grande">Criar sala</button>
+
+      <div class="divisor"><span>ou entre em uma sala</span></div>
+
+      <div class="linha-codigo">
+        <input id="in-codigo" type="text" maxlength="90" placeholder="COLE O CONVITE OU O CODIGO" autocomplete="off" spellcheck="false" />
+        <button id="btn-entrar" class="btn">Entrar</button>
+      </div>
+
+      <p id="erro-entrada" class="erro" hidden></p>
+      <p id="status-entrada" class="status-entrada" hidden></p>
+
+      <p class="rodape-entrada">
+        Quem transmite precisa do app Nexo. Quem só assiste pode abrir o link do
+        servidor direto no navegador.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== RECUPERAR SENHA ===================== -->
+  <!-- Dois caminhos para a mesma coisa, como ficou combinado: o código que
+       chega no e-mail, e o código de suporte que o dono da conta lê no
+       cadastro (serve quando o e-mail também se perdeu). -->
+  <div id="modal-recuperar" class="overlay" hidden>
+    <div class="janela-modal pequeno">
+      <div class="modal-cabecalho">
+        <h2>Recuperar senha</h2>
+        <button class="icone-btn fecha-modal" data-fecha="modal-recuperar" type="button" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-corpo">
+        <p class="config-ajuda">
+        Digite o e-mail da conta. O Nexo manda um código para esse e-mail — ele
+        vale 20 minutos.
+      </p>
+
+      <div class="campo">
+        <label for="in-rec-email">E-mail da conta</label>
+        <input id="in-rec-email" type="email" maxlength="120" placeholder="voce@email.com"
+               autocomplete="email" spellcheck="false" />
+      </div>
+
+      <div class="campo">
+        <label for="in-rec-codigo">Código</label>
+        <input id="in-rec-codigo" type="text" maxlength="64" placeholder="Cole aqui o código recebido"
+               autocomplete="one-time-code" spellcheck="false" />
+        <small id="ajuda-rec-codigo">
+          Não achou a mensagem? Olhe a caixa de spam. Se você guardou o código de
+          suporte, troque o tipo de código aqui embaixo.
+        </small>
+      </div>
+
+      <label class="linha-check">
+        <input type="checkbox" id="check-rec-suporte" />
+        <span>Este é o meu <strong>código de suporte</strong> (não recebi e-mail)</span>
+      </label>
+
+      <div class="campo">
+        <label for="in-rec-senha">Nova senha</label>
+        <input id="in-rec-senha" type="password" maxlength="128" placeholder="No mínimo 8 caracteres"
+               autocomplete="new-password" />
+      </div>
+
+      <p id="erro-recuperar" class="erro" hidden></p>
+      <p id="status-recuperar" class="status-entrada" hidden></p>
+
+      <div class="linha-conta">
+        <button id="btn-trocar-senha" class="btn gradiente" type="button">Trocar minha senha</button>
+        <button id="btn-mandar-codigo" class="btn" type="button">Mandar código para o e-mail</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================ SALA ================================ -->
+  <section id="tela-sala" class="tela sala" hidden>
+
+    <header class="barra-topo arrastavel">
+      <div class="topo-esq">
+        <span class="logo-mini">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H13l-4 3.2V16H6.5A2.5 2.5 0 0 1 4 13.5v-8Z"/>
+          </svg>
+        </span>
+        <span class="nome-app">Nexo</span>
+        <button id="chip-codigo" class="chip-codigo" title="Clique para copiar o convite (codigo + endereço). Quem recebe so cola para entrar.">
+          <span class="rotulo">Sala</span>
+          <strong id="codigo-sala">------</strong>
+          <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
+            <path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="topo-centro">
+        <span id="estado-conn" class="estado-conn"><i class="ponto"></i> conectando…</span>
+      </div>
+
+      <div class="topo-dir arrastavel-nao">
+        <button id="btn-sino" class="icone-btn" title="Notificações" aria-label="Notificações">
+          <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M12 22a2.2 2.2 0 0 0 2.2-2.2H9.8A2.2 2.2 0 0 0 12 22Zm7-6v-5a7 7 0 0 0-5-6.7V3a2 2 0 0 0-4 0v1.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>
+          <span id="sino-badge" class="sino-badge" hidden></span>
+        </button>
+
+        <div id="painel-sino" class="painel-sino" hidden>
+          <div class="painel-sino-cab">
+            <strong>Notificações</strong>
+            <button id="sino-limpar" class="link-btn" type="button">Marcar como lidas</button>
+          </div>
+          <div id="sino-lista" class="sino-lista">
+            <p class="sino-vazio">Nada por aqui ainda.</p>
+          </div>
+        </div>
+
+        <button id="btn-toggle-chat" class="icone-btn" title="Chat">
+          <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/></svg>
+        </button>
+        <button id="btn-perfil" class="icone-btn" title="Seu perfil">
+          <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-3.3 0-10 1.7-10 5v2a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2c0-3.3-6.7-5-10-5Z"/></svg>
+        </button>
+        <button id="btn-config" class="icone-btn" title="Configurações">
+          <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M19.4 13a7.8 7.8 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.5l-.4 2.6a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.8 7.8 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1a7.3 7.3 0 0 0 1.7 1l.4 2.6c0 .3.2.5.5.5h4c.3 0 .5-.2.5-.5l.4-2.6a7.3 7.3 0 0 0 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13ZM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5Z"/></svg>
+        </button>
+        <span class="controles-janela">
+          <button class="icone-btn" data-janela="minimizar" title="Minimizar"><svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M5 11h14v2H5z"/></svg></button>
+          <button class="icone-btn" data-janela="maximizar" title="Maximizar"><svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M4 4h16v16H4V4Zm2 2v12h12V6H6Z"/></svg></button>
+          <button class="icone-btn fechar" data-janela="fechar" title="Fechar"><svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/><path fill="currentColor" d="m17 5.7-1.4 1.4L18.3 7.1 19.7 5.7 17 5.7Z"/></svg></button>
+        </span>
+      </div>
+    </header>
+
+    <!-- ------------------------ painel esquerdo ------------------------ -->
+    <aside class="painel-esq">
+      <div class="bloco">
+        <h2 class="titulo-bloco">Sua mídia</h2>
+
+        <div class="grade-botoes">
+          <button id="btn-micro" class="btn-midia" title="Ligar/desligar microfone">
+            <span class="ic" data-on="mic" data-off="mic-off"></span>
+            <small>Microfone</small>
+          </button>
+          <button id="btn-camera" class="btn-midia" title="Ligar/desligar câmera">
+            <span class="ic" data-on="cam" data-off="cam-off"></span>
+            <small>Câmera</small>
+          </button>
+          <button id="btn-tela" class="btn-midia" title="Compartilhar tela">
+            <span class="ic" data-on="screen" data-off="screen"></span>
+            <small>Transmitir</small>
+          </button>
+          <button id="btn-sair-som" class="btn-midia perigo" title="Sair da sala">
+            <span class="ic" data-on="sair" data-off="sair"></span>
+            <small>Sair</small>
+          </button>
+        </div>
+
+        <div id="aviso-limite" class="aviso" hidden>
+          Muita gente conectada. Até 8 pessoas a imagem fica fluida; acima disso
+          vale um servidor SFU (mediasoup/janus).
+        </div>
+      </div>
+
+      <div class="bloco flex-1">
+        <h2 class="titulo-bloco">Participantes <span id="cont-pessoas" class="cont">0</span></h2>
+        <ul id="lista-pessoas" class="lista-pessoas"></ul>
+      </div>
+    </aside>
+
+    <!-- ---------------------------- palco ---------------------------- -->
+    <main class="palco">
+      <div class="palco-topo">
+        <span id="titulo-transmissao">Aguardando transmissão</span>
+        <div class="acoes-palco">
+          <button id="btn-mini" class="pill pill-btn" type="button" title="Abre um quadradinho flutuante com a transmissão, para você continuar vendo enquanto usa o app">Mini-janela</button>
+          <span id="info-qualidade" class="pill">—</span>
+        </div>
+      </div>
+
+      <div class="area-video" id="area-video">
+        <div id="grade-videos" class="grade-videos"></div>
+
+        <div id="placeholder" class="placeholder">
+          <span class="icone-placeholder">
+            <svg viewBox="0 0 24 24" width="52" height="52"><path fill="currentColor" d="M21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H3V5h18v14ZM9 8v2H7v2h2v2h2v-2h2v-2h-2V8H9Z"/></svg>
+          </span>
+          <p id="placeholder-texto">Ninguém está transmitindo agora.</p>
+          <p class="placeholder-dica">Use os botões de <b>Transmitir</b> ou <b>Câmera</b> para começar, e mande o código da sala para quem quiser entrar.</p>
+        </div>
+
+        <div id="faixa-aovivo" class="faixa-aovivo" hidden><i></i> AO VIVO</div>
+
+        <!-- controles flutuantes sobre o video -->
+        <div class="controles-flutuantes arrastavel-nao" id="controles-flutuantes">
+          <button class="ctrl" id="ctrl-micro" title="Microfone">
+            <span class="ic" data-on="mic" data-off="mic-off"></span>
+          </button>
+          <button class="ctrl" id="ctrl-camera" title="Câmera">
+            <span class="ic" data-on="cam" data-off="cam-off"></span>
+          </button>
+          <button class="ctrl ctrl-principal" id="ctrl-tela" title="Transmitir tela">
+            <span class="ic" data-on="screen" data-off="screen"></span>
+            <span class="rotulo-ctrl" id="rotulo-ctrl-tela">Transmitir</span>
+          </button>
+          <span class="sep-ctrl"></span>
+          <button class="ctrl" id="ctrl-cheia" title="Tela cheia">
+            <span class="ic" data-on="cheia" data-off="cheia"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="barra-info">
+        <span id="info-conexao">—</span>
+        <span id="info-dispositivos">—</span>
+      </div>
+    </main>
+
+    <!-- ----------------------------- chat ----------------------------- -->
+    <aside class="painel-chat" id="painel-chat">
+      <div class="chat-cabecalho">
+        <div class="abas-conversa" id="abas-conversa">
+          <button class="aba-conversa ativa" data-com="" type="button">Sala</button>
+        </div>
+        <span id="cont-chat" class="cont">0</span>
+      </div>
+
+      <div id="lista-chat" class="lista-chat">
+        <div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>
+      </div>
+
+      <div id="zona-soltar" class="zona-soltar" hidden>
+        <div class="soltar-anel">
+          <svg viewBox="0 0 24 24" width="34" height="34"><path fill="currentColor" d="M19 13v6H5v-6H3v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6ZM11 6.83 8.41 9.41 7 8l5-5 5 5-1.41 1.41L13 6.83V16h-2Z"/></svg>
+          <strong>Solte o arquivo aqui</strong>
+          <span>imagem, vídeo, documento ou link</span>
+        </div>
+      </div>
+
+      <form id="form-chat" class="area-digitar">
+        <div id="anexo-pendente" class="anexo-pendente" hidden>
+          <div class="anexo-mini" id="anexo-mini"></div>
+          <div class="anexo-corpo">
+            <div class="anexo-linha">
+              <span class="anexo-nome" id="anexo-nome">arquivo</span>
+              <span class="anexo-tam" id="anexo-tam"></span>
+            </div>
+            <div class="anexo-barra"><i id="anexo-progresso"></i></div>
+            <span class="anexo-status" id="anexo-status">Preparando…</span>
+          </div>
+          <button type="button" class="icone-btn" id="btn-tirar-anexo" title="Tirar o anexo">×</button>
+        </div>
+
+        <button type="button" class="icone-btn anexo-botao" id="btn-anexar"
+                title="Anexar arquivo (imagem, vídeo, documento) — ou arraste para o chat">
+          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M16.5 6v11.5a4.5 4.5 0 0 1-9 0V5a3 3 0 0 1 6 0v10.5a1.5 1.5 0 0 1-3 0V6H9v9.5a3 3 0 0 0 6 0V5a4.5 4.5 0 0 0-9 0v12.5a6 6 0 0 0 12 0V6Z"/></svg>
+        </button>
+        <input id="in-anexo" type="file" hidden
+               accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.json,.md,.csv" />
+
+        <input id="in-chat" type="text" maxlength="500" placeholder="Enviar mensagem" autocomplete="off" />
+        <button type="submit" class="btn pequeno gradiente">Enviar</button>
+      </form>
+    </aside>
+
+    <!-- --------------------- mini-janela flutuante -------------------- -->
+    <div id="mini-janela" class="mini-janela" hidden>
+      <div class="mini-topo">
+        <span id="mini-titulo">Assistindo</span>
+        <div class="mini-acoes">
+          <button id="mini-fechar" class="mini-btn" type="button" title="Fechar a mini-janela (a transmissão continua)">×</button>
+        </div>
+      </div>
+      <div class="mini-corpo" id="mini-corpo"></div>
+    </div>
+  </section>
+
+  <!-- ===================== PERFIL DE OUTRA PESSOA ==================== -->
+  <div id="modal-pessoa" class="overlay" hidden>
+    <div class="janela-modal pequeno">
+      <div class="modal-cabecalho">
+        <strong>Perfil</strong>
+        <button class="icone-btn fecha-modal" title="Fechar">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-corpo">
+        <div class="avatar-grande" id="pessoa-avatar">?</div>
+        <h3 class="pessoa-nome" id="pessoa-nome">—</h3>
+        <div class="selos-perfil" id="pessoa-selos"></div>
+
+        <div class="acoes-pessoa">
+          <button id="btn-conversa-pessoa" class="btn gradiente" type="button">Conversa individual</button>
+        </div>
+
+        <p class="nota-pessoa">
+          Quem está na sala, fica na sala. O botão acima abre um papo só seu com
+          essa pessoa — ninguém mais lê.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= SELETOR DE FONTE ======================= -->
+  <div id="overlay-fontes" class="overlay" hidden>
+    <div class="janela-overlay">
+      <div class="overlay-cabecalho">
+        <strong>O que você quer compartilhar?</strong>
+        <button id="btn-fechar-fontes" class="icone-btn" title="Cancelar">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
+        </button>
+      </div>
+      <div class="overlay-abas"><span class="aba ativa">Telas e janelas</span></div>
+      <div id="grade-fontes" class="grade-fontes"></div>
+    </div>
+  </div>
+
+  <!-- ========================= CONFIGURAÇÕES ======================== -->
+  <div id="modal-config" class="overlay" hidden>
+    <div class="janela-modal config-janela">
+      <div class="modal-corpo">
+        <nav class="modal-abas">
+          <div class="config-busca">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+            <input id="busca-config" type="text" placeholder="Buscar" autocomplete="off" spellcheck="false" />
+          </div>
+
+          <p class="config-grupo" data-grupo>Configurações do usuário</p>
+          <button class="aba-modal" data-aba="conta" data-rotulo="Conta perfil seu">Conta</button>
+          <button class="aba-modal" data-aba="dados" data-rotulo="Dados privacidade limpar apagar">Dados e privacidade</button>
+
+          <p class="config-grupo" data-grupo>Configurações da aplicação</p>
+          <button class="aba-modal ativa" data-aba="voz-video" data-rotulo="Voz e vídeo áudio microfone câmera som fone">Voz e vídeo</button>
+          <button class="aba-modal" data-aba="notificacoes" data-rotulo="Notificações som sino aviso">Notificações</button>
+          <button class="aba-modal" data-aba="aparencia" data-rotulo="Aparência tema cor visual">Aparência</button>
+          <button class="aba-modal" data-aba="acessibilidade" data-rotulo="Acessibilidade animação contraste texto">Acessibilidade</button>
+          <button class="aba-modal" data-aba="sistema" data-rotulo="Sistema servidor bandeja atualização janela">Sistema</button>
+          <button class="aba-modal" data-aba="idioma" data-rotulo="Idioma horário hora relógio português">Idioma e horário</button>
+
+          <p class="config-grupo" data-grupo>Sobre</p>
+          <button class="aba-modal" data-aba="criador" data-rotulo="Leal program criador sobre autor">Leal program</button>
+          <button class="aba-modal" data-aba="loja" data-rotulo="Loja de temas e decorações gratuitas">Loja</button>
+
+          <p class="config-vazio" id="config-vazio" hidden>Nada com esse nome.</p>
+        </nav>
+
+        <div class="config-paginas">
+          <div class="config-topo">
+            <h2 id="config-titulo">Voz e vídeo</h2>
+            <button class="icone-btn fecha-modal" title="Fechar configurações (Esc)">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
+            </button>
+          </div>
+
+          <div class="config-rolagem">
+        <div class="painel-aba" id="aba-voz-video">
+          <div class="campo">
+            <label for="sel-micro">Microfone</label>
+            <select id="sel-micro"><option value="">Padrão do sistema</option></select>
+            <div class="medidor"><i id="barra-nivel"></i></div>
+            <small>Fale alguma coisa para ver a barra mexer.</small>
+          </div>
+
+          <div class="campo">
+            <label for="sel-fone">Fone / saída de áudio</label>
+            <select id="sel-fone"><option value="">Padrão do sistema</option></select>
+          </div>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-eco" />
+            <span>Supressão de eco e ruído (deixe ligado na maioria dos casos)</span>
+          </label>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-monitor" />
+            <span>Quero ouvir o meu próprio microfone aqui no meu fone</span>
+          </label>
+          <small class="ajuda">
+            Desligado (padrão): o microfone vai só para quem está assistindo e você não
+            ouve a si mesmo. Ligue só se quiser conferir se está saindo som.
+            Com caixa de som, ligado pode causar chiado.
+          </small>
+
+          <div class="campo">
+            <label for="range-volume">Volume da sala</label>
+            <input type="range" id="range-volume" min="0" max="100" value="100" />
+          </div>
+
+          <p class="config-secao">Câmera e transmissão de tela</p>
+
+          <div class="campo">
+            <label for="sel-camera">Câmera</label>
+            <select id="sel-camera"><option value="">Padrão do sistema</option></select>
+          </div>
+
+          <div class="campo">
+            <label for="sel-fps">Quadros por segundo da tela</label>
+            <select id="sel-fps">
+              <option value="30">30 — econômico</option>
+              <option value="60" selected>60 — fluido</option>
+              <option value="120">120 — muito fluido</option>
+              <option value="144">144 — máximo da tela</option>
+            </select>
+            <small>O valor real aparece no rodapé do palco. Depende da taxa da sua tela, da CPU e da rede.</small>
+          </div>
+
+          <div class="campo">
+            <label for="sel-resolucao">Resolução transmitida</label>
+            <select id="sel-resolucao">
+              <option value="0" selected>Nativa do monitor — sem cortar nada</option>
+              <option value="2560">1440p — pesado</option>
+              <option value="1920">1080p — nítido</option>
+              <option value="1280">720p — leve</option>
+            </select>
+            <small>Nativa manda o monitor inteiro, no tamanho real, sem rebaixar.</small>
+          </div>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-audio-sistema" />
+            <span>Também transmitir o áudio do sistema (o que toca no seu computador)</span>
+          </label>
+        </div>
+
+        <div class="painel-aba" id="aba-conta" hidden>
+          <div class="cartao-conta">
+            <div class="conta-avatar" id="conta-avatar">—</div>
+            <div class="conta-txt">
+              <strong id="conta-nome">—</strong>
+              <span id="conta-sub">Como os outros te veem na sala</span>
+            </div>
+            <button class="btn pequeno" id="btn-editar-perfil" type="button">Editar perfil</button>
+          </div>
+
+          <p class="config-secao">Como você aparece</p>
+          <dl class="ficha">
+            <dt>Nome na sala</dt><dd id="conta-nome-ficha">—</dd>
+            <dt>Servidor usado</dt><dd id="conta-servidor">—</dd>
+            <dt>Versão do app</dt><dd id="conta-versao">—</dd>
+            <dt>Onde ficam guardados</dt><dd>Só neste computador. O Nexo não manda seus dados para servidor nenhum.</dd>
+          </dl>
+        </div>
+
+        <div class="painel-aba" id="aba-notificacoes" hidden>
+          <p class="config-ajuda">
+            O sininho no topo avisa sobre mensagens e sobre atualização do app.
+            Estas opções decidem quando ele chama atenção.
+          </p>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-nota-som" />
+            <span>Tocar um som quando chegar mensagem que você não está vendo</span>
+          </label>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-nota-badge" checked />
+            <span>Mostrar o contador de não lidas no sininho</span>
+          </label>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-nota-privado" checked />
+            <span>Destacar mensagens privadas (só vocês dois leem)</span>
+          </label>
+
+          <div class="linha-acoes">
+            <button id="btn-testar-som" class="btn" type="button">Testar o som</button>
+          </div>
+        </div>
+
+        <div class="painel-aba" id="aba-sistema" hidden>
+          <div class="campo">
+            <label for="in-servidor-config">Servidor</label>
+            <input id="in-servidor-config" type="text" maxlength="200" spellcheck="false" />
+            <small>Vale para a próxima sala que você entrar.</small>
+          </div>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-fechar-bandeja" checked />
+            <span>Ao fechar, deixar o Nexo em segundo plano em vez de encerrar (volta pelo ícone da bandeja)</span>
+          </label>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-verificar-atualizacao" checked />
+            <span>Procurar atualização a cada minuto e avisar no sininho do que mudou</span>
+          </label>
+
+          <p class="config-secao">Manutenção</p>
+          <div class="linha-acoes">
+            <button id="btn-testar-cam" class="btn" type="button">Testar câmera</button>
+            <button id="btn-tutorial" class="btn" type="button">Ver tutorial de novo</button>
+          </div>
+          <div class="teste-cam" id="teste-cam" hidden>
+            <video id="video-teste" autoplay playsinline muted></video>
+            <button id="btn-fechar-teste" class="btn pequeno" type="button">Fechar teste</button>
+          </div>
+        </div>
+
+        <div class="painel-aba" id="aba-acessibilidade" hidden>
+          <p class="config-ajuda">Mudanças valem na hora, em todo o app.</p>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-reduzir-animacao" />
+            <span>Reduzir animações (o app quase não desliza nem pulsa)</span>
+          </label>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-alto-contraste" />
+            <span>Alto contraste — texto mais marcado e bordas mais visíveis</span>
+          </label>
+
+          <label class="linha-check">
+            <input type="checkbox" id="check-texto-grande" />
+            <span>Texto maior em todo o app</span>
+          </label>
+        </div>
+
+        <div class="painel-aba" id="aba-dados" hidden>
+          <p class="config-ajuda">
+            Tudo fica guardado <strong>nesta máquina</strong>, no armazenamento do próprio app.
+            Não existe conta na nuvem e nada é enviado para fora.
+          </p>
+
+          <p class="config-secao">Limpar agora</p>
+          <div class="config-linha">
+            <div>
+              <strong>Conversas da sala</strong>
+              <small>Apaga o histórico do chat que está na tela. Sai da sala e entra de novo que volta vazio.</small>
+            </div>
+            <button class="btn pequeno" id="btn-limpar-historico" type="button">Limpar</button>
+          </div>
+
+          <div class="config-linha">
+            <div>
+              <strong>Tudo que está guardado</strong>
+              <small>Perfil, tema, preferências e histórico. O app volta ao estado de primeira vez.</small>
+            </div>
+            <button class="btn pequeno perigo" id="btn-apagar-tudo" type="button">Apagar tudo</button>
+          </div>
+        </div>
+
+        <div class="painel-aba" id="aba-idioma" hidden>
+          <div class="campo">
+            <label for="sel-idioma">Idioma</label>
+            <select id="sel-idioma">
+              <option value="pt-BR">Português (Brasil)</option>
+            </select>
+            <small>O Nexo foi feito em português. Outras línguas entram depois.</small>
+          </div>
+
+          <p class="config-secao">Horário</p>
+          <div class="config-linha">
+            <div>
+              <strong>Formato das horas</strong>
+              <small>24 horas, como no Brasil — 21:05 e não 9:05 PM.</small>
+            </div>
+            <span class="selo-fixado">24 h</span>
+          </div>
+
+          <dl class="ficha">
+            <dt>Fuso detectado</dt><dd id="fuso-hora">—</dd>
+          </dl>
+        </div>
+
+        <div class="painel-aba" id="aba-aparencia" hidden>
+          <div class="campo">
+            <label>Tema</label>
+            <div class="grade-temas" id="grade-temas"></div>
+            <small>Muda na hora e fica guardado no seu computador.</small>
+          </div>
+          <div class="campo" id="nova-tema-opcao" hidden>
+            <label>Novo tema</label>
+            <input type="color" id="input-novo-tema" />
+            <small>Selecione uma cor para criar um tema personalizado.</small>
+          </div>
+        </div>
+
+        <div class="painel-aba" id="aba-criador" hidden>
+          <div class="cartao-criador">
+            <div class="criador-avatar">LP</div>
+            <div>
+              <h3>Leal program</h3>
+              <p class="criador-cargo">Criador do Nexo</p>
+            </div>
+          </div>
+
+          <dl class="ficha">
+            <dt>Criado em</dt>
+            <dd id="criado-em">—</dd>
+            <dt>Versão</dt>
+            <dd id="versao-app">—</dd>
+            <dt>Feito com</dt>
+            <dd>WebRTC, WebSocket e Electron — sem servidor pago, sem assinatura.</dd>
+          </dl>
+
+          <div class="sobre-criador">
+            <p>
+              O Nexo nasceu de uma ideia simples e teimosa: <strong>dar para ver a tela
+              do amigo e falar com todo mundo ao mesmo tempo, de graça, sem travar.</strong>
+              Leal program construiu cada parte — a sala, a voz em malha, a transmissão
+              em qualidade nativa do monitor, o chat com arquivos e os 10 temas —
+              escrevendo o código linha por linha, testando tudo de ponta a ponta antes
+              de deixar sair do forno.
+            </p>
+            <p>
+              Não tem equipe por trás, não tem plano pago escondido e não tem anúncio.
+              Tem só um programador que gosta de fazer as coisas funcionarem de verdade,
+              e prefere um app que testou mil vezes a um que só parece bonito.
+            </p>
+            <p class="assinatura">— Leal program</p>
+          </div>
+        </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ PERFIL ============================ -->
+  <div id="modal-perfil" class="overlay" hidden>
+    <div class="janela-modal pequeno">
+      <div class="modal-cabecalho">
+        <strong>Seu perfil</strong>
+        <button class="icone-btn fecha-modal" title="Fechar">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-corpo">
+        <div class="avatar-grande" id="avatar-preview">?</div>
+
+        <div class="campo">
+          <label for="in-perfil-nome">Nome</label>
+          <input id="in-perfil-nome" type="text" maxlength="24" autocomplete="off" />
+        </div>
+
+        <div class="campo">
+          <label>Foto de perfil</label>
+          <div class="linha-foto">
+            <button id="btn-escolher-foto" class="btn pequeno" type="button">Escolher foto do computador</button>
+            <button id="btn-remover-foto" class="btn pequeno" type="button" hidden>Usar emoji</button>
+          </div>
+          <small class="dica-campo">A foto é cortada no redondinho e vai sem distorcer —
+            ela mantém as proporções originais.</small>
+          <input id="in-foto-perfil" type="file" accept="image/*" hidden />
+        </div>
+
+        <div class="campo">
+          <label>Emoji do avatar</label>
+          <div class="grade-emojis" id="grade-emojis"></div>
+        </div>
+
+        <div class="campo">
+          <label>Cor</label>
+          <div class="grade-cores" id="grade-cores"></div>
+        </div>
+
+        <button id="btn-salvar-perfil" class="btn gradiente grande">Salvar perfil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================== CORTAR FOTO ======================== -->
+  <div id="modal-corte" class="overlay" hidden>
+    <div class="janela-modal pequeno">
+      <div class="modal-cabecalho">
+        <strong>Cortar a foto</strong>
+        <button class="icone-btn fecha-modal" title="Fechar">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-corpo coluna">
+        <p class="dica-campo centralizado">Arraste a foto para posicionar e use o zoom.
+          A parte dentro do círculo é a que vai aparecer.</p>
+
+        <div class="corte-area" id="corte-area">
+          <img id="corte-img" alt="" draggable="false" />
+          <span class="corte-anel" aria-hidden="true"></span>
+        </div>
+
+        <div class="campo campo-zoom">
+          <label for="range-zoom">Zoom</label>
+          <input id="range-zoom" type="range" min="100" max="320" value="100" />
+        </div>
+
+        <div class="linha-foto centro">
+          <button id="btn-cancelar-corte" class="btn pequeno" type="button">Cancelar</button>
+          <button id="btn-aplicar-corte" class="btn pequeno gradiente" type="button">Usar esta foto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== AVISO =========================== -->
+  <div id="aviso" class="aviso-flutuante" hidden></div>
+
+  <script src="icons.js"></script>
+  <script src="notificacoes.js"></script>
+  <script src="tutorial.js"></script>
+  <script src="renderer.js"></script>
+  <script src="loja.js"></script>
+</body>
+</html>
