@@ -1,0 +1,67 @@
+{
+  "name": "nexo",
+  "productName": "Nexo",
+  "version": "1.0.0",
+  "description": "Nexo - salas de transmissao de tela com chat em tempo real",
+  "main": "app/main.js",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "node servidor/servidor.js",
+    "dev": "electron .",
+    "servidor": "node servidor/servidor.js",
+    "dist": "electron-builder --win --x64 --publish never",
+    "teste": "node servidor/_teste.js",
+    "teste-app": "node _e2e.js",
+    "teste-video": "node _e2e-video.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^32.2.7",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "br.nexo.app",
+    "productName": "Nexo",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app/**/*",
+      "servidor/**/*",
+      "versao.json",
+      "package.json",
+      "!servidor/_teste.js",
+      "!servidor/dados-contas.json",
+      "!servidor/arquivos/**/*",
+      "!app/icone-128-original.png"
+    ],
+    "win": {
+      "icon": "app/icone.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false,
+      "artifactName": "Nexo-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Nexo",
+      "include": "build/instalar-firewall.nsh",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true
+    },
+    "compression": "maximum"
+  }
+}
