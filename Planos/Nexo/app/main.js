@@ -26,6 +26,10 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 app.commandLine.appendSwitch('unsafely-treat-insecure-origin-as-secure', 'file://');
 // evita crash do renderer/GPU ao iniciar WebRTC / câmera / tela
 app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-features', 'GpuRasterization,GpuCompositing');
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+app.commandLine.appendSwitch('disable-web-security');
 
 // modo de teste: janela pequena, fora do caminho e sem som nenhum,
 // para poder validar sem atrapalhar quem esta usando o computador.

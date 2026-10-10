@@ -1,11 +1,8 @@
 {
-  "versao": "1.1.0",
+  "versao": "1.6.0",
   "atualizadoEm": "2026-10-10",
   "novidades": [
-    "Correção: vídeo da transmissão (tela) não fica preto/vermelho — espelhamento removido",
-    "Correção: aviso de transmissão não cobre mais os botões do vídeo",
-    "Correção: contador de participantes sincronizado quando alguém sai",
-    "Correção: tela preta ao entrar na sala — desativado crash de GPU (WebRTC + vídeo)",
-    "Servidor Railway online 24h: wss://nexo-production-0b47.up.railway.app"
+    "CORREÇÃO PRINCIPAL: tela da sala estava dentro do modal de recuperação de senha no HTML (tag desbalanceada) — sala não renderizava e ficava preta. Agora a sala aparece normalmente.",
+    "Sem câmera obrigatória — microfone e transmissão de tela funcionam direto."
   ]
 }
