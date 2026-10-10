@@ -1,0 +1,18 @@
+/* tailwind.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variáveis Discord Dark Mode */
+:root {
+  --discord-bg-chat: #313338;
+  --discord-sidebar-serv: #1e1f22;
+  --discord-sidebar-canais: #2b2d31;
+  --discord-panel-ativo: #2b2d31;
+  --discord-accent-prim: #5865f2;
+  --discord-accent-perigo: #da373c;
+  --discord-status-online: #23a55a;
+  --discord-status-away: #f0b232;
+  --discord-status-dnd: #f23f43;
+  --discord-status-off: #80848e;
+}
