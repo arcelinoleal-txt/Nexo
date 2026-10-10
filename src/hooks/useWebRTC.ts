@@ -16,21 +16,21 @@ export interface UseWebRTCReturn {
   isLocalAudioMuted: boolean;
   isLocalVideoMuted: boolean;
   isScreenSharing: boolean;
-  
+
   // Controles
   toggleAudio: () => void;
   toggleVideo: () => void;
   startScreenShare: () => Promise<void>;
   stopScreenShare: () => void;
-  
+
   // Conexões Peer
   connectToUser: (userId: string, remoteStream: MediaStream) => Promise<void>;
   disconnectFromUser: (userId: string) => void;
   getRemoteStream: (userId: string) => MediaStream | undefined;
-  
+
   // Estado da conexão
   connectionStates: Map<string, 'connecting' | 'connected' | 'disconnected'>;
-  
+
   // Métodos utilitários
   getLocalVideoElement: () => HTMLVideoElement | null;
   getAudioLevel: () => number;
@@ -44,46 +44,46 @@ const useWebRTC = (myUserId: string, connectedUsers: string[]): UseWebRTCReturn 
   // ==========================================================
   // 1. ESTADO LOCAL - Captura de Áudio e Vídeo
   // ==========================================================
-  
+
   const [localStream, setLocalStream] = useState<LocalStreamType>(null);
   const [isLocalAudioMuted, setIsLocalAudioMuted] = useState(false);
   const [isLocalVideoMuted, setIsLocalVideoMuted] = useState(true); // Inicialmente vídeo off
   const [isScreenSharing, setIsScreenSharing] = useState(false);
-  
+
   const [connectionStates, setConnectionStates] = useState<Map<string, 'connecting' | 'connected' | 'disconnected'>>(new Map());
   const [remoteStreams, setRemoteStreams] = useState<RemoteStreamMapType>(new Map());
-  
+
   // Referências para elementos de vídeo
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRefs = useRef<Record<string, HTMLVideoElement>>({});
-  
+
   // Níveis de áudio (para indicador de voz)
   const audioLevels = useRef<Record<string, number>>(new Map());
-  
+
   // ==========================================================
   // 2. CAPTURA DE MÍDIA LOCAL
-  // ============================================================
-  
+  // ==========================================================
+
   const toggleAudio = useCallback(async () => {
     if (!localStream) return;
-    
+
     const audioTrack = localStream.getAudioTracks()[0];
     if (audioTrack) {
       audioTrack.enabled = !audioTrack.enabled;
       setIsLocalAudioMuted(!audioTrack.enabled);
     }
   }, [localStream]);
-  
+
   const toggleVideo = useCallback(async () => {
     if (!localStream) return;
-    
+
     const videoTrack = localStream.getVideoTracks()[0];
     if (videoTrack) {
       videoTrack.enabled = !videoTrack.enabled;
       setIsLocalVideoMuted(!videoTrack.enabled);
     }
   }, [localStream]);
-  
+
   // Iniciar compartilhamento de tela
   const startScreenShare = useCallback(async () => {
     try {
@@ -91,7 +91,7 @@ const useWebRTC = (myUserId: string, connectedUsers: string[]): UseWebRTCReturn 
       if (isScreenSharing) {
         stopScreenShare();
       }
-      
+
       // Capturar tela/display media
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
@@ -101,33 +101,33 @@ const useWebRTC = (myUserId: string, connectedUsers: string[]): UseWebRTCReturn 
         },
         audio: true
       });
-      
+
       setIsScreenSharing(true);
-      
+
       // Se já temos uma conexão peer, adicionar a trilha
       // Isso será tratado pelo connectToUser quando o usuário for selecionado
       console.log('📺 Compartilhamento de tela iniciado', screenStream.getTracks());
-      
+
     } catch (error) {
       console.error('❌ Erro ao iniciar sharing de tela:', error);
       alert('Não foi possível acessar a tela. Permita a permissão de tela nas configurações do navegador.');
     }
   }, [isScreenSharing, stopScreenShare]);
-  
+
   const stopScreenShare = useCallback(() => {
     setIsScreenSharing(false);
     // Note: O stream precisa ser parado explicitamente pelo componente que o chamou
     // ou quando o usuário sai da chamada
     console.log('⏹️ Compartilhamento de tela parado');
-  };
-  
+  }, [isScreenSharing]);
+
   // ==========================================================
   // 3. CONEXÕES PEER - WebRTC Signalization
   // ============================================================
-  
+
   const [peerConnections, setPeerConnections] = useState<Map<string, RTCPeerConnection>>(new Map());
   const [remoteStreamsMap, setRemoteStreamsMap] = useState<RemoteStreamMapType>(new Map());
-  
+
   // Função para conectar a um usuário específico
   const connectToUser = useCallback(async (userId: string, remoteStream: MediaStream) => {
     // Se já houver conexão, fechar e reconectar
@@ -137,19 +137,19 @@ const useWebRTC = (myUserId: string, connectedUsers: string[]): UseWebRTCReturn 
         existingPc.close();
       }
     }
-    
+
     const pc = new RTCPeerConnection(RTC_CONFIG);
     setPeerConnections(prev => new Map(prev).set(userId, pc));
-    
+
     // Armazenar stream remoto
     setRemoteStreamsMap(prev => new Map(prev).set(userId, remoteStream));
-    
+
     // Evento: quando trilha remota for adicionada
     pc.ontrack = (event) => {
       console.log(`📥 Received track from ${userId}:`, event.track.kind);
       // O componente que chama esse hook irá renderizar o vídeo
     };
-    
+
     // Evento: candidato ICE
     pc.onicecandidate = (event) => {
       if (event.candidate) {
@@ -158,7 +158,7 @@ const useWebRTC = (myUserId: string, connectedUsers: string[]): UseWebRTCReturn 
         console.log(`🧊 ICE candidate from ${userId}:`, event.candidate);
       }
     };
-    
+
     // Evento: mudança de estado de conexão
     pc.onconnectionstatechange = (event) => {
       console.log(`🔗 Connection state for ${userId}:`, event.target.connectionState);
@@ -168,89 +168,89 @@ const useWebRTC = (myUserId: string, connectedUsers: string[]): UseWebRTCReturn 
         return newMap;
       });
     };
-    
+
     // Evento: oniceconnectionstatechange (alternativo)
     pc.oniceconnectionstatechange = (event) => {
       console.log(`🔗 ICE Connection state for ${userId}:`, event.target.iceConnectionState);
     };
-    
+
     // ==========================================================
     // CREAT OFFER E SINALIZAÇÃO
     // ==========================================================
-    
+
     // Adicionar trilha local (áudio e vídeo)
     if (localStream) {
       localStream.getTracks().forEach(track => {
         pc.addTrack(track, localStream);
       });
     }
-    
+
     // Criar oferta SDP
     try {
       const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true });
       await pc.setLocalDescription(offer);
-      
+
       // Enviar oferta para o servidor de sinalização
       // Em um sistema real, isso seria: socket.emit('offer', { sdp: pc.localDescription.sdp, to: userId })
       // Aqui simulamos o envio
       console.log(`📤 Offer created for ${userId}`, pc.localDescription.type);
-      
+
       // Definir estado de conexão como conectando
       setConnectionStates(prev => new Map(prev).set(userId, 'connecting'));
-      
+
     } catch (error) {
       console.error('❌ Erro ao criar oferta:', error);
       setConnectionStates(prev => new Map(prev).set(userId, 'disconnected'));
     }
   }, [myUserId, connectedUsers, localStream]);
-  
+
   // ==========================================================
   // DESCONECTAR DE USUÁRIO
   // ============================================================
-  
+
   const disconnectFromUser = useCallback((userId: string) => {
     if (peerConnections.has(userId)) {
       const pc = peerConnections.get(userId)!;
       pc.close();
       peerConnections.delete(userId);
     }
-    
+
     setRemoteStreamsMap(prev => {
       const newMap = new Map(prev);
       newMap.delete(userId);
       return newMap;
     });
-    
+
     setConnectionStates(prev => {
       const newMap = new Map(prev);
       newMap.delete(userId);
       return newMap;
     });
-    
+
     console.log(`👋 Desconectado de ${userId}`);
   };
-  
+
   // ==========================================================
   // PEGAR STREAM REMOTO
   // ============================================================
-  
+
   const getRemoteStream = useCallback((userId: string): MediaStream | undefined => {
     return remoteStreamsMap.get(userId);
   };
-  
+
   // ==========================================================
   // NÍVEIS DE ÁUDIO (Indicador de Voz)
   // ============================================================
-  
+
   const getAudioLevel = useCallback((userId: string): number => {
     // Retorna um nível de áudio entre 0 e 1 baseado no mapa de níveis
     return audioLevels.current[userId] || 0;
   };
-  
+
   // ==========================================================
   // INICIALIZAÇÃO - Solicitar mídia local na montagem
   // ============================================================
-  
+
   useEffect(() => {
     // Solicitar acesso à câmera e microfone somente quando o hook for montado
     // e houver usuários conectados
@@ -268,72 +268,72 @@ const useWebRTC = (myUserId: string, connectedUsers: string[]): UseWebRTCReturn 
             height: { ideal: 720 }
           }
         });
-        
+
         setLocalStream(stream);
-        
+
         // Atribuir tracks aos elementos de vídeo locais
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream;
         }
-        
+
         console.log('🎥 Stream local capturado com sucesso');
         console.log('Tracks:', stream.getTracks().length);
-        
+
       } catch (error) {
         console.error('❌ Erro ao capturar stream local:', error);
         alert('Permissão de câmera e microfone necessária para usar o Discord Clone.');
       }
     };
-    
+
     // Só inicializar se tivermos usuários conectados
     if (connectedUsers && connectedUsers.length > 0) {
       initLocalStream();
     }
   }, [connectedUsers]);
-  
+
   // ==========================================================
   // EFFECT: Atualizar streams remotos quando mudarem
   // ============================================================
-  
+
   useEffect(() => {
     // Este effect observa as mudanças nos streams remotos
     // e atualiza os elementos de vídeo correspondentes
-    
+
     const updateRemoteVideos = () => {
       setRemoteStreamsMap(prev => {
         const newMap = new Map(prev);
         return newMap;
       });
     };
-    
+
     return updateRemoteVideos;
   }, [remoteStreams]);
-  
+
   // ==========================================================
   // RETORNO DO HOOK
   // ============================================================
-  
+
   return {
     // Estado Local
     localStream,
     isLocalAudioMuted,
     isLocalVideoMuted,
     isScreenSharing,
-    
+
     // Controles
     toggleAudio,
     toggleVideo,
     startScreenShare,
     stopScreenShare,
-    
+
     // Conexões Peer
     connectToUser,
     disconnectFromUser,
     getRemoteStream,
-    
+
     // Estado da conexão
     connectionStates,
-    
+
     // Métodos utilitários
     getLocalVideoElement: () => localVideoRef.current,
     getAudioLevel,
