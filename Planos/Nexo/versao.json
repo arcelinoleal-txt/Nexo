@@ -1,16 +1,11 @@
 {
-  "versao": "1.0.0",
+  "versao": "1.1.0",
   "atualizadoEm": "2026-10-10",
   "novidades": [
-    "Instalador para Windows — instala e já funciona sozinho",
-    "Convite da sala: cola um texto e entra de outro computador, sem mexer em configuração",
-    "Servidor dentro do próprio app — não precisa instalar nada separado",
-    "Firewall liberado na instalação, para as outras pessoas conseguirem entrar",
-    "Chamada de voz em malha, transmissão de tela na qualidade nativa do monitor",
-    "Chat com imagens, vídeos, links e documentos",
-    "Conversas individuais entre duas pessoas",
-    "10 temas de anime para trocar a aparência",
-    "Tutorial passo a passo dentro do app e tutorial em texto para mandar na conversa",
-    "Sininho de mensagens e de atualizações"
+    "Correção: vídeo da transmissão (tela) não fica preto/vermelho — espelhamento removido",
+    "Correção: aviso de transmissão não cobre mais os botões do vídeo",
+    "Correção: contador de participantes sincronizado quando alguém sai",
+    "Correção: tela preta ao entrar na sala — desativado crash de GPU (WebRTC + vídeo)",
+    "Servidor Railway online 24h: wss://nexo-production-0b47.up.railway.app"
   ]
 }

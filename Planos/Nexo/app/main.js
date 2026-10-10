@@ -24,6 +24,8 @@ registrar('[boot] main.js carregado');
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 // garante navigator.mediaDevices em origin file://
 app.commandLine.appendSwitch('unsafely-treat-insecure-origin-as-secure', 'file://');
+// evita crash do renderer/GPU ao iniciar WebRTC / câmera / tela
+app.disableHardwareAcceleration();
 
 // modo de teste: janela pequena, fora do caminho e sem som nenhum,
 // para poder validar sem atrapalhar quem esta usando o computador.
