@@ -3,7 +3,8 @@
 | Versão | Data | Status | O que mudou |
 |--------|------|--------|-------------|
 | **1.0.0** | 10/10/2026 00:17 | Base — `instalador original/` | App completo (v1.0 base) |
-| **1.7.0** | 10/10/2026 21:33 | ✅ **ATUAL** — `versoes/v1.7.0/` | Colisão de classe `.tela` corrigida (vídeo vazava 100vw/100vh) + grid posicionado (72/240/palco/340) + coluna de servidores estilo Discord + acabamento visual completo |
+| **1.7.0** | 10/10/2026 21:33 | ✅ Layout Discord | Colisão `.tela` corrigida + grid posicionado + coluna de servidores + acabamento visual |
+| **1.8.0** | 10/10/2026 22:05 | ✅ **ATUAL** — `versoes/v1.8.0/` | Aviso de atualização ganhou botão **Baixar atualização** (usa campo `download` do versao.json) |
 | **1.6.0** | 10/10/2026 20:30 | ✅ **DEFINITIVA** — `versoes/v1.6.0/` | **Bug raiz corrigido**: `#tela-sala` estava aninhada dentro do `div#modal-recuperar` (tag `</div>` desbalanceada) → sala invisível/tela preta. Validado por parser HTML + render Electron real |
 | **1.1.0** | 10/10/2026 19:43 | ✅ Corrigido — `versoes/v1.1.0/` | GPU crash corrigido (tela preta ao entrar); vídeo espelhado removido; contador sincronizado; aviso z-index ajustado |
 | 1.1.0 | — | Próxima | Correções pós-teste do 1.0 (ver abaixo) |

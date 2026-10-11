@@ -270,7 +270,8 @@ const servidor = http.createServer(async (req, res) => {
       return responder(res, 200, {
         versao: dados.versao,
         novidades: Array.isArray(dados.novidades) ? dados.novidades : [],
-        atualizadoEm: dados.atualizadoEm || null
+        atualizadoEm: dados.atualizadoEm || null,
+        download: typeof dados.download === 'string' ? dados.download : null
       });
     }
 

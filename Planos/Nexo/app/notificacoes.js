@@ -193,12 +193,13 @@ const Notificacoes = (() => {
     const vista = carregar('versaoVista', null);        // assinatura do conteúdo
     const numeroVisto = carregar('ultimaVersao', null); // só o "1.0.0"
     const novidades = Array.isArray(d.novidades) ? d.novidades : [];
+    const link = (typeof d.download === 'string' && /^https?:\/\//i.test(d.download)) ? d.download : null;
 
     /* Assinatura de TODO o conteúdo. Se mudar o número da versão, a data
        ou qualquer item das novidades, o aviso aparece. Sem isso, quem só
        editar o texto das novidades não avisaria ninguém — e é justamente
        o "o que mudou" que as pessoas precisam conseguir enxergar. */
-    const assinatura = [d.versao, d.atualizadoEm || '', novidades.join('|')].join('#');
+    const assinatura = [d.versao, d.atualizadoEm || '', novidades.join('|'), link || ''].join('#');
 
     if (vista !== null && vista !== assinatura) {
       const trocouDeNumero = numeroVisto !== null && numeroVisto !== d.versao;
@@ -211,8 +212,10 @@ const Notificacoes = (() => {
           ? `Você está na ${numeroVisto}. O que mudou:`
           : 'Tem novidade nova. O que mudou:',
         itens: novidades.slice(0, 8),
-        acao: noNavegador ? 'Atualizar agora' : null,
-        executar: noNavegador ? () => location.reload() : null
+        acao: link ? 'Baixar atualização' : (noNavegador ? 'Atualizar agora' : null),
+        executar: link
+          ? () => window.open(link, '_blank')
+          : (noNavegador ? () => location.reload() : null)
       });
     }
 
