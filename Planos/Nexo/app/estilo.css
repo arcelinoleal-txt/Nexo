@@ -257,7 +257,8 @@ button { cursor: pointer; border: 0; background: none; }
 input, select { user-select: text; }
 
 [hidden] { display: none !important; }
-.tela { height: 100vh; width: 100vw; }
+/* telas cheias do app — por ID, para não colidir com .tile.tela */
+#tela-entrada, #tela-sala { height: 100vh; width: 100vw; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -576,6 +577,7 @@ select {
 
 .barra-topo {
   grid-column: 1 / -1;
+  grid-row: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -586,6 +588,67 @@ select {
   -webkit-app-region: drag;
 }
 .arrastavel-nao, .arrastavel-nao * { -webkit-app-region: no-drag; }
+
+/* ------------------- coluna de servidores (estilo Discord) ------------ */
+
+.rail-servidores {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  background: var(--discord-sidebar-serv);
+  overflow: hidden;
+}
+
+.rail-item {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--superficie-2);
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: border-radius var(--trans), background var(--trans), transform var(--trans), color var(--trans);
+}
+.rail-item:hover {
+  border-radius: 12px;
+  background: var(--acento);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.rail-item.ativo {
+  border-radius: 12px;
+  background: var(--gradiente);
+  color: #fff;
+  box-shadow: var(--brilho);
+}
+/* indicador de ativo — pílula branca na lateral, como no Discord */
+.rail-item::before {
+  content: '';
+  position: absolute;
+  left: -13px;
+  width: 8px;
+  border-radius: 0 4px 4px 0;
+  background: #fff;
+  height: 0;
+  transition: height var(--trans);
+}
+.rail-item:hover::before { height: 20px; }
+.rail-item.ativo::before { height: 40px; }
+.rail-item svg { width: 24px; height: 24px; }
+.rail-sep {
+  width: 32px;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 4px 0;
+}
 
 .topo-esq, .topo-dir, .topo-centro { display: flex; align-items: center; gap: 10px; }
 
@@ -639,11 +702,13 @@ select {
 /* -------------------------- painel esquerdo -------------------- */
 
 .painel-esq {
+  grid-column: 2;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--superficie);
-  border-right: 1px solid var(--borda);
+  background: var(--discord-sidebar-canais);
+  border-right: 1px solid rgba(0,0,0,.25);
 }
 
 .bloco { padding: 16px 14px; border-bottom: 1px solid var(--borda); }
@@ -774,13 +839,13 @@ select {
 /* ------------------------------ palco -------------------------- */
 
 .palco {
+  grid-column: 3;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background:
-    radial-gradient(700px 340px at 50% -10%, rgba(109,94,252,.09), transparent 70%),
-    var(--fundo-2);
+  background: var(--discord-bg-chat);
 }
 
 .palco-topo {
@@ -824,8 +889,9 @@ select {
   gap: 10px;
   padding: 10px;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  align-content: center;
-  overflow-y: auto;
+  grid-auto-rows: minmax(150px, 1fr);
+  align-content: stretch;
+  overflow: hidden;
 }
 .grade-videos:empty { display: none; }
 
@@ -839,9 +905,12 @@ select {
   aspect-ratio: 16 / 9;
   animation: sobeTile .3s ease;
 }
-@keyframes sobeTile { from { opacity: 0; transform: scale(.97); } }
+@keyframes sobeTile { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
 
-.tile.tela { grid-column: 1 / -1; aspect-ratio: auto; min-height: 62%; }
+/* tela: ocupa a linha inteira da grade */
+.tile.tela { grid-column: 1 / -1; aspect-ratio: auto; min-height: 0; }
+/* só a tela: preenche a grade toda */
+.grade-videos.somente-tela { grid-template-rows: 1fr; }
 .grade-videos.somente-tela .tile.tela { height: 100%; }
 
 .tile video {
@@ -998,12 +1067,14 @@ select {
 /* ------------------------------ chat --------------------------- */
 
 .painel-chat {
+  grid-column: 4;
+  grid-row: 2;
   position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--superficie);
-  border-left: 1px solid var(--borda);
+  background: var(--discord-sidebar-canais);
+  border-left: 1px solid rgba(0,0,0,.25);
 }
 
 .chat-cabecalho {
@@ -1904,6 +1975,240 @@ input[type="range"]::-webkit-slider-thumb {
 
 @media (max-width: 780px) {
   .sala { grid-template-columns: minmax(0, 1fr); }
+  .painel-esq { display: none; }
+  .nome-app, .estado-conn { display: none; }
+  .grade-videos { grid-template-columns: 1fr; }
+}
+
+/* ==================================================================
+   POLISH — acabamento estilo Discord Dark
+   ================================================================== */
+
+/* fonte: Discord usa gg sans; usa a stack do sistema que e a mais proxima */
+body {
+  font-family: "gg sans", "Noto Sans", "Segoe UI Variable", "Segoe UI",
+               system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* scrollbars finas e discretas, como no Discord */
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.14) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.13);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.24); background-clip: padding-box; }
+
+/* texto do palco e cabeçalhos com o peso tipico do Discord */
+.palco-topo { font-weight: 650; letter-spacing: -.1px; }
+.titulo-bloco {
+  transition: color var(--trans);
+  cursor: default;
+}
+.titulo-bloco:hover { color: var(--texto); }
+
+/* contadores como pilula cinza do Discord */
+.cont {
+  background: rgba(255,255,255,.07);
+  color: var(--texto-suave);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* itens de lista: hover suave e selecao como no Discord */
+.lista-pessoas li {
+  border-radius: 6px;
+  padding: 6px 8px;
+  transition: background var(--trans), color var(--trans);
+}
+.lista-pessoas li:hover { background: rgba(255,255,255,.05); color: var(--texto); }
+.lista-pessoas li.eu { background: rgba(88,101,242,.16); color: var(--texto); }
+
+/* botoes de midia: mais limpos, quadrados arredondados iguais ao Discord */
+.btn-midia {
+  border-radius: 10px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid transparent;
+  transition: background var(--trans), transform var(--trans), border-color var(--trans);
+}
+.btn-midia:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.07); transform: none; }
+.btn-midia:active { transform: scale(.97); }
+.btn-midia.ativo {
+  background: rgba(88,101,242,.2);
+  border-color: rgba(88,101,242,.5);
+  box-shadow: none;
+}
+.btn-midia.ativo .ic { color: #a5b0ff; }
+.btn-midia.ativo small { color: #c9cffb; }
+.btn-midia.perigo:hover { background: rgba(218,55,60,.16); border-color: rgba(218,55,60,.4); }
+
+/* chip do codigo da sala — mais discreto e claro */
+.chip-codigo {
+  background: rgba(88,101,242,.13);
+  border: 1px solid rgba(88,101,242,.3);
+  color: #c4caff;
+  border-radius: 8px;
+  transition: background var(--trans);
+}
+.chip-codigo:hover { background: rgba(88,101,242,.22); transform: none; }
+.chip-codigo .rotulo { color: #8f97ad; font-size: 11px; }
+.chip-codigo strong { color: #fff; letter-spacing: 2px; }
+
+/* estado de conexao — pílula discreta */
+.estado-conn {
+  background: rgba(255,255,255,.045);
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+.estado-conn.on { color: var(--discord-status-online); }
+
+/* area de video: cantos arredondados e fundo profundo como no Discord */
+.area-video {
+  border-radius: 10px;
+  background: #0b0d12;
+  border: 1px solid rgba(255,255,255,.05);
+}
+
+/* placeholder mais suave, sem o gradiente chamativo */
+.placeholder {
+  background:
+    radial-gradient(520px 300px at 50% 45%, rgba(88,101,242,.07), transparent 70%),
+    #0b0d12;
+}
+.icone-placeholder {
+  border-radius: 20px;
+  background: rgba(88,101,242,.1);
+  border: 1px solid rgba(88,101,242,.24);
+  color: #8b95f5;
+}
+
+/* controles flutuantes — barra escura arredondada, como chamada do Discord */
+.controles-flutuantes {
+  background: rgba(12,14,20,.85);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 999px;
+  padding: 7px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.55);
+}
+.controles-flutuantes .ctrl {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  color: #b5bac1;
+  display: grid; place-items: center;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.controles-flutuantes .ctrl:hover { background: rgba(255,255,255,.08); color: #fff; }
+.controles-flutuantes .ctrl.desligado { color: var(--discord-status-dnd); }
+.controles-flutuantes .ctrl-principal {
+  width: auto;
+  border-radius: 999px;
+  padding: 0 18px;
+  gap: 9px;
+  display: inline-flex;
+  background: var(--discord-status-online);
+  color: #fff;
+  font-weight: 650;
+  font-size: 13.5px;
+}
+.controles-flutuantes .ctrl-principal:hover { background: #1a9245; }
+.controles-flutuantes .ctrl-principal.ativo { background: var(--discord-accent-perigo); }
+.controles-flutuantes .ctrl-principal.ativo:hover { background: #a12828; }
+
+/* chat: mensagens com hover e cabecalho limpo */
+.chat-cabecalho {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,.22);
+  font-weight: 700;
+  font-size: 14.5px;
+}
+.msg { padding: 3px 0; border-radius: 4px; transition: background var(--trans); }
+.msg:hover { background: rgba(255,255,255,.02); }
+.autor-msg { font-weight: 650; }
+.texto-msg { color: #dbdee1; }
+
+/* campo de digitar — caixa escura arredondada igual ao Discord */
+.area-digitar { padding: 12px 14px 16px; }
+.area-digitar input {
+  border-radius: 10px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid transparent;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  transition: border-color var(--trans), background var(--trans);
+}
+.area-digitar input:focus {
+  border-color: rgba(88,101,242,.6);
+  background: rgba(255,255,255,.06);
+}
+
+/* abas de conversa — segmentadas como no Discord */
+.abas-conversa {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  background: rgba(255,255,255,.045);
+  border-radius: 9px;
+}
+.aba-conversa {
+  border: 0;
+  background: transparent;
+  color: var(--texto-suave);
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aba-conversa:hover { color: var(--texto); }
+.aba-conversa.ativa { background: rgba(255,255,255,.1); color: #fff; }
+
+/* barra de info do rodape — discreta */
+.barra-info {
+  padding: 9px 18px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  font-size: 10.8px;
+  color: var(--texto-fraco);
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  letter-spacing: .1px;
+}
+
+/* responsivo: agora a coluna de servidores (72px) existe */
+@media (max-width: 1220px) {
+  .sala, .sala.chat-fechado { grid-template-columns: 72px 232px minmax(0, 1fr); }
+  .painel-chat {
+    position: fixed;
+    top: 52px; right: 0; bottom: 0;
+    width: 340px;
+    z-index: 40;
+    transform: translateX(102%);
+    transition: transform .22s cubic-bezier(.2,.9,.3,1);
+    box-shadow: -18px 0 50px rgba(0,0,0,.5);
+  }
+  .painel-chat.aberto { transform: translateX(0); }
+}
+
+@media (max-width: 780px) {
+  .sala { grid-template-columns: 72px minmax(0, 1fr); }
+  .rail-servidores { display: none; }
   .painel-esq { display: none; }
   .nome-app, .estado-conn { display: none; }
   .grade-videos { grid-template-columns: 1fr; }

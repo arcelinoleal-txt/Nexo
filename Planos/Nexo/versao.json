@@ -1,8 +1,10 @@
 {
-  "versao": "1.6.0",
+  "versao": "1.7.0",
   "atualizadoEm": "2026-10-10",
   "novidades": [
-    "CORREÇÃO PRINCIPAL: tela da sala estava dentro do modal de recuperação de senha no HTML (tag desbalanceada) — sala não renderizava e ficava preta. Agora a sala aparece normalmente.",
-    "Sem câmera obrigatória — microfone e transmissão de tela funcionam direto."
+    "LAYOUT CORRIGIDO: colisão de classe .tela (tela do app vs tile de tela) fazia o vídeo vazar com 100vw/100vh — corrigido",
+    "Grid da sala posicionado corretamente: 72px servidores + 240px painel + palco + 340px chat",
+    "Nova coluna de servidores estilo Discord com indicador de ativo",
+    "Acabamento visual completo: fontes, scrollbars finas, controles flutuantes, chat e inputs estilo Discord Dark"
   ]
 }
