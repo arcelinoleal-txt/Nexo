@@ -2701,3 +2701,67 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* imagem do chat: link por cima (sempre dá para abrir/baixar) e o botão
+   "baixar" embaixo. O bloco quebrado substitui a imagem por um aviso. */
+.anexo-visual {
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 0;
+}
+.anexo-visual img {
+  display: block;
+  max-width: 100%;
+  border-radius: 10px;
+  cursor: zoom-in;
+}
+
+.anexo-baixar {
+  align-self: flex-start;          /* a caixa e flex column: sem isso o botao estica */
+  display: inline-block;
+  margin-top: 2px;
+  padding: 3px 10px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 11px;
+  color: var(--texto-suave);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.5;
+  transition: background var(--trans), color var(--trans), border-color var(--trans);
+}
+.anexo-baixar:hover { background: rgba(255,255,255,.07); color: var(--texto); border-color: var(--texto-fraco); }
+
+.anexo-caixa.quebrado .anexo-visual {
+  padding: 18px 14px;
+  border: 1px dashed rgba(255,255,255,.16);
+  border-radius: 10px;
+  background: rgba(0,0,0,.22);
+  text-align: center;
+  cursor: default;
+}
+.anexo-caixa.quebrado .anexo-visual .anexo-erro-texto {
+  /* o aviso vive dentro de um <a>: precisa apagar a cor e o sublinhado do link.
+     específicidade alta + !important pra vencer o default do navegador no <a>. */
+  color: var(--texto-fraco) !important;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none !important;
+}/* checkbox "Lembrar de mim" na tela de entrada */
+.campo-checkbox { margin-top: 6px; }
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--texto-suave);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.checkbox-label input[type="checkbox"] {
+  width: 18px; height: 18px;
+  accent-color: var(--acento);
+  flex-shrink: 0;
+}
+.checkbox-label:hover { color: var(--texto); }

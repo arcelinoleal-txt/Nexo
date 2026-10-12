@@ -71,7 +71,8 @@ const estado = {
   anexo: null,          // arquivo escolhido, ainda nao enviado
   entrando: false,      // esperando o servidor responder "entrou-sala"
   canal: 'geral',       // canal de texto ativo: 'geral' ou 'arquivos'
-  filtroArquivos: 'tudo'
+  filtroArquivos: 'tudo',
+  lembrar: false        // "Lembrar de mim" na tela de entrada
 };
 
 /* ------------------------------------------------------------------ */
@@ -114,6 +115,7 @@ function carregarPreferencias() {
   estado.tema = carregar('tema', 'meia-noite');
   document.body.dataset.tema = estado.tema;
   estado.servidor = carregar('servidor', padraoServidor);
+  estado.lembrar = carregar('lembrar', false);
 }
 
 /* ------------------------------------------------------------------ */
@@ -449,6 +451,12 @@ function aoEntrarNaSala(dados) {
   $('#tela-entrada').hidden = true;
   $('#tela-sala').hidden = false;
   $('#info-conexao').textContent = 'Servidor: ' + estado.servidor;
+
+  // "Lembrar de mim" — salva nome e servidor pra próxima vez
+  if (estado.lembrar) {
+    localStorage.setItem('nexo.nomeSalvo', $('#in-nome').value.trim());
+    localStorage.setItem('nexo.servidorSalvo', $('#in-servidor').value.trim());
+  }
 
   desconectarEstado('conectado');
 
@@ -1657,7 +1665,17 @@ function anexoHtml(anexo) {
   const tam = escapeHtml(tamanhoLegivel(anexo.tamanho));
 
   if (ehImagem(tipo, bruto)) {
-    return `<div class="anexo-caixa"><img src="${url}" alt="${nome}" loading="lazy" data-luz="1"></div>`;
+    // A imagem fica dentro de um link: se ela nao carregar (arquivo apagado do
+    // servidor, link morto) o chrome mostra so o texto do alt e nao dava nem
+    // para baixar. Assim sempre existe um caminho para abrir ou salvar o
+    // arquivo, mesmo com a imagem quebrada. O data-luz segue funcionando para
+    // o clique normal abrir em tela cheia.
+    return `<div class="anexo-caixa">
+      <a class="anexo-visual" href="${url}" target="_blank" rel="noopener noreferrer" title="Abrir ou baixar ${nome}">
+        <img src="${url}" alt="${nome}" loading="lazy" data-luz="1">
+      </a>
+      <a class="anexo-baixar" href="${url}" target="_blank" rel="noopener noreferrer" download>baixar</a>
+    </div>`;
   }
   if (ehVideo(tipo, bruto)) {
     return `<div class="anexo-caixa"><video src="${url}" controls preload="metadata" playsinline></video></div>`;
@@ -1670,6 +1688,31 @@ function anexoHtml(anexo) {
       <span class="anexo-txt"><span class="fn">${nome}</span><span class="fs">${tam}</span></span>
       <span class="fx">abrir</span>
     </a></div>`;
+}
+
+/* Imagem que nao carregou (arquivo apagado do servidor, link morto) nao pode
+   virar so um texto solto sem ninguem pra clicar. Aqui a gente marca a caixa
+   como quebrada, tira a luzia (que abriria uma tela vazia) e deixa o link de
+   "baixar" como caminho real. O CSP do app barra onerror inline, entao o
+   ouvinte tem de ser ligado por JS mesmo. */
+function ligarAnexos(raiz) {
+  if (!raiz || !raiz.querySelectorAll) return;
+  raiz.querySelectorAll('img[data-luz]').forEach(img => {
+    const marcar = () => {
+      const caixa = img.closest('.anexo-caixa');
+      if (!caixa) return;
+      caixa.classList.add('quebrado');
+      img.removeAttribute('data-luz');       // nao abre mais a luzia vazia
+      img.remove();
+      const aviso = document.createElement('span');
+      aviso.className = 'anexo-erro-texto';
+      aviso.textContent = 'não foi possível carregar';
+      const alvo = caixa.querySelector('.anexo-visual') || caixa;
+      alvo.appendChild(aviso);
+    };
+    if (img.complete && img.naturalWidth === 0) marcar();
+    else img.addEventListener('error', marcar, { once: true });
+  });
 }
 
 /* ---------------- escolha, subida e envio ---------------- */
@@ -1874,6 +1917,8 @@ function criarMsgEl(item) {
         ${anexoHtml(item.anexo)}
       </div>`;
   }
+  // liga o tratamento de imagem quebrada depois que o HTML entrou no documento
+  ligarAnexos(div);
   return div;
 }
 
@@ -2874,6 +2919,30 @@ function inicializar() {
   montarGradeTemas();
 
   /* ---------------- entrada ---------------- */
+  // "Lembrar de mim" — auto-preenche nome/servidor se marcado
+  const chkLembrar = $('#in-lembrar');
+  if (chkLembrar) {
+    chkLembrar.checked = estado.lembrar;
+    if (estado.lembrar) {
+      // carrega o que a pessoa salvou da última vez
+      const nomeSalvo = localStorage.getItem('nexo.nomeSalvo');
+      const servidorSalvo = localStorage.getItem('nexo.servidorSalvo');
+      if (nomeSalvo) $('#in-nome').value = nomeSalvo;
+      if (servidorSalvo) $('#in-servidor').value = servidorSalvo;
+    }
+    chkLembrar.addEventListener('change', () => {
+      estado.lembrar = chkLembrar.checked;
+      salvar('lembrar', estado.lembrar);
+      if (estado.lembrar) {
+        localStorage.setItem('nexo.nomeSalvo', $('#in-nome').value.trim());
+        localStorage.setItem('nexo.servidorSalvo', $('#in-servidor').value.trim());
+      } else {
+        localStorage.removeItem('nexo.nomeSalvo');
+        localStorage.removeItem('nexo.servidorSalvo');
+      }
+    });
+  }
+
   $('#btn-criar').addEventListener('click', acaoCriar);
   $('#btn-entrar').addEventListener('click', acaoEntrar);
   $('#in-codigo').addEventListener('input', (ev) => {
@@ -3048,6 +3117,27 @@ function inicializar() {
   $('#btn-tela').addEventListener('click', iniciarTransmissao);
   $('#ctrl-tela').addEventListener('click', iniciarTransmissao);
   $('#btn-sair-som').addEventListener('click', sairDaSala);
+  $('#btn-sair-conta-painel').addEventListener('click', () => {
+    if (confirm('Sair da conta? Você voltará para a tela de entrada.')) {
+      gravarSessao(null, null);
+      atualizarBlocoConta();
+      $('#tela-sala').hidden = true;
+      $('#tela-entrada').hidden = false;
+      // limpa o estado da sala
+      estado.codigo = null;
+      estado.meuId = null;
+      estado.participantes = [];
+      estado.conectado = false;
+      estado.historico = [];
+      estado.privados.clear();
+      estado.naoLidas.clear();
+      estado.conversa = '';
+      $('#lista-chat').innerHTML = '<div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>';
+      montarAbasConversa();
+      desenharParticipantes();
+      $('#info-conexao').textContent = '—';
+    }
+  });
 
   /* ---------------- canais (estilo Discord) ---------------- */
   // Recolher/abrir categoria da lista de canais.
@@ -3598,7 +3688,12 @@ function inicializar() {
   // clique numa imagem do chat abre em tela cheia
   document.addEventListener('click', (ev) => {
     const img = ev.target && ev.target.closest ? ev.target.closest('img[data-luz]') : null;
-    if (img) abrirLuzia(img.currentSrc || img.src);
+    if (img) {
+      // a imagem agora vive dentro de um <a> para dar sempre um caminho de
+      // download; sem isto o clique abriria a luzia E o link ao mesmo tempo.
+      ev.preventDefault();
+      abrirLuzia(img.currentSrc || img.src);
+    }
   });
 
   $('#btn-toggle-chat').addEventListener('click', () => {

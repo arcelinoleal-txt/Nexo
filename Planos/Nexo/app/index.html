@@ -130,6 +130,13 @@
         <small>Já vem pronto para a sala online. Para testar na sua rede local troque por <code>ws://localhost:3000</code>.</small>
       </div>
 
+      <div class="campo campo-checkbox">
+        <label class="checkbox-label">
+          <input id="in-lembrar" type="checkbox" />
+          <span>Lembrar de mim (entrar direto na próxima vez)</span>
+        </label>
+      </div>
+
       <button id="btn-criar" class="btn gradiente grande">Criar sala</button>
 
       <div class="divisor"><span>ou entre em uma sala</span></div>
@@ -347,6 +354,9 @@
           </button>
           <button id="btn-sair-som" class="btn-ico-user perigo" type="button" title="Sair da sala">
             <span class="ic" data-on="sair" data-off="sair"></span>
+          </button>
+          <button id="btn-sair-conta-painel" class="btn-ico-user" type="button" title="Sair da conta (volta para a tela de entrada)">
+            <span class="ic" data-on="sair-conta" data-off="sair-conta"></span>
           </button>
         </div>
       </div>
