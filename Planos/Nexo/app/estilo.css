@@ -2764,4 +2764,133 @@ body {
   accent-color: var(--acento);
   flex-shrink: 0;
 }
-.checkbox-label:hover { color: var(--texto); }
+.checkbox-label:hover { color: var(--texto); }/* ===================================================================
+   AMIGOS (painel esquerdo)
+   =================================================================== */
+.cat-amigos { margin-bottom: 10px; }
+
+.cab-amigos {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 4px 6px 2px;
+}
+.rot-cat-amigos {
+  color: var(--texto-fraco);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+}
+.btn-novo-amigo {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 0;
+  border-radius: 5px;
+  background: rgba(255,255,255,.07);
+  color: var(--texto-suave);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.btn-novo-amigo:hover { background: var(--acento); color: #fff; }
+
+.lista-amigos,
+.lista-pedidos { list-style: none; margin: 0; padding: 0; }
+
+.amigo-vazio,
+.pedido-vazio {
+  padding: 4px 6px;
+  color: var(--texto-fraco);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+/* item de amigo / pedido */
+.item-amigo,
+.item-pedido {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 7px;
+  margin-bottom: 2px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto-suave);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.item-amigo:hover,
+.item-pedido:hover { background: rgba(255,255,255,.045); color: var(--texto); }
+
+.item-amigo .avatar,
+.item-pedido .avatar { width: 24px; height: 24px; font-size: 11px; flex-shrink: 0; }
+.item-amigo .avatar .ponto-status,
+.item-pedido .avatar .ponto-status { width: 9px; height: 9px; border-width: 2px; border-color: var(--discord-sidebar-canais); }
+
+.item-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* botões de ação no pedido (aceitar / recusar) */
+.pedido-acoes {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.btn-pedido {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 4px;
+  background: rgba(255,255,255,.07);
+  color: var(--texto-suave);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.btn-pedido:hover { background: var(--acento); color: #fff; }
+.btn-pedido.aceitar:hover { background: #23a55a; }
+.btn-pedido.recusar:hover { background: #da373c; }
+
+/* ===================================================================
+   MODAL ADICIONAR AMIGO
+   =================================================================== */
+.acoes-amigo-busca { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+.resultado-amigo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--texto);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--trans);
+}
+.resultado-amigo:hover { background: rgba(255,255,255,.06); }
+.resultado-amigo .avatar { width: 28px; height: 28px; font-size: 12px; flex-shrink: 0; }
+.resultado-amigo .avatar .ponto-status { width: 9px; height: 9px; border-width: 2px; border-color: var(--superficie); }
+.resultado-nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.resultado-acao { flex-shrink: 0; }

@@ -325,6 +325,52 @@ const servidor = http.createServer(async (req, res) => {
       return responder(res, 200, { pessoas });
     }
 
+    /* ---------------------------- amizades ---------------------------- */
+    /* Todas exigem usuário logado (token no header Authorization). */
+
+    const token = tokenDe(req);
+    const usuario = token ? contas.usuarioDoToken(token) : null;
+    if (!usuario) return responder(res, 401, { erro: 'Não autenticado.' });
+
+    /* GET /api/amigos  -> { amigos: [...], pedidos: [...] } */
+    if (url === '/api/amigos' && req.method === 'GET') {
+      const r = contas.listarAmizades(usuario.id);
+      if (r.erro) return responder(res, r.status || 400, { erro: r.erro });
+      return responder(res, 200, r);
+    }
+
+    /* POST /api/amigos/pedir  { amigoId } -> envia pedido */
+    if (url === '/api/amigos/pedir' && req.method === 'POST') {
+      const corpo = await lerJson(req);
+      const r = contas.pedirAmizade(usuario.id, corpo?.amigoId);
+      if (r.erro) return responder(res, r.status || 400, { erro: r.erro });
+      return responder(res, 200, r);
+    }
+
+    /* POST /api/amigos/aceitar  { amigoId } -> aceita pedido */
+    if (url === '/api/amigos/aceitar' && req.method === 'POST') {
+      const corpo = await lerJson(req);
+      const r = contas.aceitarAmizade(usuario.id, corpo?.amigoId);
+      if (r.erro) return responder(res, r.status || 400, { erro: r.erro });
+      return responder(res, 200, r);
+    }
+
+    /* POST /api/amigos/recusar  { amigoId } -> recusa/cancela pedido */
+    if (url === '/api/amigos/recusar' && req.method === 'POST') {
+      const corpo = await lerJson(req);
+      const r = contas.recusarAmizade(usuario.id, corpo?.amigoId);
+      if (r.erro) return responder(res, r.status || 400, { erro: r.erro });
+      return responder(res, 200, r);
+    }
+
+    /* POST /api/amigos/remover  { amigoId } -> remove amizade */
+    if (url === '/api/amigos/remover' && req.method === 'POST') {
+      const corpo = await lerJson(req);
+      const r = contas.removerAmigo(usuario.id, corpo?.amigoId);
+      if (r.erro) return responder(res, r.status || 400, { erro: r.erro });
+      return responder(res, 200, r);
+    }
+
     /* ----------------------------- upload ----------------------------- */
 
     if (url === '/api/upload' && req.method === 'POST') {

@@ -348,9 +348,105 @@ function mostrarSuporte(usuario, senha) {
   return { suporte: usuario.suporte };
 }
 
+/* ------------------------------------------------------------------ */
+/* Amizades                                                            */
+/* ------------------------------------------------------------------ */
+
+/* Inicializa campos de amizade se não existirem (migração suave). */
+function garantirCamposAmizade(usuario) {
+  if (!usuario.amigos) usuario.amigos = [];
+  if (!usuario.pedidosAmizade) usuario.pedidosAmizade = [];
+}
+
+/** Envia pedido de amizade. Não permite duplicar, não permite si mesmo,
+ *  não permite se já são amigos. */
+function pedirAmizade(deId, paraId) {
+  const de = porId(deId);
+  const para = porId(paraId);
+  if (!de || !para) return { erro: 'Usuário não encontrado.', status: 404 };
+  if (deId === paraId) return { erro: 'Você não pode adicionar a si mesmo.', status: 400 };
+
+  garantirCamposAmizade(de);
+  garantirCamposAmizade(para);
+
+  if (de.amigos.includes(paraId)) return { erro: 'Vocês já são amigos.', status: 409 };
+  if (para.pedidosAmizade.includes(deId)) return { erro: 'Pedido já enviado.', status: 409 };
+  if (de.pedidosAmizade.includes(paraId)) return { erro: 'Essa pessoa já te convidou — aceite o pedido dela.', status: 409 };
+
+  para.pedidosAmizade.push(deId);
+  gravar();
+  return { ok: true };
+}
+
+/** Aceita pedido de amizade. Torna a relação bidirecional. */
+function aceitarAmizade(usuarioId, amigoId) {
+  const usuario = porId(usuarioId);
+  const amigo = porId(amigoId);
+  if (!usuario || !amigo) return { erro: 'Usuário não encontrado.', status: 404 };
+
+  garantirCamposAmizade(usuario);
+  garantirCamposAmizade(amigo);
+
+  if (!usuario.pedidosAmizade.includes(amigoId)) return { erro: 'Nenhum pedido dessa pessoa.', status: 404 };
+
+  // remove o pedido
+  usuario.pedidosAmizade = usuario.pedidosAmizade.filter(id => id !== amigoId);
+  // adiciona nos dois lados
+  if (!usuario.amigos.includes(amigoId)) usuario.amigos.push(amigoId);
+  if (!amigo.amigos.includes(usuarioId)) amigo.amigos.push(usuarioId);
+  gravar();
+  return { ok: true };
+}
+
+/** Recusa (ou cancela) pedido de amizade. */
+function recusarAmizade(usuarioId, amigoId) {
+  const usuario = porId(usuarioId);
+  if (!usuario) return { erro: 'Usuário não encontrado.', status: 404 };
+  garantirCamposAmizade(usuario);
+  const antes = usuario.pedidosAmizade.length;
+  usuario.pedidosAmizade = usuario.pedidosAmizade.filter(id => id !== amigoId);
+  if (usuario.pedidosAmizade.length === antes) return { erro: 'Nenhum pedido dessa pessoa.', status: 404 };
+  gravar();
+  return { ok: true };
+}
+
+/** Remove amizade estabelecida (bidirecional). */
+function removerAmigo(usuarioId, amigoId) {
+  const usuario = porId(usuarioId);
+  const amigo = porId(amigoId);
+  if (!usuario || !amigo) return { erro: 'Usuário não encontrado.', status: 404 };
+  garantirCamposAmizade(usuario);
+  garantirCamposAmizade(amigo);
+  usuario.amigos = usuario.amigos.filter(id => id !== amigoId);
+  amigo.amigos = amigo.amigos.filter(id => id !== usuarioId);
+  gravar();
+  return { ok: true };
+}
+
+/** Lista amigos + pedidos pendentes (para a aba "Amigos" do cliente). */
+function listarAmizades(usuarioId) {
+  const usuario = porId(usuarioId);
+  if (!usuario) return { erro: 'Usuário não encontrado.', status: 404 };
+  garantirCamposAmizade(usuario);
+
+  const amigos = (usuario.amigos || []).map(id => {
+    const u = porId(id);
+    return u ? { id: u.id, nome: u.nome, avatar: u.avatar || '', cor: u.cor || 0 } : null;
+  }).filter(Boolean);
+
+  const pedidos = (usuario.pedidosAmizade || []).map(id => {
+    const u = porId(id);
+    return u ? { id: u.id, nome: u.nome, avatar: u.avatar || '', cor: u.cor || 0 } : null;
+  }).filter(Boolean);
+
+  return { amigos, pedidos };
+}
+
 module.exports = {
   cadastrar, entrar, redefinir, redefinirComSuporte, mostrarSuporte,
   gerarRecuperacao, porEmail, porId, porNome, procurar,
   usuarioDoToken, gerarToken, publico,
-  conferirSenha, validarSenha
+  conferirSenha, validarSenha,
+  // amizades
+  pedirAmizade, aceitarAmizade, recusarAmizade, removerAmigo, listarAmizades
 };

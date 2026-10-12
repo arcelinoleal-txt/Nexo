@@ -1,6 +1,6 @@
-'use strict';
+﻿'use strict';
 
-/** Icones do Nexo — SVG inline, sem dependencias externas. */
+/** Icones do Nexo â€” SVG inline, sem dependencias externas. */
 
 const ICONES = {
   mic: '<path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2Z"/>',
@@ -18,7 +18,10 @@ const ICONES = {
 
   cheia: '<path d="M7 14H5v5h5v-2H7v-3Zm-2-4h2V7h3V5H5v5Zm14 7h-3v2h5v-5h-2v3ZM14 5v2h3v3h2V5h-5Z"/>',
 
-  'cheia-sair': '<path d="M5 16h2v-3h3v-2H5v5Zm0-8h5V5H5v3Zm14 8h-5v-2h3v-3h2v5Zm0-11h-5V5h5v2Z"/>'
+  'cheia-sair': '<path d="M5 16h2v-3h3v-2H5v5Zm0-8h5V5H5v3Zm14 8h-5v-2h3v-3h2v5Zm0-11h-5V5h5v2Z"/>',
+  'pessoa-adicionar': '<path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-5-9h4V7H7v4H3V7H7V3h4v4h4v2H7v4H3v2h4v4h4v2h2v-4h4v-4h-4v-4h-2V3z"/>',
+  'pessoa-check': '<path d="M14 9l-5 5 1.4 1.4L14 11.8 21 5 19.6 3.6 14 9z"/>',
+  'pessoa-x': '<path d="M13.4 4.6l-1.4 1.4L12 7.6l-1.4-1.4-1.4 1.4L10.6 6 9.2 7.4l1.4 1.4L10.6 9.6 9.2 11l1.4 1.4L12 10.6l1.4 1.4 1.4-1.4z"/>',
 };
 
 /**
