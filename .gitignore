@@ -1,0 +1,20 @@
+node_modules
+
+# --- segredos: nunca podem entrar no repositório ---
+nexo-secreto-backup.txt
+*.secreto.txt
+.env
+.env.*
+!.env.example
+**/dados-contas.json
+**/token*.txt
+**/*-backup.txt
+
+# artefatos e temporários
+dist/
+*.log
+_teste*.png
+
+# dados enviados pelos usuarios (nunca versionar)
+Planos/Nexo/servidor/arquivos/
+Planos/Nexo/servidor/dados-contas.json
