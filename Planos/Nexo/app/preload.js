@@ -12,6 +12,12 @@ contextBridge.exposeInMainWorld('nexoDesktop', {
   info: () => ipcRenderer.invoke('app:info'),
   definirPreferencia: (chave, valor) => ipcRenderer.invoke('app:preferencia', chave, valor),
   plataforma: process.platform,
+  // Atualização automática: o renderer pede o download, o processo principal
+  // baixa, confere o SHA-256 e abre o instalador. O progresso volta por aqui.
+  baixarAtualizacao: (url, sha256) => ipcRenderer.invoke('atualizacao:baixar', url, sha256),
+  instalarAtualizacao: (arquivo) => ipcRenderer.invoke('atualizacao:instalar', arquivo),
+  descartarAtualizacao: (arquivo) => ipcRenderer.invoke('atualizacao:descartar', arquivo),
+  sobreProgressoAtualizacao: (cb) => ipcRenderer.on('atualizacao:progresso', (_e, d) => cb(d)),
   // REA / Discord-inspired: safe config bridge for premium settings
   salvarConfigLocal: (chave, valor) => ipcRenderer.invoke('config:salvar', chave, valor),
   carregarConfigLocal: (chave) => ipcRenderer.invoke('config:carregar', chave)

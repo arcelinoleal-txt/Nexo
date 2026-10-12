@@ -28,14 +28,14 @@
   --texto-suave:  #8f97ad;
   --texto-fraco:  #5d6478;
 
-  --acento:       #6d5efc;
-  --acento-2:     #b45cf0;
-  --gradiente:    linear-gradient(135deg, #6d5efc 0%, #a855f7 55%, #ec4899 100%);
-  --brilho:       0 8px 30px rgba(109, 94, 252, .38);
+  --acento:       #5865f2;
+  --acento-2:     #4752c4;
+  --gradiente:    linear-gradient(180deg, #5865f2 0%, #4752c4 100%);
+  --brilho:       0 8px 24px rgba(88, 101, 242, .38);
 
-  --verde:  #2bd576;
-  --vermelho: #f43f5e;
-  --amarelo: #f7b731;
+  --verde:  #23a55a;
+  --vermelho: #f23f43;
+  --amarelo: #f0b232;
   --ciano:  #22d3ee;
 
   --raio:   10px;
@@ -326,7 +326,7 @@ input, select { user-select: text; }
   flex-direction: column;
   height: 100%;
   background:
-    radial-gradient(900px 520px at 12% -8%, rgba(109,94,252,.34), transparent 62%),
+    radial-gradient(900px 520px at 12% -8%, rgba(88,101,252,.34), transparent 62%),
     radial-gradient(820px 500px at 108% 106%, rgba(236,72,153,.22), transparent 60%),
     radial-gradient(700px 400px at 50% 120%, rgba(34,211,238,.12), transparent 60%),
     var(--fundo);
@@ -337,8 +337,8 @@ input, select { user-select: text; }
   flex: 0 0 auto;
   height: 44px;
   padding: 0 12px 0 16px;
-  background: linear-gradient(180deg, #0f131c, #0b0e15);
-  border-bottom: 1px solid var(--borda);
+  background: var(--discord-bg-chat);
+  border-bottom: 1px solid rgba(0,0,0,.35);
   -webkit-app-region: drag;
 }
 
@@ -402,7 +402,7 @@ input, select { user-select: text; }
 }
 .campo input:focus, .campo select:focus {
   border-color: var(--acento);
-  box-shadow: 0 0 0 3px rgba(109,94,252,.2);
+  box-shadow: 0 0 0 3px rgba(88,101,252,.2);
 }
 .campo input::placeholder { color: var(--texto-fraco); }
 .campo small { display: block; margin-top: 7px; font-size: 12px; line-height: 1.5; color: var(--texto-fraco); }
@@ -428,7 +428,7 @@ input, select { user-select: text; }
 }
 #tela-entrada .campo input:focus,
 #tela-entrada .campo select:focus {
-  box-shadow: 0 0 0 3px rgba(109,94,252,.18);
+  box-shadow: 0 0 0 3px rgba(88,101,252,.18);
 }
 #tela-entrada .campo small { font-size: 11px; margin-top: 5px; }
 
@@ -486,7 +486,7 @@ select {
   outline: none;
   transition: border-color var(--trans), box-shadow var(--trans);
 }
-.linha-codigo input:focus { border-color: var(--acento); box-shadow: 0 0 0 3px rgba(109,94,252,.2); }
+.linha-codigo input:focus { border-color: var(--acento); box-shadow: 0 0 0 3px rgba(88,101,252,.2); }
 .linha-codigo .btn { padding-inline: 22px; }
 
 /* Override linha-codigo na tela de entrada */
@@ -497,7 +497,7 @@ select {
   font-size: 15px;
   letter-spacing: 3.5px;
 }
-#tela-entrada .linha-codigo input:focus { box-shadow: 0 0 0 3px rgba(109,94,252,.18); }
+#tela-entrada .linha-codigo input:focus { box-shadow: 0 0 0 3px rgba(88,101,252,.18); }
 #tela-entrada .linha-codigo .btn { padding: 12px 20px; }
 
 .erro { margin: 16px 0 0; color: #ff8ea1; font-size: 13px; text-align: center; }
@@ -583,8 +583,8 @@ select {
   justify-content: space-between;
   gap: 10px;
   padding: 0 8px 0 16px;
-  background: linear-gradient(180deg, #0f131c, #0b0e15);
-  border-bottom: 1px solid var(--borda);
+  background: var(--discord-bg-chat);
+  border-bottom: 1px solid rgba(0,0,0,.35);
   -webkit-app-region: drag;
 }
 .arrastavel-nao, .arrastavel-nao * { -webkit-app-region: no-drag; }
@@ -667,13 +667,13 @@ select {
   gap: 8px;
   padding: 6px 13px;
   border-radius: 999px;
-  background: rgba(109,94,252,.13);
-  border: 1px solid rgba(109,94,252,.32);
+  background: rgba(88,101,252,.13);
+  border: 1px solid rgba(88,101,252,.32);
   color: #b9b1ff;
   font-size: 13px;
   transition: background var(--trans), transform var(--trans);
 }
-.chip-codigo:hover { background: rgba(109,94,252,.24); transform: translateY(-1px); }
+.chip-codigo:hover { background: rgba(88,101,252,.24); transform: translateY(-1px); }
 .chip-codigo .rotulo { color: #8d86d8; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; }
 .chip-codigo strong { color: #fff; letter-spacing: 2.5px; font-size: 13px; font-weight: 700; }
 
@@ -751,7 +751,7 @@ select {
   cursor: pointer;
   transition: all var(--trans);
 }
-.cod-srv:hover { background: rgba(109,94,252,.18); border-color: rgba(109,94,252,.45); color: #cfc9ff; }
+.cod-srv:hover { background: rgba(88,101,252,.18); border-color: rgba(88,101,252,.45); color: #cfc9ff; }
 .cod-srv.copiado { background: rgba(34,197,94,.2); border-color: rgba(34,197,94,.5); color: #86efac; }
 
 /* ---------------------- lista de canais (Discord) -------------------- */
@@ -831,7 +831,7 @@ select {
   margin-left: auto;
   padding: 1px 6px;
   border-radius: 999px;
-  background: rgba(109,94,252,.25);
+  background: rgba(88,101,252,.25);
   color: #b9b1ff;
   font-size: 10.5px;
   font-weight: 800;
@@ -885,13 +885,16 @@ select {
 
 .painel-usuario {
   display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 7px 7px 8px;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 6px 7px;
   background: #232428;
   border-top: 1px solid rgba(0,0,0,.35);
   flex-shrink: 0;
+  position: relative;
 }
+.linha-identidade { display: flex; align-items: center; gap: 7px; }
+.linha-midia { display: flex; align-items: center; gap: 2px; }
 .avatar-user {
   position: relative;
   width: 30px; height: 30px;
@@ -906,6 +909,15 @@ select {
   overflow: visible;
 }
 .avatar-user .emoji { font-size: 15px; line-height: 1; }
+/* Foto de perfil: preenche o redondo sem deixar o base64 vazar como texto.
+   O .avatar-user fica com overflow: visible de propósito (o ponto de status
+   fica para fora do círculo), então quem precisa cortar é a própria imagem. */
+.avatar-user .avatar-foto {
+  width: 100%; height: 100%;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .avatar-user .ponto-status {
   position: absolute;
   right: -2px; bottom: -2px;
@@ -927,7 +939,119 @@ select {
 }
 .info-user small { font-size: 10.5px; color: var(--texto-fraco); }
 
-.acoes-user { display: flex; gap: 3px; flex-shrink: 0; }
+/* Cada botão de áudio vem com a sua setinha: o Discord coloca o seletor de
+   aparelho encostado no próprio botão, e não dentro de uma tela de
+   configuração — é ali, na hora, que a pessoa troca o microfone ou o fone. */
+.grupo-disp { position: relative; display: flex; align-items: center; }
+
+.btn-ico-user.discreto { width: 26px; height: 26px; opacity: .65; }
+.btn-ico-user.discreto:hover { opacity: 1; }
+.btn-ico-user.discreto svg { width: 15px; height: 15px; }
+
+.btn-seta {
+  width: 15px; height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--texto-fraco);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color var(--trans), background var(--trans);
+}
+.btn-seta:hover { color: var(--texto); background: rgba(255,255,255,.08); }
+.grupo-disp.aberto .btn-seta { color: var(--texto); background: rgba(255,255,255,.1); }
+.grupo-disp.aberto .btn-seta svg { transform: rotate(180deg); }
+.btn-seta svg { transition: transform var(--trans); }
+
+/* Lista de aparelhos. Sobe para CIMA do botão (o painel fica no rodapé da
+   janela) e não empurra nada de lugar: fica por cima. */
+.menu-disp {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: -6px;
+  min-width: 230px;
+  max-width: 300px;
+  padding: 6px;
+  background: #111214;
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.55);
+  z-index: 60;
+}
+.menu-disp[hidden] { display: none; }
+.menu-disp .md-titulo {
+  padding: 5px 8px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--texto-fraco);
+}
+.menu-disp .md-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.menu-disp .md-item:hover { background: rgba(255,255,255,.07); color: var(--texto); }
+.menu-disp .md-item.ativo { background: var(--acento); color: #fff; }
+.menu-disp .md-item .md-nome {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.menu-disp .md-check { width: 13px; height: 13px; flex-shrink: 0; opacity: 0; }
+.menu-disp .md-item.ativo .md-check { opacity: 1; }
+.menu-disp .md-vazio {
+  padding: 10px 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--texto-fraco);
+}
+.menu-disp .md-rodape {
+  margin-top: 4px;
+  padding: 7px 8px 3px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+.menu-disp .md-rodape button {
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 5px;
+  background: rgba(255,255,255,.06);
+  color: var(--texto-suave);
+  font-size: 12px;
+  cursor: pointer;
+}
+.menu-disp .md-rodape button:hover { background: rgba(255,255,255,.1); color: var(--texto); }
+.menu-disp .md-nivel {
+  height: 6px;
+  margin: 2px 8px 8px;
+  border-radius: 3px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+}
+.menu-disp .md-nivel i {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--verde);
+  transition: width .08s linear;
+}
 
 .btn-ico-user {
   width: 30px; height: 30px;
@@ -994,7 +1118,7 @@ select {
 .selo.tela     { background: rgba(244,63,94,.2);  color: #ff97a8; }
 .selo.camera   { background: rgba(34,211,238,.16); color: #7fe8f7; }
 .selo.mudo     { background: rgba(255,255,255,.07); color: var(--texto-suave); }
-.selo.eu       { background: rgba(109,94,252,.22); color: #b9b1ff; }
+.selo.eu       { background: rgba(88,101,252,.22); color: #b9b1ff; }
 
 /* ------------------------------ palco -------------------------- */
 
@@ -1073,6 +1197,100 @@ select {
 .grade-videos.somente-tela { grid-template-rows: 1fr; }
 .grade-videos.somente-tela .tile.tela { height: 100%; }
 
+/* --------------- fila de quem está na chamada (estilo Discord) -------------- */
+/* Avatar redondo grande no meio do palco enquanto ninguém transmite. Quando
+   alguém fala, acende um anel verde neon em volta do avatar dela — é a mesma
+   leitura do Discord, e resolve de uma vez "quem está falando" sem precisar
+   ficar procurando nome numa lista. */
+.fila-voz {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  gap: 22px;
+  padding: 26px;
+  z-index: 3;
+  /* deixa o clique passar para o vídeo quando ele existir */
+  pointer-events: none;
+}
+.fila-voz:empty { display: none; }
+.fila-voz > * { pointer-events: auto; }
+
+/* Com tela ou câmera no ar, a fila encolhe para o topo e devolve o miolo
+   para o vídeo. */
+.area-video.com-video .fila-voz {
+  inset: 0 0 auto 0;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-content: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(0,0,0,.72), transparent);
+}
+
+.tile-voz {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  max-width: 110px;
+}
+
+.avatar-grande-voz {
+  position: relative;
+  width: 84px; height: 84px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--acento);
+  color: #fff;
+  font-size: 27px;
+  font-weight: 800;
+  overflow: visible;
+  border: 3px solid rgba(255,255,255,.14);
+  transition: box-shadow .18s ease, border-color .18s ease, transform .18s ease;
+}
+.avatar-grande-voz img {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.avatar-grande-voz .emoji { font-size: 30px; line-height: 1; }
+
+/* o anel verde neon: só o halo muda, o avatar não pisca nem pula */
+.tile-voz.falando .avatar-grande-voz {
+  border-color: #2df56f;
+  box-shadow: 0 0 0 3px rgba(45,245,111,.30),
+              0 0 18px 2px rgba(45,245,111,.55),
+              0 0 42px 6px rgba(45,245,111,.26);
+  transform: scale(1.04);
+}
+
+.tile-nome {
+  max-width: 110px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0,0,0,.85);
+}
+.tile-voz.falando .tile-nome { color: #fff; }
+
+.area-video.com-video .avatar-grande-voz { width: 44px; height: 44px; font-size: 16px; border-width: 2px; }
+.area-video.com-video .avatar-grande-voz .emoji { font-size: 18px; }
+.area-video.com-video .tile-voz { flex-direction: row; gap: 0; max-width: none; }
+.area-video.com-video .tile-nome { display: none; }
+
 .tile video {
   width: 100%; height: 100%;
   object-fit: contain;
@@ -1125,7 +1343,7 @@ select {
   padding: 34px;
   text-align: center;
   background:
-    radial-gradient(520px 300px at 50% 45%, rgba(109,94,252,.12), transparent 70%),
+    radial-gradient(520px 300px at 50% 45%, rgba(88,101,252,.12), transparent 70%),
     repeating-linear-gradient(45deg, #070910 0 14px, #090c14 14px 28px);
   z-index: 2;
 }
@@ -1133,8 +1351,8 @@ select {
   display: grid; place-items: center;
   width: 96px; height: 96px;
   border-radius: 28px;
-  background: rgba(109,94,252,.12);
-  border: 1px solid rgba(109,94,252,.3);
+  background: rgba(88,101,252,.12);
+  border: 1px solid rgba(88,101,252,.3);
   color: #8b7dff;
 }
 .placeholder p { margin: 0; }
@@ -1214,15 +1432,30 @@ select {
 
 .sep-ctrl { width: 1px; height: 26px; background: rgba(255,255,255,.14); }
 
-.barra-info {
+/* Barra de conexão — uma linha só, em cima do painel do usuário.
+   Verde quando no ar, vermelho quando cai (mesma leitura do Discord). */
+.barra-voz {
   display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 0 20px 15px;
-  font-size: 11.5px;
-  color: var(--texto-fraco);
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 1px;
+  background: #232428;
+  color: var(--verde);
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.barra-voz .bv-icone { display: grid; place-items: center; flex-shrink: 0; opacity: .9; }
+.barra-voz .bv-texto {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-variant-numeric: tabular-nums;
 }
+.barra-voz.caido { color: var(--vermelho); }
+.barra-voz.oculta { display: none; }
 
 /* ------------------------------ chat --------------------------- */
 
@@ -1290,7 +1523,7 @@ select {
   outline: none;
   transition: border-color var(--trans), background var(--trans);
 }
-.area-digitar input:focus { border-color: rgba(109,94,252,.5); background: var(--superficie-3); }
+.area-digitar input:focus { border-color: rgba(88,101,252,.5); background: var(--superficie-3); }
 .area-digitar input::placeholder { color: var(--texto-fraco); }
 
 /* ---------------- anexo no chat ---------------- */
@@ -1356,7 +1589,7 @@ select {
   border-radius: var(--raio-g);
   color: var(--acento);
   text-align: center;
-  box-shadow: 0 0 0 6px rgba(109,94,252,.10) inset;
+  box-shadow: 0 0 0 6px rgba(88,101,252,.10) inset;
 }
 .soltar-anel strong { font-size: 16px; color: var(--texto); }
 .soltar-anel span { font-size: 12px; color: var(--texto-suave); }
@@ -1505,7 +1738,7 @@ select {
 .item-fonte:hover {
   border-color: var(--acento);
   transform: translateY(-3px);
-  box-shadow: 0 14px 34px rgba(109,94,252,.3);
+  box-shadow: 0 14px 34px rgba(88,101,252,.3);
 }
 .item-fonte img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #000; }
 .item-fonte .nome {
@@ -1541,7 +1774,7 @@ select {
 }
 .aba-modal:hover { background: rgba(255,255,255,.05); color: var(--texto); }
 .aba-modal.ativa {
-  background: linear-gradient(135deg, rgba(109,94,252,.24), rgba(168,85,247,.16));
+  background: linear-gradient(135deg, rgba(88,101,252,.24), rgba(88,101,252,.14));
   color: #fff;
 }
 
@@ -1629,7 +1862,7 @@ select {
 .cartao-conta {
   display: flex; align-items: center; gap: 15px;
   padding: 17px;
-  background: linear-gradient(135deg, rgba(109,94,252,.16), rgba(168,85,247,.10));
+  background: linear-gradient(135deg, rgba(88,101,252,.16), rgba(88,101,252,.08));
   border: 1px solid var(--borda-forte);
   border-radius: var(--raio-g);
 }
@@ -1748,8 +1981,7 @@ input[type="range"]::-webkit-slider-thumb {
    espremido (era exatamente o que aparecia na tela de perfil). */
 #modal-perfil .modal-corpo,
 #modal-corte .modal-corpo,
-#modal-nova-dm .modal-corpo,
-#modal-novo-amigo .modal-corpo {
+#modal-nova-dm .modal-corpo {
   flex-direction: column;
   overflow-y: auto;
 }
@@ -1825,7 +2057,7 @@ input[type="range"]::-webkit-slider-thumb {
   place-items: center;
 }
 .grade-emojis button:hover { background: var(--superficie-3); transform: scale(1.12); }
-.grade-emojis button.sel { border-color: var(--acento); background: rgba(109,94,252,.2); }
+.grade-emojis button.sel { border-color: var(--acento); background: rgba(88,101,252,.2); }
 
 .grade-cores { display: flex; flex-wrap: wrap; gap: 9px; }
 
@@ -1843,7 +2075,7 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.14);
 }
 .tema-btn:hover { border-color: var(--borda-forte); color: var(--texto); transform: translateY(-1px); }
-.tema-btn.sel { border-color: var(--acento); color: var(--texto); box-shadow: 0 0 0 3px rgba(109,94,252,.20); }
+.tema-btn.sel { border-color: var(--acento); color: var(--texto); box-shadow: 0 0 0 3px rgba(88,101,252,.20); }
 
 /* ------------------------------------------------------------------ */
 /* Sininho de notificações                                             */
@@ -2419,17 +2651,8 @@ body {
 .aba-conversa:hover { color: var(--texto); background: rgba(255,255,255,.05); }
 .aba-conversa.ativa { background: rgba(255,255,255,.08); color: #fff; }
 
-/* barra de info do rodape — discreta */
-.barra-info {
-  padding: 9px 18px;
-  border-top: 1px solid rgba(255,255,255,.05);
-  font-size: 10.8px;
-  color: var(--texto-fraco);
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
-  letter-spacing: .1px;
-}
+/* (a antiga .barra-info do rodapé saiu: o texto corrido com nome de aparelho
+   e endereço do servidor virou a .barra-voz de uma linha, lá em cima.) */
 
 /* responsivo: agora a coluna de servidores (72px) existe */
 @media (max-width: 1220px) {
@@ -2768,47 +2991,202 @@ body {
 .checkbox-label:hover { color: var(--texto); }/* ===================================================================
    AMIGOS (painel esquerdo)
    =================================================================== */
-.cat-amigos { margin-bottom: 10px; }
 
+/* as duas visões do painel esquerdo (sala e amigos) dividem o mesmo
+   espaço: crescem até o fim e rolam sozinhas */
+.visao-painel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ------------------------- cabeçalho ------------------------- */
 .cab-amigos {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2px 4px 6px 2px;
+  height: 48px;
+  padding: 0 10px 0 16px;
+  border-bottom: 1px solid rgba(0,0,0,.35);
+  box-shadow: 0 1px 0 rgba(0,0,0,.18);
+  flex-shrink: 0;
 }
-.rot-cat-amigos {
+.rot-cab-amigos {
+  color: var(--texto);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+.btn-novo-amigo {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.btn-novo-amigo:hover { background: rgba(255,255,255,.08); color: var(--texto); }
+.btn-novo-amigo .ic { display: grid; place-items: center; }
+.btn-novo-amigo svg { width: 18px; height: 18px; }
+
+/* --------------------------- abas ---------------------------- */
+.abas-amigos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 8px 4px 16px;
+  flex-shrink: 0;
+}
+.aba-amigos {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--texto-suave);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--trans), color var(--trans);
+}
+.aba-amigos:hover { background: rgba(255,255,255,.06); color: var(--texto); }
+.aba-amigos.ativa { background: rgba(255,255,255,.10); color: var(--texto); }
+/* "Adicionar amigo" é o destaque, como no Discord */
+.aba-amigos.destaque { color: var(--discord-status-online); }
+.aba-amigos.destaque.ativa { background: rgba(35,165,90,.16); color: var(--discord-status-online); }
+.aba-amigos.destaque:hover { background: rgba(35,165,90,.10); }
+
+/* contador dentro da aba (nº em linha / nº de pedidos) */
+.cont-aba {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--discord-accent-perigo);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+.aba-amigos.destaque .cont-aba { background: var(--discord-status-online); }
+
+/* bolinha vermelha no ícone de Amigos do rail */
+.rail-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--discord-accent-perigo);
+  border: 3px solid var(--discord-sidebar-serv);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 11px;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* -------------------------- corpo ---------------------------- */
+.corpo-amigos {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 8px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: #1a1b1e transparent;
+}
+.corpo-amigos::-webkit-scrollbar { width: 8px; }
+.corpo-amigos::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 4px; }
+
+.rot-aba-amigos {
+  margin: 4px 8px 12px;
   color: var(--texto-fraco);
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: .6px;
 }
-.btn-novo-amigo {
+
+/* ------------------ bloco "Adicionar amigo" ------------------ */
+.painel-adicionar { padding: 0 8px; }
+.painel-adicionar h4 {
+  margin: 8px 0 8px;
+  color: var(--texto);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+}
+.nota-adicionar {
+  margin: 0 0 18px;
+  color: var(--texto-suave);
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 460px;
+}
+.campo-adicionar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 50px;
+  padding: 0 6px 0 16px;
+  border: 1px solid rgba(0,0,0,.35);
+  border-radius: 8px;
+  background: rgba(0,0,0,.28);
+  transition: border-color var(--trans), box-shadow var(--trans);
+}
+.campo-adicionar:focus-within {
+  border-color: var(--discord-accent-prim);
+  box-shadow: 0 0 0 1px var(--discord-accent-prim);
+}
+.campo-adicionar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--texto);
+  font-size: 15px;
+  outline: none;
+}
+.campo-adicionar input::placeholder { color: var(--texto-fraco); }
+.campo-adicionar button {
   display: grid;
   place-items: center;
-  width: 19px;
-  height: 19px;
+  width: 36px;
+  height: 36px;
   border: 0;
-  border-radius: 5px;
-  background: rgba(255,255,255,.07);
+  border-radius: 6px;
+  background: transparent;
   color: var(--texto-suave);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1;
   cursor: pointer;
   transition: background var(--trans), color var(--trans);
+  flex-shrink: 0;
 }
-.btn-novo-amigo:hover { background: var(--acento); color: #fff; }
+.campo-adicionar button:hover { background: rgba(255,255,255,.08); color: var(--texto); }
 
 .lista-amigos,
 .lista-pedidos { list-style: none; margin: 0; padding: 0; }
 
 .amigo-vazio,
 .pedido-vazio {
-  padding: 4px 6px;
+  padding: 18px 10px;
   color: var(--texto-fraco);
-  font-size: 11.5px;
-  line-height: 1.45;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
 }
 
 /* item de amigo: <li> com dois filhos — botao de abrir + botao de remover */
@@ -2817,9 +3195,9 @@ body {
   align-items: center;
   gap: 4px;
   width: 100%;
-  padding: 0 4px 0 0;
+  padding: 0 6px 0 0;
   margin-bottom: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background var(--trans);
 }
 .item-amigo:hover { background: rgba(255,255,255,.045); }
@@ -2828,15 +3206,15 @@ body {
 .amigo-abrir {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 11px;
   flex: 1;
   min-width: 0;
-  padding: 5px 3px 5px 7px;
+  padding: 6px 4px 6px 8px;
   border: 0;
-  border-radius: 6px;
+  border-radius: 8px;
   background: none;
   color: var(--texto-suave);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
@@ -2848,14 +3226,14 @@ body {
 .item-pedido {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 11px;
   width: 100%;
-  padding: 5px 7px;
+  padding: 6px 8px;
   margin-bottom: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
   background: none;
   color: var(--texto-suave);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   text-align: left;
   transition: background var(--trans), color var(--trans);
@@ -2863,9 +3241,11 @@ body {
 .item-pedido:hover { background: rgba(255,255,255,.045); color: var(--texto); }
 
 .amigo-abrir .avatar,
-.item-pedido .avatar { width: 24px; height: 24px; font-size: 11px; flex-shrink: 0; }
+.item-pedido .avatar { width: 32px; height: 32px; font-size: 14px; flex-shrink: 0; }
 .amigo-abrir .avatar .ponto-status,
-.item-pedido .avatar .ponto-status { width: 9px; height: 9px; border-width: 2px; border-color: var(--discord-sidebar-canais); }
+.item-pedido .avatar .ponto-status { width: 10px; height: 10px; border-width: 2px; border-color: var(--discord-sidebar-canais); }
+.item-amigo:hover .avatar .ponto-status,
+.item-pedido:hover .avatar .ponto-status { border-color: #26282c; }
 
 .item-nome {
   flex: 1;
@@ -2878,26 +3258,27 @@ body {
 /* botões de ação no pedido (aceitar / recusar) */
 .pedido-acoes {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 .btn-pedido {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border: 0;
-  border-radius: 4px;
-  background: rgba(255,255,255,.07);
+  border-radius: 50%;
+  background: rgba(0,0,0,.30);
   color: var(--texto-suave);
   font-size: 12px;
   cursor: pointer;
   transition: background var(--trans), color var(--trans);
 }
 .btn-pedido:hover { background: var(--acento); color: #fff; }
-.btn-pedido.aceitar:hover { background: #23a55a; }
+.btn-pedido.aceitar:hover { background: var(--discord-status-online); }
 .btn-pedido.recusar:hover,
-.btn-pedido.remover:hover { background: #da373c; }
+.btn-pedido.remover:hover { background: var(--discord-accent-perigo); }
+.btn-pedido svg { width: 16px; height: 16px; }
 
 /* ===================================================================
    MODAL ADICIONAR AMIGO

@@ -135,6 +135,30 @@ function httpJson(caminho, corpo, token) {
   });
 }
 
+/* Faz um GET guardando também os cabeçalhos — usado no teste da rota de
+   download, onde o Content-Length importa tanto quanto o status. */
+function httpComCabecalhos(caminho) {
+  return new Promise((resolve) => {
+    const req = http.request(BASE + caminho, { method: 'GET' }, (res) => {
+      let d = '';
+      res.on('data', c => { d += c; if (d.length > 64) req.destroy(); }); // só quero os primeiros bytes
+      res.on('end', () => resolve({
+        status: res.statusCode,
+        cab: res.headers,
+        inicio: d.slice(0, 2)
+      }));
+      res.on('close', () => resolve({
+        status: res.statusCode,
+        cab: res.headers,
+        inicio: d.slice(0, 2)
+      }));
+    });
+    req.on('error', () => resolve({ status: 0, cab: {}, inicio: '' }));
+    req.setTimeout(8000, () => { req.destroy(); resolve({ status: -1, cab: {}, inicio: '' }); });
+    req.end();
+  });
+}
+
 function subirArquivo(nome, corpo, tipo) {
   return new Promise((resolve, reject) => {
     const req = http.request(BASE + '/api/upload?nome=' + encodeURIComponent(nome), {
@@ -551,7 +575,44 @@ function subirArquivo(nome, corpo, tipo) {
   conf(deVolta.status === 200, 'arquivo enviado ainda e servido: ' + up.corpo.url + ' -> ' + deVolta.status);
 
   /* ---------------------------------------------------------------- */
-  /* 11. sala vazia some                                               */
+  /* 11. rota /atualizacao/ (download do instalador)                   */
+  /*                                                                   */
+  /* Regressao: a rota procurava o .exe em versoes/ direto, mas o      */
+  /* instalador mora dentro da pasta da versao (versoes/v1.12.0/).     */
+  /* Resultado: /api/versao anunciava um download que respondia 404.   */
+  /* ---------------------------------------------------------------- */
+
+  const versaoAtual = await httpJson('/api/versao');
+  conf(versaoAtual.status === 200 && versaoAtual.corpo.versao,
+    '/api/versao responde com a versao: ' + (versaoAtual.corpo && versaoAtual.corpo.versao));
+
+  if (versaoAtual.status === 200 && versaoAtual.corpo.download && versaoAtual.corpo.sha256) {
+    const dl = await httpComCabecalhos(versaoAtual.corpo.download);
+    conf(dl.status === 200, 'download do instalador responde 200 (nao 404): ' + dl.status);
+    conf(dl.inicio === 'MZ', 'o que vem no download e um .exe de verdade (MZ): ' + JSON.stringify(dl.inicio));
+    conf(String(dl.cab['content-length']) === String(versaoAtual.corpo.tamanho),
+      'Content-Length bate com o tamanho anunciado: ' + dl.cab['content-length'] + ' vs ' + versaoAtual.corpo.tamanho);
+    conf(/nexo-setup-.*\.exe/i.test(dl.cab['content-disposition'] || ''),
+      'Content-Disposition traz o nome do instalador: ' + dl.cab['content-disposition']);
+    conf(dl.cab['cache-control'] === 'no-store', 'instalador nao fica no cache (no-store)');
+  } else {
+    conf(false, 'sem download/sha256 no /api/versao — teste de download pulado');
+  }
+
+  /* as guardas de seguranca precisam continuar de pe */
+  const travessia = await httpTexto('/atualizacao/../../package.json');
+  conf(travessia.status === 404, 'travessia de pasta (../../) e recusada: ' + travessia.status);
+  const travessia2 = await httpTexto('/atualizacao/..%2f..%2fpackage.json');
+  conf(travessia2.status === 404, 'travessia com %2f tambem e recusada: ' + travessia2.status);
+  const outroArq = await httpTexto('/atualizacao/Nexo-Setup-1.12.0.exe.blockmap');
+  conf(outroArq.status === 404, 'so .exe e aceito (.blockmap recusado): ' + outroArq.status);
+  const dirPuro = await httpTexto('/atualizacao/');
+  conf(dirPuro.status === 404, 'listar a pasta nao passa: ' + dirPuro.status);
+  const inexiste = await httpTexto('/atualizacao/Nexo-Setup-9.9.9.exe');
+  conf(inexiste.status === 404, 'versao que nao existe devolve 404: ' + inexiste.status);
+
+  /* ---------------------------------------------------------------- */
+  /* 12. sala vazia some                                               */
   /* ---------------------------------------------------------------- */
 
   A.close();

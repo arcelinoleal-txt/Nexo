@@ -4,6 +4,9 @@ const { app, BrowserWindow, ipcMain, desktopCapturer, session, shell, Tray, Menu
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const https = require('https');
+const crypto = require('crypto');
+const { spawn } = require('child_process');
 
 // NEXO_USERDATA dá ao exemplar de teste a sua própria pasta de dados.
 // Sem isso ele brigaria pela trava de instância única com a cópia que já
@@ -221,6 +224,136 @@ ipcMain.handle('app:info', () => ({
 ipcMain.handle('app:preferencia', (_evento, chave, valor) => {
   if (chave === 'fecharParaBandeja') fecharParaBandeja = !!valor;
   return { fecharParaBandeja };
+});
+
+// links externos abrem no navegador do sistema
+
+/* ------------------------------------------------------------------ */
+/* Atualização automática                                              */
+/* ------------------------------------------------------------------ */
+/* Quem tem o app instalado não precisa baixar .exe na mão: o sininho avisa
+   que saiu versão nova, mostra o que mudou e, num clique, baixa o
+   instalador, confere o SHA-256 e abre por cima da versão atual.
+
+   O hash é conferido ANTES de rodar qualquer coisa. Um download cortado ou
+   trocado no meio do caminho não pode virar execução — é a diferença entre
+   "atualizou" e "alguém rodou um programa que não era o nosso". */
+
+const DIR_ATUALIZACAO_LOCAL = () => path.join(app.getPath('temp'), 'nexo-atualizacao');
+
+let atualizacaoEmAndamento = false;
+
+/* Baixa seguindo redirecionamento (o Railway e o GitHub redirecionam com
+   frequência) e reportando o andamento de 200 em 200ms — mais que isso vira
+   bagunça na barra, menos que isso faz a barra travar. */
+function baixarArquivo(url, destino, aoAvancar, nivel) {
+  return new Promise((resolver, rejeitar) => {
+    const mod = /^https:/i.test(url) ? https : http;
+    const req = mod.get(url, { headers: { 'User-Agent': 'Nexo/' + app.getVersion() } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume();
+        if ((nivel || 0) > 5) { rejeitar(new Error('Muitos redirecionamentos.')); return; }
+        resolver(baixarArquivo(res.headers.location, destino, aoAvancar, (nivel || 0) + 1));
+        return;
+      }
+      if (res.statusCode !== 200) {
+        res.resume();
+        rejeitar(new Error('O servidor respondeu ' + res.statusCode + '.'));
+        return;
+      }
+
+      const total = Number(res.headers['content-length']) || 0;
+      fs.mkdirSync(path.dirname(destino), { recursive: true });
+      const saida = fs.createWriteStream(destino);
+      let recebidos = 0;
+      let ultimaAviso = 0;
+
+      res.on('data', (pedaco) => {
+        recebidos += pedaco.length;
+        const agora = Date.now();
+        if (aoAvancar && (agora - ultimaAviso > 200 || (total && recebidos >= total))) {
+          ultimaAviso = agora;
+          aoAvancar(total ? Math.min(100, Math.round((recebidos / total) * 100)) : 0, recebidos, total);
+        }
+      });
+      res.on('error', rejeitar);
+      saida.on('error', rejeitar);
+      saida.on('finish', () => saida.close(() => resolver(recebidos)));
+      res.pipe(saida);
+    });
+    req.on('error', rejeitar);
+    req.setTimeout(15 * 60 * 1000, () => req.destroy(new Error('O download demorou demais e foi interrompido.')));
+  });
+}
+
+function hashDeArquivo(caminho) {
+  return new Promise((resolver, rejeitar) => {
+    const h = crypto.createHash('sha256');
+    const s = fs.createReadStream(caminho);
+    s.on('error', rejeitar);
+    s.on('data', p => h.update(p));
+    s.on('end', () => resolver(h.digest('hex')));
+  });
+}
+
+ipcMain.handle('atualizacao:baixar', async (evento, url, sha256) => {
+  if (atualizacaoEmAndamento) return { ok: false, erro: 'Já existe uma atualização em andamento.' };
+  if (!/^https?:\/\//i.test(String(url || ''))) return { ok: false, erro: 'Endereço de atualização inválido.' };
+
+  atualizacaoEmAndamento = true;
+  const destino = path.join(DIR_ATUALIZACAO_LOCAL(), 'Nexo-Setup.exe');
+  registrar('[atualizacao] começando o download: ' + url);
+
+  try {
+    const avisar = (pct, bytes, total) => {
+      try {
+        if (evento.sender && !evento.sender.isDestroyed()) {
+          evento.sender.send('atualizacao:progresso', { pct, bytes, total });
+        }
+      } catch { /* janela fechou no meio */ }
+    };
+
+    const bytes = await baixarArquivo(url, destino, avisar);
+    registrar('[atualizacao] baixado: ' + bytes + ' bytes');
+
+    if (sha256) {
+      const confere = (await hashDeArquivo(destino)).toLowerCase();
+      if (confere !== String(sha256).toLowerCase()) {
+        try { fs.unlinkSync(destino); } catch { /* já sumiu */ }
+        registrar('[atualizacao] HASH NAO CONFERE. esperado=' + sha256 + ' veio=' + confere);
+        return { ok: false, erro: 'O arquivo baixado não confere com o esperado. Tente de novo.' };
+      }
+      registrar('[atualizacao] SHA-256 conferido.');
+    }
+
+    return { ok: true, arquivo: destino, bytes };
+  } catch (erro) {
+    registrar('[atualizacao] ERRO no download: ' + erro.message);
+    return { ok: false, erro: erro.message };
+  } finally {
+    atualizacaoEmAndamento = false;
+  }
+});
+
+ipcMain.handle('atualizacao:instalar', (_evento, arquivo) => {
+  if (!arquivo || !fs.existsSync(arquivo)) return { ok: false, erro: 'Instalador não encontrado.' };
+  try {
+    registrar('[atualizacao] abrindo o instalador: ' + arquivo);
+    // desanexado: o instalador segue sozinho mesmo se o app morrer antes
+    spawn(arquivo, [], { detached: true, stdio: 'ignore', windowsHide: false }).unref();
+    // sai daqui antes: o instalador precisa substituir os próprios arquivos
+    rodandoEmFundo = true;
+    setTimeout(() => app.quit(), 700);
+    return { ok: true };
+  } catch (erro) {
+    registrar('[atualizacao] ERRO ao abrir o instalador: ' + erro.message);
+    return { ok: false, erro: erro.message };
+  }
+});
+
+ipcMain.handle('atualizacao:descartar', (_evento, arquivo) => {
+  try { if (arquivo && fs.existsSync(arquivo)) fs.unlinkSync(arquivo); } catch { /* deixa estar */ }
+  return { ok: true };
 });
 
 // links externos abrem no navegador do sistema

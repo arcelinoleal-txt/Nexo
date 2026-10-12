@@ -374,6 +374,9 @@ function processarMensagem(msg) {
       desenharParticipantes();
       sincronizarComPresenca();
       atualizarTiles();
+      // a aba "Em linha" do painel de amigos depende destes dados
+      if (_abaAmigos === 'linha') desenharListaAmigos();
+      atualizarBadgesAmigos();
       $('#aviso-limite').hidden = (estado.participantes.length <= LIMITE_CONFORTAVEL);
       reconectarFaltantes();
       break;
@@ -441,6 +444,9 @@ function aoEntrarNaSala(dados) {
   estado.meuId = dados.meuId;
   estado.participantes = dados.participantes || [];
   estado.conectado = true;
+  // daqui para frente vale medir quem está falando: sem isto o anel verde
+  // nunca acenderia, porque não há nada ligado às streams
+  iniciarDetecaoDeFala();
 
   // Monta o convite sem segurar a entrada na sala: ele só é exibido
   // quando a pessoa for compartilhar o código.
@@ -454,7 +460,7 @@ function aoEntrarNaSala(dados) {
   if (codLateral) codLateral.textContent = dados.codigo;
   $('#tela-entrada').hidden = true;
   $('#tela-sala').hidden = false;
-  $('#info-conexao').textContent = 'Servidor: ' + estado.servidor;
+  definirBarraVoz('Conectado');
 
   carregarAmizades();
 
@@ -864,6 +870,7 @@ function atualizarTiles() {
   if (chave === estado.tilesVisiveis) {
     desenharRotulos();
     atualizarMiniJanela();
+    atualizarEstadoVideoDaFila();
     return;
   }
   estado.tilesVisiveis = chave;
@@ -917,6 +924,7 @@ function atualizarTiles() {
 
   desenharRotulos();
   atualizarMiniJanela();
+  atualizarEstadoVideoDaFila();
 }
 
 function desenharRotulos() {
@@ -1216,16 +1224,346 @@ async function listarDispositivos() {
   try {
     const devs = await navigator.mediaDevices.enumerateDevices();
 
-    preencherSelect('#sel-micro', devs.filter(d => d.kind === 'audioinput'), estado.disp.micro, 'Padrão do sistema');
-    preencherSelect('#sel-fone', devs.filter(d => d.kind === 'audiooutput'), estado.disp.fone, 'Padrão do sistema');
-    preencherSelect('#sel-camera', devs.filter(d => d.kind === 'videoinput'), estado.disp.camera, 'Padrão do sistema');
+    const micros = devs.filter(d => d.kind === 'audioinput');
+    const fones = devs.filter(d => d.kind === 'audiooutput');
+    const cams = devs.filter(d => d.kind === 'videoinput');
+
+    // guardo a lista para os menus do painel do usuário, que precisam do
+    // mesmo conteúdo do <select> das configurações
+    _devsAudio.micro = micros;
+    _devsAudio.fone = fones;
+
+    preencherSelect('#sel-micro', micros, estado.disp.micro, 'Padrão do sistema');
+    preencherSelect('#sel-fone', fones, estado.disp.fone, 'Padrão do sistema');
+    preencherSelect('#sel-camera', cams, estado.disp.camera, 'Padrão do sistema');
 
     const temSaida = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype;
     const campoFone = $('#sel-fone');
     if (campoFone) campoFone.disabled = !temSaida;
+    _temSaidaAudio = temSaida;
 
     atualizarRodapeDispositivos();
   } catch { /* ignora */ }
+}
+
+/* ------------------------------------------------------------------ */
+/* Seletor de aparelhos no painel do usuário (estilo Discord)          */
+/* ------------------------------------------------------------------ */
+/* O Discord não esconde o microfone e o fone numa tela de configuração:
+   cada um fica com a sua setinha, encostado no próprio botão, e a lista
+   abre ali mesmo. É o caminho curto para quando o primo entra e a pessoa
+   precisa trocar de aparelho na hora, sem sair da sala. */
+
+const _devsAudio = { micro: [], fone: [] };
+let _temSaidaAudio = false;
+
+function rotuloDispositivo(tipo, d, i) {
+  if (d.label) return d.label;
+  return (tipo === 'micro' ? 'Microfone ' : 'Saída ') + (i + 1);
+}
+
+function escolhidoEhODoSistema(tipo) { return !estado.disp[tipo]; }
+
+function montarMenuDispositivo(tipo) {
+  const menu = $(tipo === 'micro' ? 'menu-micro' : 'menu-fone');
+  if (!menu) return;
+
+  const devs = _devsAudio[tipo] || [];
+  const escolhido = estado.disp[tipo] || '';
+  const titulo = tipo === 'micro' ? 'Microfone' : 'Fone / saída de áudio';
+
+  if (!devs.length) {
+    menu.innerHTML = '<p class="md-vazio">Ainda não apareceu nenhum aparelho. ' +
+      'Se você acabou de conectar o microfone ou o fone, feche e abra as ' +
+      'configurações de novo para o Windows repassar a lista.</p>';
+    return;
+  }
+
+  const padrao = `<button class="md-item${escolhidoEhODoSistema(tipo) ? ' ativo' : ''}" type="button"
+      role="menuitemradio" aria-checked="${escolhidoEhODoSistema(tipo)}" data-id="">
+    <svg class="md-check" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
+    <span class="md-nome">Padrão do sistema</span>
+  </button>`;
+
+  const itens = devs.map((d, i) => {
+    const ativo = (d.deviceId || '') === escolhido;
+    return `<button class="md-item${ativo ? ' ativo' : ''}" type="button"
+        role="menuitemradio" aria-checked="${ativo}" data-id="${escapeHtml(d.deviceId || '')}">
+      <svg class="md-check" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
+      <span class="md-nome">${escapeHtml(rotuloDispositivo(tipo, d, i))}</span>
+    </button>`;
+  }).join('');
+
+  let rodape = '';
+  if (tipo === 'micro') {
+    rodape = `<div class="md-nivel"><i id="nivel-menu-micro"></i></div>
+      <div class="md-rodape"><button type="button" data-acao="config-voz">Mais ajustes de áudio…</button></div>`;
+  } else {
+    rodape = `<div class="md-rodape">
+        <input type="range" id="range-volume-menu" min="0" max="100"
+               value="${Math.round(estado.volume)}" title="Volume da sala"
+               aria-label="Volume da sala" />
+        <button type="button" data-acao="config-voz">Mais ajustes de áudio…</button>
+      </div>`;
+  }
+
+  menu.innerHTML = `<div class="md-titulo">${escapeHtml(titulo)}</div>${padrao}${itens}${rodape}`;
+
+  menu.querySelectorAll('.md-item').forEach(b => {
+    b.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      escolherDispositivo(tipo, b.dataset.id || '');
+    });
+  });
+
+  const cfg = menu.querySelector('[data-acao="config-voz"]');
+  if (cfg) cfg.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    fecharMenusDispositivo();
+    abrirConfig('voz-video');
+  });
+
+  const vol = $('#range-volume-menu');
+  if (vol) vol.addEventListener('input', (ev) => {
+    estado.volume = Number(ev.target.value);
+    salvar('volume', estado.volume);
+    const cfgVol = $('#range-volume');
+    if (cfgVol) cfgVol.value = String(estado.volume);
+    aplicarSaidaEmTudo();
+  });
+}
+
+async function escolherDispositivo(tipo, deviceId) {
+  if (tipo === 'micro') await trocarMicrofone(deviceId);
+  else {
+    estado.disp.fone = deviceId;
+    salvar('disp', estado.disp);
+    await aplicarSaidaEmTudo();
+  }
+  // a lista continua aberta: a pessoa pode estar testando um aparelho atrás
+  // do outro, e fechar sozinho a cada clique só faria ela reabrir
+  montarMenuDispositivo(tipo);
+  sincronizarSelecaoConfig();
+}
+
+function sincronizarSelecaoConfig() {
+  const m = $('#sel-micro'); if (m) m.value = estado.disp.micro || '';
+  const f = $('#sel-fone'); if (f) f.value = estado.disp.fone || '';
+}
+
+function fecharMenusDispositivo(excepto) {
+  ['micro', 'fone'].forEach(tipo => {
+    if (tipo === excepto) return;
+    const menu = $(tipo === 'micro' ? 'menu-micro' : 'menu-fone');
+    const grupo = menu && menu.closest('.grupo-disp');
+    if (menu) menu.hidden = true;
+    if (grupo) grupo.classList.remove('aberto');
+  });
+}
+
+function alternarMenuDispositivo(tipo) {
+  const menu = $(tipo === 'micro' ? 'menu-micro' : 'menu-fone');
+  const grupo = menu && menu.closest('.grupo-disp');
+  if (!menu || !grupo) return;
+  const abrindo = menu.hidden;
+  fecharMenusDispositivo(abrindo ? tipo : null);
+  if (abrindo) {
+    montarMenuDispositivo(tipo);
+    menu.hidden = false;
+    grupo.classList.add('aberto');
+  }
+}
+
+function ligarMenusDispositivo() {
+  const mm = $('#btn-menu-micro');
+  if (mm) mm.addEventListener('click', (ev) => { ev.stopPropagation(); alternarMenuDispositivo('micro'); });
+
+  const mf = $('#btn-menu-fone');
+  if (mf) mf.addEventListener('click', (ev) => { ev.stopPropagation(); alternarMenuDispositivo('fone'); });
+
+  // o botão do fone (sem a seta) também abre a lista: é o atalho de quem
+  // quer só conferir em qual aparelho o som está saindo
+  const bf = $('#btn-fone');
+  if (bf) bf.addEventListener('click', (ev) => { ev.stopPropagation(); alternarMenuDispositivo('fone'); });
+
+  document.addEventListener('click', () => fecharMenusDispositivo());
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') fecharMenusDispositivo(); });
+}
+
+/* ------------------------------------------------------------------ */
+/* Fila de quem está na chamada + anel de quem está falando            */
+/* ------------------------------------------------------------------ */
+/* A fila são os avatares redondos por cima do palco. O anel verde acende
+   em volta de quem está com a boca aberta — medido de verdade, com um
+   analisador de áudio ligado a cada stream, e não por "quem tem trilha".
+
+   IMPORTANTE: o analisador só MEDIDURA. Ele não vai para o destination,
+   então o som continua saindo pelo caminho de sempre; se ligasse, quem
+   estivesse de fone se ouviria ecoando. */
+
+let _ctxAudio = null;
+const _analisadores = new Map();   // chave de stream -> { fonte, analisador }
+const _falando = new Set();        // quem está na boca AGORA
+const _ultimaFala = new Map();     // id -> timestamp da última fala alta
+
+function contextoAudio() {
+  if (_ctxAudio) return _ctxAudio;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  try { _ctxAudio = new AC(); } catch { return null; }
+  return _ctxAudio;
+}
+
+function vigiarStream(chave, stream) {
+  if (!stream || _analisadores.has(chave)) return;
+  const ctx = contextoAudio();
+  if (!ctx) return;
+  try {
+    const fonte = ctx.createMediaStreamSource(stream);
+    const analisador = ctx.createAnalyser();
+    analisador.fftSize = 512;
+    analisador.smoothingTimeConstant = 0.75;
+    fonte.connect(analisador);
+    _analisadores.set(chave, { fonte, analisador });
+  } catch { /* stream ainda sem trilha de áudio */ }
+}
+
+function desligarVigia(chave) {
+  const v = _analisadores.get(chave);
+  if (!v) return;
+  try { v.fonte.disconnect(); } catch { /* já estava solto */ }
+  _analisadores.delete(chave);
+}
+
+let _dadosTempo = null;
+function medirNivel(analisador) {
+  if (!_dadosTempo || _dadosTempo.length !== analisador.fftSize) {
+    _dadosTempo = new Uint8Array(analisador.fftSize);
+  }
+  analisador.getByteTimeDomainData(_dadosTempo);
+  let soma = 0;
+  for (let i = 0; i < _dadosTempo.length; i++) {
+    const v = (_dadosTempo[i] - 128) / 128;
+    soma += v * v;
+  }
+  return Math.sqrt(soma / _dadosTempo.length);   // 0..1
+}
+
+let _ultimaStreamLocal = null;
+
+function vigiarTudo() {
+  // microfone local: religa o medidor quando a stream muda de identity
+  if (estado.streamMicro) {
+    if (_ultimaStreamLocal !== estado.streamMicro.id) {
+      if (_ultimaStreamLocal) desligarVigia('__eu');
+      _ultimaStreamLocal = estado.streamMicro.id;
+      vigiarStream('__eu', estado.streamMicro);
+    }
+  } else if (_ultimaStreamLocal) {
+    desligarVigia('__eu');
+    _ultimaStreamLocal = null;
+    marcarFalante(estado.meuId, false);
+  }
+
+  // remotos: cada elemento de mídia já carrega em dataset.peer de quem veio
+  for (const [sid, el] of estado.els) {
+    const s = el.srcObject;
+    if (!s || typeof s.getAudioTracks !== 'function') continue;
+    if (!s.getAudioTracks().some(t => t.readyState === 'live')) continue;
+    vigiarStream(sid, s);
+  }
+}
+
+function marcarFalante(id, falando) {
+  if (!id) return;
+  const jaEstava = _falando.add ? _falando.has(id) : false;
+  if (!!falando === !!jaEstava) return;   // só toca no DOM quando muda de verdade
+  if (falando) _falando.add(id); else _falando.delete(id);
+
+  const seguro = (typeof CSS !== 'undefined' && CSS.escape) ? CSS.escape(id) : id;
+  document.querySelectorAll('.tile-voz[data-pessoa="' + seguro + '"]')
+    .forEach(t => t.classList.toggle('falando', !!falando));
+  const li = $('#lista-pessoas li[data-id="' + seguro + '"]');
+  if (li) li.classList.toggle('falando', !!falando);
+}
+
+let _timerFalantes = null;
+
+function iniciarDetecaoDeFala() {
+  if (_timerFalantes) return;
+  _timerFalantes = setInterval(() => {
+    if (!estado.conectado) return;
+    vigiarTudo();
+    if (_ctxAudio && _ctxAudio.state === 'suspended') _ctxAudio.resume().catch(() => {});
+
+    for (const [chave, v] of _analisadores) {
+      const el = estado.els.get(chave);
+      const id = chave === '__eu' ? estado.meuId : (el && el.dataset ? el.dataset.peer : null);
+      if (!id) continue;
+
+      const nivel = medirNivel(v.analisador);
+      if (nivel > 0.035) _ultimaFala.set(id, Date.now());
+      // atraso de SAÍDA: sem ele o anel apaga a cada sílaba e vira
+      // estroboscópio. Mantém aceso enquanto a pessoa continuar falando.
+      const recente = _ultimaFala.has(id) && (Date.now() - _ultimaFala.get(id) < 500);
+      marcarFalante(id, recente);
+    }
+  }, 90);
+}
+
+function pararDetecaoDeFala() {
+  if (_timerFalantes) { clearInterval(_timerFalantes); _timerFalantes = null; }
+  for (const chave of Array.from(_analisadores.keys())) desligarVigia(chave);
+  for (const id of Array.from(_falando)) marcarFalante(id, false);
+  _ultimaFala.clear();
+  _ultimaStreamLocal = null;
+}
+
+function desenharFilaVoz() {
+  const fila = $('#fila-voz');
+  if (!fila) return;
+
+  const ordenados = estado.participantes.slice().sort((a, b) =>
+    a.id === estado.meuId ? -1 : b.id === estado.meuId ? 1 : String(a.nome).localeCompare(String(b.nome))
+  );
+
+  fila.innerHTML = ordenados.map(p => `
+    <button class="tile-voz${_falando.has(p.id) ? ' falando' : ''}" type="button"
+            data-pessoa="${escapeHtml(p.id)}" title="${escapeHtml(p.nome || '')} — ver perfil">
+      ${avatarHtml(p, 'avatar-grande-voz')}
+      <span class="tile-nome">${escapeHtml(p.nome || '')}</span>
+    </button>`).join('');
+
+  fila.querySelectorAll('.tile-voz').forEach(t => {
+    t.addEventListener('click', () => abrirPerfilPessoa(t.dataset.pessoa));
+  });
+
+  atualizarEstadoVideoDaFila();
+}
+
+/* Sem vídeo no ar a fila ocupa o miolo; com vídeo, encolhe para o topo e
+   devolve o palco para quem está transmitindo. */
+function atualizarEstadoVideoDaFila() {
+  const area = $('#area-video');
+  const grade = $('#grade-videos');
+  if (area && grade) area.classList.toggle('com-video', !grade.hidden);
+}
+
+/* Antes isto escrevia o nome do microfone e da câmera em texto corrido
+   dentro de uma barra embaixo do vídeo — o texto era longo, ficava cortado
+   e não tinha nada a ver com o lugar onde a pessoa ajusta áudio. Agora a
+   mesma função mantém a lista de aparelhos em dia (o marcador de quem está
+   ativo) e o indicador de conexão. */
+function atualizarRodapeDispositivos() {
+  montarMenuDispositivo('micro');
+  montarMenuDispositivo('fone');
+}
+
+/* Abre as configurações já numa aba. O seletor de aparelhos do painel do
+   usuário mora fora do escopo onde as abas vivem, então quem conhece as
+   abas deixa a chave exposta aqui embaixo. */
+function abrirConfig(aba) {
+  if (typeof window.nexoAbrirConfig === 'function') window.nexoAbrirConfig(aba);
 }
 
 function preencherSelect(seletor, lista, valorAtual, rotuloPadrao) {
@@ -1249,16 +1587,9 @@ function preencherSelect(seletor, lista, valorAtual, rotuloPadrao) {
   el.value = Array.from(el.options).some(o => o.value === anterior) ? anterior : '';
 }
 
-function atualizarRodapeDispositivos() {
-  const el = $('#info-dispositivos');
-  if (!el) return;
-  const micro = estado.streamMicro
-    ? (estado.streamMicro.getAudioTracks()[0]?.label || 'microfone ativo')
-    : 'sem microfone';
-  const cam = estado.streamCamera ? 'câmera ligada' : null;
-  const partes = [micro, cam, estado.streamTela ? 'tela transmitindo' : null].filter(Boolean);
-  el.textContent = partes.join(' · ');
-}
+/* (a antiga atualizarRodapeDispositivos saiu de perto: ela despejava o nome
+   do microfone e da câmera em texto corrido na barra de baixo do vídeo. O
+   lugar disso agora é a lista de aparelhos de cada botão.) */
 
 async function aplicarSaida(el) {
   if (!el) return;
@@ -1381,6 +1712,8 @@ function desenharParticipantes() {
   });
 
   desenharPainelUsuario(ordenados);
+  // a fila de avatares por cima do palco acompanha a mesma lista
+  desenharFilaVoz();
 
   // nomes e avatares podem ter mudado — repinta as conversas privadas
   desenharListaDms();
@@ -1405,11 +1738,21 @@ function desenharPainelUsuario(ordenados) {
 
   const av = $('#avatar-user');
   if (av) {
-    const conteudo = eu.avatar
-      ? `<span class="emoji">${escapeHtml(eu.avatar)}</span>`
-      : escapeHtml(iniciais(nome));
-    av.style.background = corDe(eu.cor || 0);
-    av.style.color = textoSobreFundo(eu.cor || 0);
+    let conteudo;
+    if (ehFoto(eu.avatar)) {
+      /* Foto de perfil entra como <img>, nunca como texto. Antes o base64
+         inteiro era colado dentro do <span class="emoji"> e aparecia como uma
+         linha branca gigante espremida no rodapé, sem caber nem quebrar. */
+      conteudo = `<img class="avatar-foto" src="${eu.avatar}" alt="" />`;
+      av.style.background = 'var(--superficie-2)';
+      av.style.color = '';
+    } else {
+      conteudo = eu.avatar
+        ? `<span class="emoji">${escapeHtml(eu.avatar)}</span>`
+        : escapeHtml(iniciais(nome));
+      av.style.background = corDe(eu.cor || 0);
+      av.style.color = textoSobreFundo(eu.cor || 0);
+    }
     av.innerHTML = conteudo + `<i class="ponto-status${eu.mudo ? ' off' : ''}"></i>`;
   }
 
@@ -1458,13 +1801,30 @@ function desenharBotoesDeMidia() {
   atualizarRodapeDispositivos();
 }
 
+/* A barra de conexão virou UMA linha só, em cima do painel do usuário
+   (mesma leitura do "Voz conectado" do Discord): verde quando está no ar,
+   vermelho quando caiu. Antes ela despejava o endereço do servidor e a
+   contagem de pares em texto corrido lá embaixo do vídeo — frase longa,
+   ficava cortada, e não dizia nada que a pessoa realmente precisasse. */
+function definirBarraVoz(texto, caido) {
+  const el = $('#info-conexao');
+  if (!el) return;
+  el.textContent = texto;
+  const barra = el.closest('.barra-voz');
+  if (barra) barra.classList.toggle('caido', !!caido);
+}
+
 function atualizarRodapeConexao() {
   const el = $('#info-conexao');
   if (!el) return;
+  if (!estado.conectado) { definirBarraVoz('Desconectado', true); return; }
+
   const total = estado.pcs.size;
   const ok = Array.from(estado.pcs.values())
     .filter(pc => pc.connectionState === 'connected').length;
-  el.textContent = `Servidor: ${estado.servidor} · ${ok}/${total} pares WebRTC conectados`;
+  definirBarraVoz(total
+    ? `Conectado · ${ok}/${total} ${total === 1 ? 'par' : 'pares'} WebRTC`
+    : 'Conectado');
 }
 
 /* qualidade ao vivo: resolução e fps que estão chegando indo/indo */
@@ -2351,6 +2711,8 @@ function sairDaSala() {
   estado.meuId = null;
   estado.participantes = [];
   $('#lista-chat').innerHTML = '<div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>';
+  const filaSair = $('#fila-voz');
+  if (filaSair) filaSair.innerHTML = '';
   $('#tela-sala').hidden = true;
   $('#tela-entrada').hidden = false;
   definirStatusEntrada('');
@@ -2358,6 +2720,10 @@ function sairDaSala() {
 }
 
 function limparTudo() {
+  // solta os medidores de áudio: senão as streams mortas ficariam presas
+  // na memória, e o anel continuaria acendendo para quem já saiu
+  pararDetecaoDeFala();
+
   for (const id of Array.from(estado.pcs.keys())) encerrarPar(id);
   estado.pcs.clear();
   estado.filaIce.clear();
@@ -3121,6 +3487,7 @@ function inicializar() {
   /* ---------------- mídia ---------------- */
   $('#btn-micro').addEventListener('click', alternarMicrofone);
   $('#ctrl-micro').addEventListener('click', alternarMicrofone);
+  ligarMenusDispositivo();
   $('#btn-camera').addEventListener('click', alternarCamera);
   $('#ctrl-camera').addEventListener('click', alternarCamera);
   $('#btn-tela').addEventListener('click', iniciarTransmissao);
@@ -3148,7 +3515,7 @@ function inicializar() {
       $('#lista-chat').innerHTML = '<div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>';
       montarAbasConversa();
       desenharParticipantes();
-      $('#info-conexao').textContent = '—';
+      definirBarraVoz('Desconectado', true);
     }
   });
 
@@ -3195,15 +3562,26 @@ function inicializar() {
   });
 
   /* ---------------- configurações ---------------- */
-  $('#btn-config').addEventListener('click', async () => {
+  async function abrirConfigEm(aba) {
     // Abre primeiro, lista os aparelhos depois. Se o navegador demorar a
     // responder o enumerateDevices() — permissão de microfone pendente, por
     // exemplo — as configurações não podem ficar esperando: o botão tem que
     // abrir SEMPRE, mesmo sem áudio nenhum no sistema.
     abrirModal('#modal-config');
     preencherContaConfig();
+    // só troca de aba quando quem chamou pediu uma específica: abrir pela
+    // engrenagem deixa a pessoa na aba em que ela estava
+    if (aba) abrirAbaConfig(aba);
     try { await listarDispositivos(); } catch (_e) { /* sem áudio: abre mesmo assim */ }
-  });
+  }
+
+  // Deixa a chave para fora do escopo: o seletor de aparelhos do painel do
+  // usuário manda a pessoa direto para a aba de voz e vídeo.
+  window.nexoAbrirConfig = abrirConfigEm;
+
+  $('#btn-config').addEventListener('click', () => abrirConfigEm());
+  const btnConfigUser = $('#btn-config-user');
+  if (btnConfigUser) btnConfigUser.addEventListener('click', () => abrirConfigEm('voz-video'));
 
   /* painel "Conta": o que os outros veem, agora e no futuro */
   function preencherContaConfig() {
@@ -3770,20 +4148,25 @@ async function carregarAmizades() {
   }
 }
 
-/* Desenha a lista de amigos na sidebar (aba "Amigos"). */
+/* Desenha a lista de amigos na sidebar. Respeita a aba aberta:
+   "linha" mostra só quem está conectado; "todos" mostra a lista inteira. */
 function desenharListaAmigos() {
   const box = $('#lista-amigos');
   if (!box) return;
 
-  const amigos = estado.amigos || [];
+  const todos = estado.amigos || [];
+  const amigos = (_abaAmigos === 'linha') ? amigosEmLinha() : todos;
+
+  // só a aba que usa esta lista deixa ela visível — desenhar não pode
+  // reabrir a lista por cima da aba "Pendentes" ou "Adicionar".
+  box.hidden = !(_abaAmigos === 'linha' || _abaAmigos === 'todos');
 
   if (!amigos.length) {
-    box.innerHTML = `<li class="amigo-vazio">Nenhum amigo ainda.</li>`;
-    box.hidden = false;
+    box.innerHTML = (_abaAmigos === 'linha' && todos.length)
+      ? `<li class="amigo-vazio">Ninguém em linha agora.</li>`
+      : `<li class="amigo-vazio">Nenhum amigo ainda.</li>`;
     return;
   }
-
-  box.hidden = false;
   box.innerHTML = amigos.map(a => `
     <li class="item-amigo" data-id="${escapeHtml(a.id)}">
       <button class="amigo-abrir" data-id="${escapeHtml(a.id)}" type="button"
@@ -3822,12 +4205,14 @@ function desenharListaPedidos() {
 
   const pedidos = estado.pedidosAmizade || [];
 
+  // a aba "Pendentes" fica visível mesmo vazia, só com o aviso —
+  // esconder o <ul> aqui faria a aba parecer travada. Fora dela, some.
+  box.hidden = (_abaAmigos !== 'pedidos');
+
   if (!pedidos.length) {
-    box.hidden = true;
+    box.innerHTML = `<li class="pedido-vazio">Nenhum pedido de amizade.</li>`;
     return;
   }
-
-  box.hidden = false;
   box.innerHTML = pedidos.map(p => `
     <li>
       <div class="item-pedido" data-id="${escapeHtml(p.id)}">
@@ -3951,10 +4336,111 @@ async function removerAmizade(amigoId) {
 /* Atualiza os badges (contadores) na aba "Amigos". */
 function atualizarBadgesAmigos() {
   const totalPedidos = (estado.pedidosAmizade || []).length;
-  const rot = document.querySelector('.rot-cat-amigos');
-  if (rot) rot.textContent = totalPedidos
-    ? `Amigos (${totalPedidos > 9 ? '9+' : totalPedidos})`
-    : 'Amigos';
+
+  // contadores DENTRO das abas do painel de amigos
+  const cLinha = $('#cont-aba-linha');
+  if (cLinha) {
+    const n = amigosEmLinha().length;
+    cLinha.hidden = n === 0;
+    cLinha.textContent = n > 9 ? '9+' : String(n);
+  }
+  const cPedidos = $('#cont-aba-pedidos');
+  if (cPedidos) {
+    cPedidos.hidden = totalPedidos === 0;
+    cPedidos.textContent = totalPedidos > 9 ? '9+' : String(totalPedidos);
+  }
+
+  // bolinha vermelha no ícone de Amigos do rail (Discord faz igual)
+  const badge = $('#rail-badge-amigos');
+  if (badge) {
+    badge.hidden = totalPedidos === 0;
+    badge.textContent = totalPedidos > 9 ? '9+' : String(totalPedidos);
+  }
+
+  // se a aba "Pendentes" estiver aberta, redesenha a lista na hora
+  if (_abaAmigos === 'pedidos') desenharListaPedidos();
+}
+
+/* ------------------------------------------------------------------ */
+/* Navegação do rail: Sala <-> Amigos (como o Discord troca Home/DMs)  */
+/* ------------------------------------------------------------------ */
+
+let _abaAmigos = 'todos';
+
+/* Amigos que estão de fato conectados agora (presença da sala). */
+function amigosEmLinha() {
+  const onlines = new Set((estado.participantes || []).map(p => p.id));
+  return (estado.amigos || []).filter(a => onlines.has(a.id));
+}
+
+/* Mostra o painel de Amigos no lugar da lista de canais. */
+function irParaAmigos(aba) {
+  const painelSala = $('#painel-sala-visao');
+  const painelAmigos = $('#painel-amigos');
+  if (!painelAmigos) return;
+
+  if (painelSala) painelSala.hidden = true;
+  painelAmigos.hidden = false;
+
+  const bSala = $('#rail-sala');
+  const bAmigos = $('#rail-amigos');
+  if (bSala) bSala.classList.remove('ativo');
+  if (bAmigos) bAmigos.classList.add('ativo');
+
+  // busca mais fresca toda vez que abre — mas sem travar a troca de vista
+  carregarAmizades();
+  mudarAbaAmigos(aba || 'linha');
+}
+
+/* Volta para a lista de canais (a "sala"). */
+function irParaSala() {
+  const painelSala = $('#painel-sala-visao');
+  const painelAmigos = $('#painel-amigos');
+  if (painelAmigos) painelAmigos.hidden = true;
+  if (painelSala) painelSala.hidden = false;
+
+  const bSala = $('#rail-sala');
+  const bAmigos = $('#rail-amigos');
+  if (bAmigos) bAmigos.classList.remove('ativo');
+  if (bSala) bSala.classList.add('ativo');
+}
+
+/* Troca a aba ativa do painel de amigos e mostra só o bloco dela. */
+function mudarAbaAmigos(aba) {
+  const valido = ['linha', 'todos', 'pedidos', 'adicionar'];
+  _abaAmigos = valido.includes(aba) ? aba : 'linha';
+
+  document.querySelectorAll('.aba-amigos').forEach(b => {
+    b.classList.toggle('ativa', b.dataset.aba === _abaAmigos);
+  });
+
+  const listaAmigos = $('#lista-amigos');
+  const listaPedidos = $('#lista-pedidos');
+  const painelAdd = $('#painel-adicionar');
+  const rotulo = $('#rot-aba-amigos');
+
+  // por padrão esconde tudo; cada aba liga o seu bloco
+  if (listaAmigos) listaAmigos.hidden = true;
+  if (listaPedidos) listaPedidos.hidden = true;
+  if (painelAdd) painelAdd.hidden = true;
+  if (rotulo) rotulo.hidden = true;
+
+  if (_abaAmigos === 'adicionar') {
+    if (painelAdd) painelAdd.hidden = false;
+    const inp = $('#in-busca-amigo');
+    if (inp) inp.focus();
+  } else if (_abaAmigos === 'pedidos') {
+    if (rotulo) { rotulo.hidden = false; rotulo.textContent = 'Pendentes'; }
+    if (listaPedidos) listaPedidos.hidden = false;
+    desenharListaPedidos();
+  } else {
+    if (rotulo) {
+      rotulo.hidden = false;
+      rotulo.textContent = _abaAmigos === 'linha' ? 'Em linha' : 'Todos os amigos';
+    }
+    if (listaAmigos) listaAmigos.hidden = false;
+    desenharListaAmigos();
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -3966,7 +4452,8 @@ function abrirBuscaAmigo() {
   if (box) box.innerHTML = '';
   const input = $('#in-busca-amigo');
   if (input) { input.value = ''; input.focus(); }
-  abrirModal('#modal-novo-amigo');
+  // a busca mora DENTRO do painel de amigos — não há mais modal por cima
+  irParaAmigos('adicionar');
 }
 
 async function buscarAmigo() {
@@ -4042,11 +4529,11 @@ async function buscarAmigo() {
 /* ------------------------------------------------------------------ */
 
 function inicializarAmigos() {
-  // botão "+" na seção Amigos
+  // botão "+" no cabeçalho do painel de amigos
   const btnNovoAmigo = $('#btn-novo-amigo');
   if (btnNovoAmigo) btnNovoAmigo.addEventListener('click', abrirBuscaAmigo);
 
-  // busca no modal
+  // busca (agora dentro do painel, não num modal)
   const btnBuscar = $('#btn-buscar-amigo');
   if (btnBuscar) btnBuscar.addEventListener('click', buscarAmigo);
   const inputBusca = $('#in-busca-amigo');
@@ -4056,17 +4543,19 @@ function inicializarAmigos() {
     });
   }
 
-  // fechar modal ao clicar fora (já coberto pelo handler genérico .overlay)
-  // limpar ao fechar
-  const modal = $('#modal-novo-amigo');
-  if (modal) {
-    modal.addEventListener('click', (ev) => {
-      if (ev.target === modal) {
-        const box = $('#lista-resultado-amigo');
-        if (box) box.innerHTML = '';
-        const inp = $('#in-busca-amigo');
-        if (inp) inp.value = '';
-      }
-    });
-  }
+  // abas do painel (Em linha / Todos / Pendentes / Adicionar)
+  document.querySelectorAll('.aba-amigos').forEach(b => {
+    b.addEventListener('click', () => mudarAbaAmigos(b.dataset.aba));
+  });
+
+  // rail: troca entre a sala e o painel de amigos, como o Discord
+  const railSala = $('#rail-sala');
+  if (railSala) railSala.addEventListener('click', irParaSala);
+  const railAmigos = $('#rail-amigos');
+  if (railAmigos) railAmigos.addEventListener('click', () => irParaAmigos());
+  const railLoja = $('#rail-loja');
+  if (railLoja) railLoja.addEventListener('click', () => abrirConfig('loja'));
+
+  // quem chega num pedido novo tira a bolinha do rail
+  atualizarBadgesAmigos();
 }

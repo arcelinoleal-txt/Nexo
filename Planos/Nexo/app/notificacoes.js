@@ -177,7 +177,90 @@ const Notificacoes = (() => {
     });
   }
 
-  /* ---------- atualizações ---------- */
+  /* ---------- atualização ---------- */
+  /* Compara de verdade os números. Sem isto o app avisaria de versão nova
+     até para quem JÁ está nela — o aviso passaria a depender de ter alguém
+     mexendo no texto das novidades, e não de existir versão mais nova. */
+  function compararVersoes(a, b) {
+    const pa = String(a || '').split('.').map(n => parseInt(n, 10) || 0);
+    const pb = String(b || '').split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < 3; i++) {
+      const d = (pa[i] || 0) - (pb[i] || 0);
+      if (d !== 0) return d > 0 ? 1 : -1;
+    }
+    return 0;
+  }
+
+  let _versaoLocal = null;
+  async function versaoLocal() {
+    if (_versaoLocal) return _versaoLocal;
+    try {
+      if (window.nexoDesktop && window.nexoDesktop.info) {
+        const i = await window.nexoDesktop.info();
+        if (i && i.versao) { _versaoLocal = String(i.versao); return _versaoLocal; }
+      }
+    } catch { /* sem desktop: é o navegador aberto no site */ }
+    _versaoLocal = '0.0.0';
+    return _versaoLocal;
+  }
+
+  /* O fluxo inteiro da atualização, do clique até o instalador abrir.
+     A barra de progresso mora DENTRO da própria notificação: nada de janela
+     nova nem de popup do sistema — é o sininho, que já está aberto, que
+     conta o que está acontecendo. Se algo falhar, a mesma notificação vira
+     o caminho de tentar de novo. */
+  async function executarAtualizacao(item, info) {
+    const desktop = window.nexoDesktop;
+    if (!desktop || !desktop.baixarAtualizacao) return;
+    // clique duplo não pode pôr dois downloads no ar ao mesmo tempo
+    if (item.atualizando) return;
+    item.atualizando = true;
+
+    const textoBaixando = (pct) => pct
+      ? 'Baixando… ' + pct + '%'
+      : 'Baixando…';
+
+    item.acao = textoBaixando(0);
+    item.executar = null;
+    item.corpo = 'Baixando a versão ' + info.versao + '. Pode levar um minuto — não feche o app.';
+    desenhar();
+
+    let ultimo = '';
+    if (desktop.sobreProgressoAtualizacao) {
+      desktop.sobreProgressoAtualizacao((d) => {
+        const texto = textoBaixando(d && d.pct ? d.pct : 0);
+        if (texto === ultimo) return;    // só redesenha quando o número muda
+        ultimo = texto;
+        item.acao = texto;
+        desenhar();
+      });
+    }
+
+    let r;
+    try {
+      r = await desktop.baixarAtualizacao(info.download, info.sha256);
+    } catch (e) {
+      r = { ok: false, erro: (e && e.message) || 'falha inesperada' };
+    }
+
+    if (!r || !r.ok) {
+      item.atualizando = false;
+      item.acao = 'Tentar de novo';
+      item.executar = () => executarAtualizacao(item, info);
+      item.corpo = 'Não consegui baixar a atualização: ' +
+        ((r && r.erro) || 'erro desconhecido') + '. O app continua funcionando normalmente.';
+      desenhar();
+      return;
+    }
+
+    item.acao = 'Instalando…';
+    item.corpo = 'Instalador conferido. O Nexo vai fechar e a instalação começa agora — ' +
+      'é só confirmar a janela do Windows quando aparecer.';
+    desenhar();
+
+    try { await desktop.instalarAtualizacao(r.arquivo); } catch { /* o app sai mesmo assim */ }
+  }
+
   async function verificarAtualizacao() {
     if (api.semAtualizacao) return;   // desligado em Configurações > Sistema
 
@@ -195,6 +278,11 @@ const Notificacoes = (() => {
     const novidades = Array.isArray(d.novidades) ? d.novidades : [];
     const link = (typeof d.download === 'string' && /^https?:\/\//i.test(d.download)) ? d.download : null;
 
+    const local = await versaoLocal();
+    const temMaisNova = compararVersoes(d.versao, local) > 0;
+    const rodaNoApp = !!(window.nexoDesktop && window.nexoDesktop.baixarAtualizacao);
+    const podeAtualizarSozinho = rodaNoApp && temMaisNova && !!link;
+
     /* Assinatura de TODO o conteúdo. Se mudar o número da versão, a data
        ou qualquer item das novidades, o aviso aparece. Sem isso, quem só
        editar o texto das novidades não avisaria ninguém — e é justamente
@@ -204,19 +292,39 @@ const Notificacoes = (() => {
     if (vista !== null && vista !== assinatura) {
       const trocouDeNumero = numeroVisto !== null && numeroVisto !== d.versao;
       const noNavegador = location.protocol === 'http:' || location.protocol === 'https:';
-      adicionar({
+
+      const info = {
+        versao: d.versao,
+        download: link,
+        sha256: (typeof d.sha256 === 'string' && /^[0-9a-f]{64}$/i.test(d.sha256)) ? d.sha256 : null,
+        novidades
+      };
+
+      const novo = adicionar({
         tipo: 'atualizacao',
         chave: 'versao',
-        titulo: trocouDeNumero ? `Nexo ${d.versao} disponível` : 'O Nexo foi atualizado',
-        corpo: trocouDeNumero
-          ? `Você está na ${numeroVisto}. O que mudou:`
-          : 'Tem novidade nova. O que mudou:',
+        titulo: trocouDeNumero ? `Nexo ${d.versao} disponível` : `O Nexo foi atualizado`,
+        corpo: podeAtualizarSozinho
+          ? `Você está na ${local}. O que mudou:`
+          : (temMaisNova
+            ? `Você está na ${local}. Instale a ${d.versao} para ter o que mudou:`
+            : 'Tem novidade nova. O que mudou:'),
         itens: novidades.slice(0, 8),
-        acao: link ? 'Baixar atualização' : (noNavegador ? 'Atualizar agora' : null),
-        executar: link
-          ? () => window.open(link, '_blank')
-          : (noNavegador ? () => location.reload() : null)
+        acao: podeAtualizarSozinho
+          ? 'Atualizar agora'
+          : (link ? 'Baixar' : (noNavegador ? 'Atualizar agora' : null)),
+        executar: podeAtualizarSozinho
+          ? null
+          : (link
+            ? () => window.open(link, '_blank')
+            : (noNavegador ? () => location.reload() : null))
       });
+
+      // o item novo é o próprio alvo do progresso — amarrado aqui em cima,
+      // sem depender de `this` nem de como o botão vem a chamar a função
+      if (podeAtualizarSozinho && novo) {
+        novo.executar = () => executarAtualizacao(novo, info);
+      }
     }
 
     if (vista !== assinatura) salvar('versaoVista', assinatura);

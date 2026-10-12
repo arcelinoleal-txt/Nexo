@@ -57,6 +57,53 @@ const MAX_ARQUIVO = Number(process.env.NEXO_MAX_ARQUIVO) || 25 * 1024 * 1024; //
 
 if (!fs.existsSync(DIR_ARQUIVOS)) fs.mkdirSync(DIR_ARQUIVOS, { recursive: true });
 
+/* Onde ficam os instaladores publicados: versoes/v1.12.0/Nexo-Setup-1.12.0.exe.
+   Eles são versionados no mesmo repositório do código, então no Railway já
+   estão lá depois do deploy — sem bucket à parte, sem nada para configurar. */
+const DIR_ATUALIZACAO = path.join(__dirname, '..', 'versoes');
+
+/* SHA-256 lendo em blocos de 1MB: um .exe de ~77MB não pode ser lido de uma
+   vez só para virar string na memória. */
+function hashSync(caminho) {
+  const h = crypto.createHash('sha256');
+  const fd = fs.openSync(caminho, 'r');
+  try {
+    const buf = Buffer.alloc(1024 * 1024);
+    let lido;
+    while ((lido = fs.readSync(fd, buf, 0, buf.length, null)) > 0) h.update(buf.subarray(0, lido));
+  } finally {
+    fs.closeSync(fd);
+  }
+  return h.digest('hex');
+}
+
+/* Acha o instalador da versão publicada e devolve endereço, tamanho e hash.
+   O hash muda a cada release mas é caro o bastante para não valer a pena
+   recalcular a cada pergunta — guarda por arquivo, e invalida sozinho quando
+   o arquivo muda. */
+const _cacheInstalador = new Map();
+
+function instalarDaVersao(versao) {
+  if (!/^\d+\.\d+\.\d+$/.test(String(versao || ''))) return null;
+  const nome = 'Nexo-Setup-' + versao + '.exe';
+  const alvo = path.join(DIR_ATUALIZACAO, 'v' + versao, nome);
+  let st;
+  try { st = fs.statSync(alvo); } catch { return null; }
+  if (!st.isFile()) return null;
+
+  const chave = alvo + '|' + st.size + '|' + st.mtimeMs;
+  const guardado = _cacheInstalador.get(chave);
+  if (guardado) return guardado;
+
+  try {
+    const achado = { url: '/atualizacao/' + nome, nome, tamanho: st.size, sha256: hashSync(alvo) };
+    _cacheInstalador.set(chave, achado);
+    return achado;
+  } catch {
+    return null; // sem instalador publicado: o aviso de versão continua valendo
+  }
+}
+
 /* Endereço que um outro computador da rede vai conseguir alcançar.
    Quem cria a sala manda esse endereço junto com o código, para a outra
    pessoa colar uma única vez e já cair na sala certa — sem precisar
@@ -261,7 +308,12 @@ const servidor = http.createServer(async (req, res) => {
     /* ----------------------------- versao ---------------------------- */
     /* O "app base" edita versao.json e publica aqui. Quem tem o app
        instalado pergunta periodicamente e, se tiver mais novo, mostra
-       o aviso no sininho com a lista do que mudou. */
+       o aviso no sininho com a lista do que mudou.
+
+       O download NÃO é escrito à mão no versao.json: o servidor acha o
+       instalador correspondente dentro de versoes/, calcula o SHA-256 uma
+       vez e devolve tudo pronto. Assim quem publica só precisa editar o
+       número e as novidades — o resto não tem como ficar errado. */
 
     if (url === '/api/versao') {
       let dados = { versao: '0.0.0', novidades: [], atualizadoEm: null };
@@ -270,12 +322,60 @@ const servidor = http.createServer(async (req, res) => {
         const lido = JSON.parse(bruto);
         if (lido && typeof lido.versao === 'string') dados = lido;
       } catch { /* sem versao.json: devolve a padrao */ }
+
+      const inst = instalarDaVersao(dados.versao);
       return responder(res, 200, {
         versao: dados.versao,
         novidades: Array.isArray(dados.novidades) ? dados.novidades : [],
         atualizadoEm: dados.atualizadoEm || null,
-        download: typeof dados.download === 'string' ? dados.download : null
+        // o versao.json ainda pode forçar um endereço à mão, mas o caminho
+        // normal é o servidor achar o instalador sozinho
+        download: (inst && inst.url) || (typeof dados.download === 'string' ? dados.download : null),
+        sha256: inst ? inst.sha256 : null,
+        tamanho: inst ? inst.tamanho : null
       });
+    }
+
+    /* Instalador da versão publicada. Só arquivos .exe que moram dentro de
+       versoes/ — mesmo cuidado do /arquivos/: nada de sair da pasta, nada de
+       servir diretório (isso já derrubou o servidor uma vez).
+       O instalador mora DENTRO da pasta da versão (versoes/v1.12.0/), igualzinho
+       o caminho que a /api/versao anuncia — sem isso o download dava 404. */
+    if (url.startsWith('/atualizacao/')) {
+      const nome = path.basename(url.slice('/atualizacao/'.length));
+      if (!/^nexo-setup-[\w.-]+\.exe$/i.test(nome)) {
+        res.writeHead(404); res.end('Nao encontrado'); return;
+      }
+      // extrai a versao do proprio nome (Nexo-Setup-1.12.0.exe -> v1.12.0)
+      const versaoNome = (nome.match(/^nexo-setup-(.+)\.exe$/i) || [])[1];
+      const pastas = [];
+      if (versaoNome) pastas.push(path.join(DIR_ATUALIZACAO, 'v' + versaoNome));
+      pastas.push(DIR_ATUALIZACAO); // compat: versoes/ direto
+
+      let alvo = null;
+      for (const p of pastas) {
+        const caminho = path.join(p, nome);
+        if (!caminho.startsWith(DIR_ATUALIZACAO)) continue; // nada de ../
+        try { if (fs.statSync(caminho).isFile()) { alvo = caminho; break; } } catch { /* tenta a proxima */ }
+      }
+      if (!alvo) {
+        res.writeHead(404); res.end('Nao encontrado'); return;
+      }
+      const total = fs.statSync(alvo).size;
+      res.writeHead(200, {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition': 'attachment; filename="' + nome + '"',
+        'Content-Length': String(total),
+        // o instalador muda a cada release, então não vale guardar no cache
+        'Cache-Control': 'no-store'
+      });
+      const leitor = fs.createReadStream(alvo);
+      leitor.on('error', () => {
+        console.warn('[nexo] falha ao ler instalador:', nome);
+        try { res.writeHead(500); res.end(); } catch { /* resposta ja iniciada */ }
+      });
+      leitor.pipe(res);
+      return;
     }
 
     // Convite da sala: o endereço que outro computador precisa marcar.

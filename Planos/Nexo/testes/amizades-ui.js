@@ -194,6 +194,7 @@ function getJson(rota) {
         ];
         gravarSessao(${JSON.stringify(tokA)}, ${JSON.stringify(ca.json.usuario)});
         desenharParticipantes();
+        irParaAmigos('todos');   // abre o painel de amigos (nova vista do rail)
         return 'ok';
       } catch(e) { return 'ERRO: ' + e.message + ' | ' + e.stack; }
     })()
@@ -208,14 +209,20 @@ function getJson(rota) {
 
   let r = await avaliar(`(function(){
     var cab = document.querySelector('.cab-amigos');
-    var rot = document.querySelector('.rot-cat-amigos');
+    var rot = document.querySelector('.rot-cab-amigos');
     var btn = document.getElementById('btn-novo-amigo');
     var lista = document.getElementById('lista-amigos');
     var ped = document.getElementById('lista-pedidos');
+    var painel = document.getElementById('painel-amigos');
+    var abas = document.querySelectorAll('.aba-amigos');
     return JSON.stringify({ temCab: !!cab, rot: rot ? rot.textContent : null,
-      temBtn: !!btn, temLista: !!lista, pedidosHidden: ped ? ped.hidden : null });
+      temBtn: !!btn, temLista: !!lista, painelVisivel: painel ? !painel.hidden : null,
+      abas: abas.length, pedidosHidden: ped ? ped.hidden : null });
   })()`);
-  verificar('seccao Amigos existe com cabecalho e botao', r.valor && parsar(r.valor).temCab && parsar(r.valor).temBtn, r.valor);
+  o = parsar(r.valor);
+  verificar('seccao Amigos existe com cabecalho e botao', o.temCab && o.temBtn, r.valor);
+  verificar('painel de amigos abre no lugar da sala', o.painelVisivel === true, r.valor);
+  verificar('painel tem as 4 abas do Discord', o.abas === 4, r.valor);
 
   r = await avaliar(`(async function(){
     try {
@@ -229,9 +236,11 @@ function getJson(rota) {
   r = await avaliar(`(function(){
     var lista = document.getElementById('lista-amigos');
     var ped = document.getElementById('lista-pedidos');
+    var rot = document.querySelector('.rot-aba-amigos');
     return JSON.stringify({ vazia: !!lista.querySelector('.amigo-vazio'),
       itens: lista.querySelectorAll('.item-amigo').length,
-      pedidosHidden: ped.hidden, rot: document.querySelector('.rot-cat-amigos').textContent });
+      pedidosHidden: ped.hidden, rot: rot ? rot.textContent : null,
+      listaVisivel: !lista.hidden });
   })()`);
   o = parsar(r.valor);
   verificar('lista vazia mostra "Nenhum amigo ainda"', o.vazia && o.itens === 0, r.valor);
@@ -240,19 +249,23 @@ function getJson(rota) {
   await shot('01-secao-amigos');
 
   /* ---------------------------------------------------------------
-     2) modal Adicionar amigo + busca
+     2) painel Adicionar amigo + busca
      --------------------------------------------------------------- */
-  console.log('\n== 2) Modal Adicionar amigo ==');
+  console.log('\n== 2) Painel Adicionar amigo ==');
 
-  r = await avaliar(`document.getElementById('btn-novo-amigo').click(); 'ok'`);
-  await dormir(300);
-  r = await avaliar(`(function(){
-    var m = document.getElementById('modal-novo-amigo');
-    return JSON.stringify({ aberto: !m.hidden, temInput: !!document.getElementById('in-busca-amigo'),
+  r = await avaliar(`(async function(){
+    document.getElementById('btn-novo-amigo').click();
+    await new Promise(res => setTimeout(res, 300));
+    var painel = document.getElementById('painel-adicionar');
+    var aba = document.querySelector('.aba-amigos.ativa');
+    return JSON.stringify({ aberto: painel ? !painel.hidden : null,
+      abaAtiva: aba ? aba.dataset.aba : null,
+      temInput: !!document.getElementById('in-busca-amigo'),
       temBtnBuscar: !!document.getElementById('btn-buscar-amigo') });
   })()`);
   o = parsar(r.valor);
-  verificar('modal abre com input e botao buscar', o.aberto && o.temInput && o.temBtnBuscar, r.valor);
+  verificar('botao + abre o painel com input e botao buscar', o.aberto && o.temInput && o.temBtnBuscar, r.valor);
+  verificar('botao + leva direto pra aba "adicionar"', o.abaAtiva === 'adicionar', r.valor);
 
   r = await avaliar(`(function(){
     var i = document.getElementById('in-busca-amigo');
@@ -318,21 +331,33 @@ function getJson(rota) {
   r = await avaliar(`(async function(){ await carregarAmizades(); return 'ok'; })()`);
   await dormir(500);
 
+  /* o pedido só aparece na aba "Pendentes" — troca pra ela antes de conferir */
+  r = await avaliar(`(async function(){
+    mudarAbaAmigos('pedidos');
+    await new Promise(res => setTimeout(res, 200));
+    return 'ok';
+  })()`);
+  verificar('B troca pra aba Pendentes', r.valor === 'ok', r.valor || r.erro);
+
   r = await avaliar(`(function(){
     var ped = document.getElementById('lista-pedidos');
     var itens = ped.querySelectorAll('.item-pedido');
     var aceitar = ped.querySelectorAll('.btn-pedido.aceitar');
     var recusar = ped.querySelectorAll('.btn-pedido.recusar');
-    var rot = document.querySelector('.rot-cat-amigos').textContent;
+    var cont = document.getElementById('cont-aba-pedidos');
+    var badgeRail = document.getElementById('rail-badge-amigos');
     return JSON.stringify({ hidden: ped.hidden, itens: itens.length,
-      aceitar: aceitar.length, recusar: recusar.length, rot: rot,
+      aceitar: aceitar.length, recusar: recusar.length,
+      contAbas: cont ? { hidden: cont.hidden, txt: cont.textContent } : null,
+      railBadge: badgeRail ? { hidden: badgeRail.hidden, txt: badgeRail.textContent } : null,
       nome: itens[0] ? itens[0].querySelector('.item-nome').textContent : null });
   })()`);
   o = parsar(r.valor);
   verificar('B ve o pedido pendente na lista', o.hidden === false && o.itens === 1, r.valor);
   verificar('pedido tem botao aceitar e recusar', o.aceitar === 1 && o.recusar === 1, r.valor);
   verificar('pedido mostra o nome de A', o.nome === nA, 'nome=' + o.nome);
-  verificar('badge no cabecalho mostra (1)', /\(1\)/.test(o.rot), 'rot=' + o.rot);
+  verificar('contador da aba Pendentes mostra (1)', o.contAbas && o.contAbas.txt === '1' && !o.contAbas.hidden, JSON.stringify(o.contAbas));
+  verificar('badge vermelho no rail do Amigos', o.railBadge && !o.railBadge.hidden && o.railBadge.txt === '1', JSON.stringify(o.railBadge));
 
   await shot('04-pedido-recebido');
 
@@ -348,14 +373,22 @@ function getJson(rota) {
     var ped = document.getElementById('lista-pedidos');
     var lista = document.getElementById('lista-amigos');
     var itens = lista.querySelectorAll('.item-amigo');
-    return JSON.stringify({ pedidosHidden: ped.hidden, amigos: itens.length,
+    var cont = document.getElementById('cont-aba-pedidos');
+    var badgeRail = document.getElementById('rail-badge-amigos');
+    return JSON.stringify({
+      listaVaziaAindaVisivel: !ped.hidden && !!ped.querySelector('.pedido-vazio'),
+      itensPedidos: ped.querySelectorAll('.item-pedido').length,
+      amigos: itens.length,
       nome: itens[0] ? itens[0].querySelector('.item-nome').textContent : null,
-      rot: document.querySelector('.rot-cat-amigos').textContent });
+      contEscondido: cont ? cont.hidden : null,
+      railEscondido: badgeRail ? badgeRail.hidden : null });
   })()`);
   o = parsar(r.valor);
-  verificar('apos aceitar, pedidos somem', o.pedidosHidden === true, r.valor);
+  verificar('apos aceitar, nao sobra nenhum pedido', o.itensPedidos === 0, r.valor);
+  verificar('aba Pendentes mostra o estado vazio', o.listaVaziaAindaVisivel === true, r.valor);
   verificar('B agora tem A na lista de amigos', o.amigos === 1 && o.nome === nA, r.valor);
-  verificar('badge volta pra "Amigos" sem numero', o.rot === 'Amigos', 'rot=' + o.rot);
+  verificar('contador da aba some quando nao ha pedido', o.contEscondido === true, r.valor);
+  verificar('badge vermelho do rail some', o.railEscondido === true, r.valor);
 
   await shot('05-b-amigo');
 
@@ -365,6 +398,8 @@ function getJson(rota) {
   console.log('\n== 5) Clicar no amigo abre conversa ==');
 
   r = await avaliar(`(async function(){
+    mudarAbaAmigos('todos');   // a lista de amigos so aparece nesta aba
+    await new Promise(r => setTimeout(r, 250));
     document.querySelector('#lista-amigos .amigo-abrir').click();
     await new Promise(r => setTimeout(r, 600));
     return JSON.stringify({ conversa: estado.conversa, canal: estado.canal });
@@ -383,6 +418,7 @@ function getJson(rota) {
     gravarSessao(${JSON.stringify(tokA)}, ${JSON.stringify(ca.json.usuario)});
     estado.meuId = '${idA}';
     await carregarAmizades();
+    mudarAbaAmigos('todos');   // garante a aba que mostra a lista inteira
     await new Promise(r => setTimeout(r, 400));
     var lista = document.getElementById('lista-amigos');
     var itens = lista.querySelectorAll('.item-amigo');
@@ -401,6 +437,7 @@ function getJson(rota) {
       return resp.ok;
     })();
     await carregarAmizades();
+    mudarAbaAmigos('todos');
     await new Promise(r => setTimeout(r, 400));
     var lista = document.getElementById('lista-amigos');
     return JSON.stringify({ removido: ok, restam: lista.querySelectorAll('.item-amigo').length,

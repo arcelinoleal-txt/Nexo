@@ -1,12 +1,14 @@
 {
-  "versao": "1.11.0",
+  "versao": "1.12.0",
   "atualizadoEm": "2026-10-12",
   "download": null,
   "novidades": [
-    "Seção Amigos: adicione pessoas pelo nome, aceite ou recuse pedidos e veja quem já é seu amigo",
-    "De dentro de um amigo, um clique abre a conversa privada direto",
-    "Corrigidos os acentos quebrados que apareciam espalhados pela interface",
-    "Corrigido um travamento que derrubava o servidor inteiro ao abrir /arquivos/",
-    "Melhorias na lista de participantes e nos arquivos da sala"
+    "Amigos agora moram na coluna da esquerda, com as abas Em linha, Todos, Pendentes e Adicionar amigo",
+    "Selo vermelho no ícone de Amigos quando chega pedido novo, e contador dentro da aba",
+    "Aviso de atualização com botão de instalar: baixa, confere e troca a versão sem perder sua conta",
+    "Avatares de todo mundo sobre a chamada, com anel verde neon brilhando em quem está falando",
+    "Áudio e microfone saíram do rodapé e ganharam painel próprio de voz, com escolha de microfone e fone",
+    "As imagens agora podem ser vistas na hora antes de baixar",
+    "Visual renovado no padrão do Discord: cores, botões e fontes mais limpos em toda a interface"
   ]
 }

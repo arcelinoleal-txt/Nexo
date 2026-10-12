@@ -2,7 +2,12 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; connect-src 'self' ws: wss: http: https:; img-src 'self' data: blob:; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
+  <!-- A imagem/vídeo/áudio de anexo pode morar em OUTRO domínio: o app abre
+       daqui (file:// ou 127.0.0.1:3000) mas a sala pode estar num servidor
+       remoto. Sem https: nestes dois blocos o navegador cortava a carga e o
+       anexo aparecia como "não foi possível carregar". O script continua
+       preso em 'self' — é a parte que protege contra injeção de código. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; connect-src 'self' ws: wss: http: https:; img-src 'self' data: blob: https: http:; media-src 'self' blob: https: http:; style-src 'self' 'unsafe-inline'; script-src 'self'" />
   <title>Nexo</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="estilo.css" />
@@ -218,14 +223,15 @@
 
     <!-- --------------------- coluna de servidores -------------------- -->
     <nav class="rail-servidores" aria-label="Servidores">
-      <button class="rail-item ativo" type="button" title="Nexo — sala atual">
+      <button class="rail-item ativo" id="rail-sala" type="button" title="Nexo — sala atual" aria-label="Sala">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H13l-4 3.2V16H6.5A2.5 2.5 0 0 1 4 13.5v-8Z"/></svg>
       </button>
       <div class="rail-sep"></div>
-      <button class="rail-item" type="button" title="Amigos">
+      <button class="rail-item" id="rail-amigos" type="button" title="Amigos" aria-label="Amigos">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm-8 1a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm0 2c-2.3 0-7 1.2-7 3.5V20h9v-2.5c0-.9.4-1.7 1-2.4A13 13 0 0 1 8 14Zm8 0c-3 0-8 1.4-8 4V20h12v-2c0-2.6-5-4-8-4Z"/></svg>
+        <span class="rail-badge" id="rail-badge-amigos" hidden></span>
       </button>
-      <button class="rail-item" type="button" title="Loja">
+      <button class="rail-item" id="rail-loja" type="button" title="Loja" aria-label="Loja">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 8h-3V6a3 3 0 0 0-3-3h-4a3 3 0 0 0-3 3v2H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1ZM10 6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2h-4Zm8 13H6v-9h2v1a1 1 0 0 0 2 0v-1h4v1a1 1 0 0 0 2 0v-1h2Z"/></svg>
       </button>
     </nav>
@@ -280,6 +286,12 @@
 
     <!-- ------------------- painel esquerdo (estilo Discord) ------------------- -->
     <aside class="painel-esq">
+      <!-- ===================== vista da sala ===================== -->
+      <!-- Os canais e as conversas privadas são UMAS das duas telas que o
+           painel mostra. A outra é a de amigos, que abre pelo ícone das
+           pessoas na coluna da esquerda — igual ao Discord, em que a lista
+           de DMs e a tela de amigos dividem o mesmo espaço. -->
+      <div id="painel-sala-visao" class="visao-painel">
       <!-- cabeçalho do servidor -->
       <div class="cab-servidor">
         <strong class="nome-srv">Nexo</strong>
@@ -335,45 +347,125 @@
         </ul>
       </section>
 
-      <!-- lista de amigos (estilo Discord) -->
-      <section class="cat-canais cat-amigos">
+      </div><!-- /painel-sala-visao -->
+
+      <!-- ===================== vista de amigos (estilo Discord) ===================== -->
+      <!-- Abre pelo ícone de pessoas da coluna da esquerda. Em vez de uma
+           seçãozinha espremida no rodapé dos canais, ocupa o painel inteiro
+           e traz as mesmas abas do Discord: quem está em linha, todos, os
+           pedidos pendentes e a busca para adicionar alguém novo. -->
+      <div id="painel-amigos" class="visao-painel" hidden>
         <div class="cab-amigos">
-          <span class="rot-cat-amigos">Amigos</span>
+          <strong class="rot-cab-amigos">Amigos</strong>
           <button class="btn-novo-amigo" id="btn-novo-amigo" type="button"
                   title="Adicionar amigo por nome ou e-mail">
             <span class="ic" data-on="pessoa-adicionar" data-off="pessoa-adicionar"></span>
           </button>
         </div>
-        <ul id="lista-amigos" class="lista-amigos">
-          <li class="amigo-vazio">Nenhum amigo ainda.</li>
-        </ul>
-        <ul id="lista-pedidos" class="lista-pedidos" hidden>
-          <li class="pedido-vazio">Nenhum pedido de amizade.</li>
-        </ul>
-      </section>
 
-      <!-- painel do usuário (rodapé) -->
-      <div class="painel-usuario">
-        <div class="avatar-user" id="avatar-user"><i class="ponto-status"></i></div>
-        <div class="info-user">
-          <strong id="nome-user">Você</strong>
-          <small id="status-user">Conectado</small>
+        <nav class="abas-amigos" id="abas-amigos" aria-label="Seções de amigos">
+          <button class="aba-amigos" data-aba="linha" type="button">Em linha<span class="cont-aba" id="cont-aba-linha" hidden></span></button>
+          <button class="aba-amigos ativa" data-aba="todos" type="button">Todos</button>
+          <button class="aba-amigos" data-aba="pedidos" type="button">Pendentes<span class="cont-aba" id="cont-aba-pedidos" hidden></span></button>
+          <button class="aba-amigos destaque" data-aba="adicionar" type="button">Adicionar amigo</button>
+        </nav>
+
+        <div class="corpo-amigos" id="corpo-amigos">
+          <p class="rot-aba-amigos" id="rot-aba-amigos">Todos os amigos</p>
+
+          <ul id="lista-amigos" class="lista-amigos">
+            <li class="amigo-vazio">Nenhum amigo ainda.</li>
+          </ul>
+
+          <ul id="lista-pedidos" class="lista-pedidos" hidden>
+            <li class="pedido-vazio">Nenhum pedido de amizade.</li>
+          </ul>
+
+          <!-- a busca passa a morar DENTRO do painel, não num modal por
+               cima: dá para achar alguém enquanto vê a lista, como no
+               Discord. Os ids continuam os mesmos, então toda a lógica de
+               busca que já funcionava continua valendo sem mexer nela. -->
+          <div id="painel-adicionar" class="painel-adicionar" hidden>
+            <h4>Adicionar amigo</h4>
+            <p class="nota-adicionar">
+              Procure pelo nome ou e-mail. Só contas cadastradas no Nexo
+              aparecem — e ninguém vê seu e-mail.
+            </p>
+            <div class="campo-adicionar">
+              <input id="in-busca-amigo" type="text" maxlength="60"
+                     placeholder="Nome ou e-mail do amigo" autocomplete="off" spellcheck="false" />
+              <button id="btn-buscar-amigo" type="button" title="Buscar" aria-label="Buscar">
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5Zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14Z"/></svg>
+              </button>
+            </div>
+            <ul id="lista-resultado-amigo" class="lista-escolher"></ul>
+          </div>
         </div>
-        <div class="acoes-user">
-          <button id="btn-micro" class="btn-ico-user" type="button" title="Ligar/desligar microfone">
-            <span class="ic" data-on="mic" data-off="mic-off"></span>
+      </div><!-- /painel-amigos -->
+
+      <!-- barra de conexão: UMA linha, como a "Voz conectado" do Discord.
+           Antes havia um parágrafo cinza embaixo do vídeo despejando o nome
+           do aparelho e o endereço do servidor em texto corrido — ficava
+           espremido, cortado, e não servia para nada. Aqui sobra só o que
+           ajuda a saber se está tudo no ar; o nome do microfone e do fone
+           vive na setinha de cada botão, onde a pessoa troca de aparelho. -->
+      <div class="barra-voz" id="barra-voz">
+        <span class="bv-icone" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M12 3a9 9 0 0 0-9 9v5a3 3 0 0 0 3 3h1a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1H5v-.2A7 7 0 0 1 19 12v.2h-2a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1a3 3 0 0 0 3-3v-5a9 9 0 0 0-9-9Z"/></svg>
+        </span>
+        <span id="info-conexao" class="bv-texto">Voz conectado</span>
+      </div>
+
+      <!-- painel do usuário (rodapé) — mesmo desenho do Discord:
+           identidade em cima, mídia embaixo, e cada botão de áudio com a
+           setinha que abre a lista de aparelhos ali mesmo, sem precisar sair
+           da sala para trocar o microfone ou o fone. -->
+      <div class="painel-usuario">
+        <div class="linha-identidade">
+          <div class="avatar-user" id="avatar-user"><i class="ponto-status"></i></div>
+          <div class="info-user">
+            <strong id="nome-user">Você</strong>
+            <small id="status-user">Conectado</small>
+          </div>
+          <button id="btn-config-user" class="btn-ico-user discreto" type="button" title="Configurações">
+            <span class="ic" data-on="engrenagem" data-off="engrenagem"></span>
           </button>
+        </div>
+
+        <div class="linha-midia">
+          <div class="grupo-disp" data-disp="micro">
+            <button id="btn-micro" class="btn-ico-user" type="button" title="Ligar/desligar microfone">
+              <span class="ic" data-on="mic" data-off="mic-off"></span>
+            </button>
+            <button id="btn-menu-micro" class="btn-seta" type="button"
+                    title="Escolher o microfone" aria-label="Escolher o microfone" aria-haspopup="true">
+              <svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path fill="currentColor" d="m7 10 5 5 5-5z"/></svg>
+            </button>
+            <div class="menu-disp" id="menu-micro" role="menu" hidden></div>
+          </div>
+
+          <div class="grupo-disp" data-disp="fone">
+            <button id="btn-fone" class="btn-ico-user" type="button" title="Ajustar o volume da sala">
+              <span class="ic" data-on="fone" data-off="fone"></span>
+            </button>
+            <button id="btn-menu-fone" class="btn-seta" type="button"
+                    title="Escolher o fone / saída de áudio" aria-label="Escolher o fone" aria-haspopup="true">
+              <svg viewBox="0 0 24 24" width="11" height="11" aria-hidden="true"><path fill="currentColor" d="m7 10 5 5 5-5z"/></svg>
+            </button>
+            <div class="menu-disp" id="menu-fone" role="menu" hidden></div>
+          </div>
+
           <button id="btn-camera" class="btn-ico-user" type="button" title="Ligar/desligar câmera">
             <span class="ic" data-on="cam" data-off="cam-off"></span>
           </button>
           <button id="btn-tela" class="btn-ico-user" type="button" title="Compartilhar tela">
             <span class="ic" data-on="screen" data-off="screen"></span>
           </button>
-          <button id="btn-sair-som" class="btn-ico-user perigo" type="button" title="Sair da sala">
-            <span class="ic" data-on="sair" data-off="sair"></span>
-          </button>
           <button id="btn-sair-conta-painel" class="btn-ico-user" type="button" title="Sair da conta (volta para a tela de entrada)">
             <span class="ic" data-on="sair-conta" data-off="sair-conta"></span>
+          </button>
+          <button id="btn-sair-som" class="btn-ico-user perigo" type="button" title="Sair da sala">
+            <span class="ic" data-on="sair" data-off="sair"></span>
           </button>
         </div>
       </div>
@@ -391,6 +483,12 @@
 
       <div class="area-video" id="area-video">
         <div id="grade-videos" class="grade-videos"></div>
+
+        <!-- Quem está na chamada, em cima do palco — a mesma leitura do
+             Discord: avatar redondo grande, e quando a pessoa fala acende um
+             anel verde neon em volta. Funciona também com a tela compartilhada
+             por cima: aí a fila encolhe para o topo e o vídeo ocupa o miolo. -->
+        <div id="fila-voz" class="fila-voz"></div>
 
         <div id="placeholder" class="placeholder">
           <span class="icone-placeholder">
@@ -421,10 +519,6 @@
         </div>
       </div>
 
-      <div class="barra-info">
-        <span id="info-conexao">—</span>
-        <span id="info-dispositivos">—</span>
-      </div>
     </main>
 
     <!-- ----------------------------- chat ----------------------------- -->
@@ -567,33 +661,6 @@
       </div>
       <div class="overlay-abas"><span class="aba ativa">Telas e janelas</span></div>
       <div id="grade-fontes" class="grade-fontes"></div>
-    </div>
-  </div>
-
-  <!-- ==================== ADICIONAR AMIGO ==================== -->
-  <div id="modal-novo-amigo" class="overlay" hidden>
-    <div class="janela-modal pequeno">
-      <div class="modal-cabecalho">
-        <strong>Adicionar amigo</strong>
-        <button class="icone-btn fecha-modal" title="Fechar">
-          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
-        </button>
-      </div>
-
-      <div class="modal-corpo">
-        <p class="nota-pessoa">
-          Digite o nome ou e-mail de quem você quer adicionar. A busca acontece
-          no servidor — só contas cadastradas aparecem.
-        </p>
-        <div class="campo">
-          <input id="in-busca-amigo" type="text" maxlength="60"
-                 placeholder="Nome ou e-mail do amigo" autocomplete="off" spellcheck="false" />
-        </div>
-        <div class="acoes-amigo-busca">
-          <button id="btn-buscar-amigo" class="btn gradiente" type="button">Buscar</button>
-        </div>
-        <ul id="lista-resultado-amigo" class="lista-escolher"></ul>
-      </div>
     </div>
   </div>
 
