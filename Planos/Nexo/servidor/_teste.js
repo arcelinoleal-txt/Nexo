@@ -94,6 +94,25 @@ function novoCliente() {
   });
 }
 
+/* GET bruto com timeout: preciso ver o status REAL de uma rota, inclusive
+   quando ela devolve texto e nao JSON (e sem travar o teste se o servidor
+   parar de responder). */
+function httpTexto(caminho, timeoutMs) {
+  return new Promise((resolve) => {
+    const req = http.request(BASE + caminho, { method: 'GET' }, (res) => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => resolve({ status: res.statusCode, corpo: d.slice(0, 80) }));
+    });
+    req.on('error', () => resolve({ status: 0, corpo: 'erro de conexao' }));
+    req.setTimeout(timeoutMs || 4000, () => {
+      req.destroy();
+      resolve({ status: -1, corpo: 'sem resposta (timeout)' });
+    });
+    req.end();
+  });
+}
+
 function httpJson(caminho, corpo, token) {
   return new Promise((resolve) => {
     const dados = corpo ? JSON.stringify(corpo) : null;
@@ -508,6 +527,28 @@ function subirArquivo(nome, corpo, tipo) {
     'endereco do convite parece um ip valido: ' + convite.corpo.ip);
   conf(Number(convite.corpo.porta) > 0 && Number(convite.corpo.porta) <= 65535,
     'convite traz a porta certa: ' + convite.corpo.porta);
+
+  /* ---------------------------------------------------------------- */
+  /* 10c. /arquivos/ apontando pra DIRETORIO nao pode derrubar o server */
+  /* ---------------------------------------------------------------- */
+
+  /* Regressão: antes, pedir a pasta fazia createReadStream sobre um
+     diretório, o stream soltava EISDIR sem tratamento e o processo MORRIA.
+     Um único acesso a /arquivos/ derrubava o Nexo inteiro. */
+  const p1 = await httpTexto('/arquivos/');
+  conf(p1.status === 404, '/arquivos/ (pasta vazia) devolve 404, nao derruba: ' + p1.status);
+  const p2 = await httpTexto('/arquivos/.');
+  conf(p2.status === 404, '/arquivos/. devolve 404: ' + p2.status);
+  const p3 = await httpTexto('/arquivos/subpasta/');
+  conf(p3.status === 404, '/arquivos/subpasta/ devolve 404: ' + p3.status);
+
+  /* o servidor precisa ter sobrevivido a todos os tres */
+  const vivo = await httpTexto('/health');
+  conf(vivo.status === 200, 'servidor continua de pe apos pedir pastas: ' + vivo.status);
+
+  /* e o arquivo enviado la em cima ainda precisa ser servido normalmente */
+  const deVolta = await httpTexto(up.corpo.url);
+  conf(deVolta.status === 200, 'arquivo enviado ainda e servido: ' + up.corpo.url + ' -> ' + deVolta.status);
 
   /* ---------------------------------------------------------------- */
   /* 11. sala vazia some                                               */

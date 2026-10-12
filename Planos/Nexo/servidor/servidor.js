@@ -407,7 +407,12 @@ const servidor = http.createServer(async (req, res) => {
     if (url.startsWith('/arquivos/')) {
       const nome = path.basename(url.slice('/arquivos/'.length));
       const alvo = path.join(DIR_ARQUIVOS, nome);
-      if (!alvo.startsWith(DIR_ARQUIVOS) || !fs.existsSync(alvo)) {
+      /* Precisa ser um ARQUIVO de verdade: pedir a pasta (ou um nome vazio) não
+         pode cair no createReadStream, que jogaria EISDIR sem tratamento e
+         derrubaria o processo inteiro. */
+      let ehArquivo = false;
+      if (nome) { try { ehArquivo = fs.statSync(alvo).isFile(); } catch { ehArquivo = false; } }
+      if (!ehArquivo || !alvo.startsWith(DIR_ARQUIVOS)) {
         res.writeHead(404); res.end('Nao encontrado'); return;
       }
       const ext = path.extname(nome).toLowerCase();
@@ -416,7 +421,14 @@ const servidor = http.createServer(async (req, res) => {
         'Content-Disposition': 'inline; filename="' + encodeURIComponent(nome) + '"',
         'Cache-Control': 'public, max-age=86400'
       });
-      fs.createReadStream(alvo).pipe(res);
+      const leitor = fs.createReadStream(alvo);
+      /* Se o arquivo sumir no meio da leitura, responde 500 em vez de matar o
+         processo com um 'error' não tratado no stream. */
+      leitor.on('error', () => {
+        console.warn('[nexo] falha ao ler arquivo:', nome);
+        try { res.writeHead(500); res.end(); } catch { /* resposta ja iniciada */ }
+      });
+      leitor.pipe(res);
       return;
     }
 
