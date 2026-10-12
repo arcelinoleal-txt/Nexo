@@ -6,6 +6,7 @@
   <title>Nexo</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="estilo.css" />
+  <link rel="stylesheet" href="estilo-premium.css" />
 </head>
 <body>
 
@@ -840,5 +841,31 @@
   <script src="loja.js"></script>
   <script src="configuracoes.js"></script>
   <script src="profile.js"></script>
+  <script src="premium.js"></script>
+
+  <!-- ===== LAYOUT PREMIUM (REA + Discord + models) ===== -->
+  <section id="app-montado" hidden>
+    <aside class="sidebar-conversa">
+      <div class="sidebar-header"><span>Salas & Conversas</span><button onclick="abrirNovaSala()">+</button></div>
+      <div class="sidebar-busca"><input placeholder="Buscar sala" oninput="filtrarAbas(this.value)"></div>
+      <nav class="lista-abas" id="lista-abas">
+        <a class="aba-item ativa" href="#" onclick="selecionarAba(this,'sala1')"><div class="aba-avatar">✦</div><div class="aba-info"><div class="aba-nome">Sala Principais</div><div class="aba-sub">3 pessoas online</div></div><span class="aba-badge">2</span></a>
+        <a class="aba-item" href="#" onclick="selecionarAba(this,'sala2')"><div class="aba-avatar" style="background:linear-gradient(135deg,#facc15,#f97316)">🔥</div><div class="aba-info"><div class="aba-nome">Anime Talk</div><div class="aba-sub">5 pessoas</div></div></a>
+        <a class="aba-item" href="#" onclick="selecionarAba(this,'privado')"><div class="aba-avatar" style="background:linear-gradient(135deg,#ec4899,#8b5cf6)">💬</div><div class="aba-info"><div class="aba-nome">Conversa Privada</div><div class="aba-sub">Você + 2</div></div><span class="aba-badge">1</span></a>
+      </nav>
+    </aside>
+    <main class="chat-principal">
+      <header class="chat-topo"><h2 class="chat-titulo">Sala Principais <span class="sala-status"><span class="ponto"></span>Online</span></h2></header>
+      <div class="chat-corpo" id="chat-corpo">
+        <div class="msg"><div class="msg-avatar">G</div><div class="msg-body"><div class="msg-cabe"><span class="msg-autor">Gustavo</span><span class="msg-hora">agora</span></div><div class="msg-texto">E ai galera, entrou na sala! REA analisou o Discord e agora o Nexo tá bonito kkk 😎</div></div></div>
+        <div class="msg"><div class="msg-avatar" style="background:linear-gradient(135deg,#facc15,#f97316)">F</div><div class="msg-body"><div class="msg-cabe"><span class="msg-autor">Fernanda</span><span class="msg-hora">2 min atrás</span></div><div class="msg-texto">A aba de Configurações ficou perfeita! Parece Discord mesmo.</div></div></div>
+      </div>
+      <form class="chat-input-area" onsubmit="enviarMsg(event)">
+        <input id="campo-mensagem" type="text" maxlength="500" placeholder="Enviar mensagem..." autocomplete="off" />
+        <button type="submit">Enviar</button>
+      </form>
+    </main>
+  </section>
+
 </body>
 </html>
