@@ -316,6 +316,18 @@
         vale um servidor SFU (mediasoup/janus).
       </div>
 
+      <!-- conversas privadas abertas (estilo DM do Discord) -->
+      <section class="cat-canais cat-dms">
+        <div class="cab-dms">
+          <span class="rot-cat-dms">Conversas</span>
+          <button class="btn-nova-dm" id="btn-nova-dm" type="button"
+                  title="Abrir uma conversa privada com alguém da sala">+</button>
+        </div>
+        <ul id="lista-dms" class="lista-dms">
+          <li class="dm-vazia">Nenhuma conversa privada ainda.</li>
+        </ul>
+      </section>
+
       <!-- painel do usuário (rodapé) -->
       <div class="painel-usuario">
         <div class="avatar-user" id="avatar-user"><i class="ponto-status"></i></div>
@@ -405,6 +417,23 @@
         <div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>
       </div>
 
+      <!-- canal #arquivos: navegador do que já foi compartilhado na sala -->
+      <div id="painel-arquivos" class="painel-arquivos" hidden>
+        <div class="arq-cabecalho">
+          <div class="arq-filtros" id="arq-filtros">
+            <button class="arq-filtro ativo" data-tipo="tudo" type="button">Tudo</button>
+            <button class="arq-filtro" data-tipo="imagem" type="button">Imagens</button>
+            <button class="arq-filtro" data-tipo="video" type="button">Vídeos</button>
+            <button class="arq-filtro" data-tipo="audio" type="button">Áudios</button>
+            <button class="arq-filtro" data-tipo="arquivo" type="button">Docs</button>
+          </div>
+          <button class="pill pill-btn arq-enviar" id="btn-enviar-arq" type="button"
+                  title="Enviar um arquivo para a sala">Enviar</button>
+        </div>
+        <div class="arq-resumo" id="arq-resumo"></div>
+        <div class="arq-grade" id="arq-grade"></div>
+      </div>
+
       <div id="zona-soltar" class="zona-soltar" hidden>
         <div class="soltar-anel">
           <svg viewBox="0 0 24 24" width="34" height="34"><path fill="currentColor" d="M19 13v6H5v-6H3v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6ZM11 6.83 8.41 9.41 7 8l5-5 5 5-1.41 1.41L13 6.83V16h-2Z"/></svg>
@@ -476,6 +505,26 @@
           Quem está na sala, fica na sala. O botão acima abre um papo só seu com
           essa pessoa — ninguém mais lê.
         </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== NOVA CONVERSA PRIVADA ==================== -->
+  <div id="modal-nova-dm" class="overlay" hidden>
+    <div class="janela-modal pequeno">
+      <div class="modal-cabecalho">
+        <strong>Nova conversa privada</strong>
+        <button class="icone-btn fecha-modal" title="Fechar">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-corpo">
+        <p class="nota-pessoa">
+          Escolha alguém que esteja na sala. A conversa fica só entre vocês dois —
+          ninguém mais lê.
+        </p>
+        <ul id="lista-escolher-pessoa" class="lista-escolher"></ul>
       </div>
     </div>
   </div>

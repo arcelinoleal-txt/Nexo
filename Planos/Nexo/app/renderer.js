@@ -69,7 +69,9 @@ const estado = {
   nomes: new Map(),     // id -> nome (guardo mesmo se a pessoa sair)
   conversa: '',         // '' = chat da sala; senao id da outra pessoa
   anexo: null,          // arquivo escolhido, ainda nao enviado
-  entrando: false       // esperando o servidor responder "entrou-sala"
+  entrando: false,      // esperando o servidor responder "entrou-sala"
+  canal: 'geral',       // canal de texto ativo: 'geral' ou 'arquivos'
+  filtroArquivos: 'tudo'
 };
 
 /* ------------------------------------------------------------------ */
@@ -1365,6 +1367,9 @@ function desenharParticipantes() {
   });
 
   desenharPainelUsuario(ordenados);
+
+  // nomes e avatares podem ter mudado — repinta as conversas privadas
+  desenharListaDms();
 }
 
 /* Espelho de "eu" no rodapé do painel esquerdo (igual ao painel do usuário
@@ -1606,7 +1611,10 @@ function origemHttp() {
 function absolvaUrl(u) {
   const s = String(u || '');
   if (!s) return '';
-  if (/^https?:\/\//i.test(s)) return s;
+  // endereço pronto (http, data: de prévia local, blob: de mídia capturada)
+  if (/^(https?:|data:|blob:)/i.test(s)) return s;
+  // caminho do servidor (/arquivos/...): fica relativo de propósito, para
+  // funcionar igual na sua rede e do outro lado da internet
   if (s.startsWith('/')) return origemHttp() + s;
   return origemHttp() + '/' + s;
 }
@@ -1874,6 +1882,9 @@ function anexarMensagem(item, silencioso) {
   estado.historico.push(item);
   if (estado.historico.length > 400) estado.historico.shift();
 
+  // galeria aberta: um anexo novo aparece lá na hora, sem trocar de canal
+  if (estado.canal === 'arquivos' && item.anexo) desenharArquivos();
+
   // estou olhando uma conversa individual: só guarda, não atira na tela errada
   if (estado.conversa) return;
 
@@ -1915,6 +1926,9 @@ function anexarMensagemPrivada(item) {
   if (estado.conversa !== outro) {
     estado.naoLidas.set(outro, (estado.naoLidas.get(outro) || 0) + 1);
   }
+  // galeria aberta também recebe anexos vindos de conversas privadas
+  if (estado.canal === 'arquivos' && item.anexo) desenharArquivos();
+
   montarAbasConversa();
   if (estado.conversa === outro) desenharChat();
 }
@@ -1939,9 +1953,14 @@ function montarAbasConversa() {
   box.querySelectorAll('.aba-conversa').forEach(b => {
     b.addEventListener('click', () => abrirConversa(b.dataset.com || ''));
   });
+
+  // o painel esquerdo espelha as mesmas conversas, com badge de não-lidas
+  desenharListaDms();
 }
 
 function abrirConversa(id) {
+  // conversa acontece no chat; se a galeria estiver aberta, volta pra ele
+  if (estado.canal === 'arquivos') trocarCanal('geral');
   estado.conversa = id || '';
   if (id) {
     estado.naoLidas.delete(id);
@@ -1984,6 +2003,241 @@ function desenharChat() {
   }
 
   lista.scrollTop = lista.scrollHeight;
+}
+
+/* ------------------------------------------------------------------ */
+/* Canal #arquivos                                                     */
+/* ------------------------------------------------------------------ */
+/* Não existe um segundo fluxo de mensagens. O canal mostra, organizado
+   em galeria, tudo que já foi anexado no chat da sala e nas conversas
+   privadas — assim ele é de verdade sem pedir nada novo ao servidor que
+   já está publicado. Quem entra na sala depois recebe o histórico e a
+   galeria enche sozinha.                                              */
+
+function classificarAnexo(a) {
+  if (!a) return 'arquivo';
+  if (ehImagem(a.tipo, a.nome)) return 'imagem';
+  if (ehVideo(a.tipo, a.nome)) return 'video';
+  if (ehAudio(a.tipo, a.nome)) return 'audio';
+  return 'arquivo';
+}
+
+function coletarArquivos() {
+  const saida = [];
+  const visto = new Set();
+
+  const empurrar = (item) => {
+    const a = item && item.anexo;
+    if (!a || !a.url) return;
+    if (visto.has(a.url)) return;      // anexo repetido aparece uma vez só
+    visto.add(a.url);
+    saida.push({
+      nome: a.nome || 'arquivo',
+      url: a.url,
+      tipo: a.tipo || '',
+      tamanho: a.tamanho || 0,
+      de: item.de || '',
+      hora: item.hora || 0,
+      classe: classificarAnexo(a)
+    });
+  };
+
+  estado.historico.forEach(empurrar);
+  for (const caixa of estado.privados.values()) caixa.forEach(empurrar);
+
+  return saida.sort((a, b) => b.hora - a.hora);
+}
+
+function quemEnviou(id) {
+  if (!id) return 'alguém';
+  if (id === estado.meuId) return 'você';
+  const p = acharPessoa(id);
+  return (p && p.nome) || estado.nomes.get(id) || 'alguém';
+}
+
+function desenharArquivos() {
+  const grade = $('#arq-grade');
+  if (!grade) return;
+
+  const filtro = estado.filtroArquivos || 'tudo';
+  const todos = coletarArquivos();
+  const lista = filtro === 'tudo' ? todos : todos.filter(a => a.classe === filtro);
+
+  document.querySelectorAll('.arq-filtro').forEach(b => {
+    b.classList.toggle('ativo', b.dataset.tipo === filtro);
+  });
+
+  const resumo = $('#arq-resumo');
+  if (resumo) {
+    if (todos.length) {
+      const bytes = todos.reduce((s, a) => s + (a.tamanho || 0), 0);
+      resumo.innerHTML = `<b>${todos.length}</b> ${todos.length === 1 ? 'item' : 'itens'}` +
+        ` · ${escapeHtml(tamanhoLegivel(bytes))} no total`;
+    } else {
+      resumo.textContent = '';
+    }
+  }
+
+  if (!lista.length) {
+    grade.innerHTML = todos.length
+      ? `<div class="arq-vazio">Nada em <b>${escapeHtml(filtro)}</b> por enquanto.</div>`
+      : `<div class="arq-vazio">Nenhum arquivo compartilhado ainda.<br>` +
+        `Toque no <b>clipe</b> do chat — ou arraste um arquivo pra dentro dele —<br>` +
+        `que tudo aparece aqui, organizado por tipo.</div>`;
+    return;
+  }
+
+  grade.innerHTML = lista.map(a => {
+    const url = escapeHtml(absolvaUrl(a.url));
+    const nome = escapeHtml(a.nome);
+    const meta = [quemEnviou(a.de), a.hora ? horaDe(a.hora) : '']
+      .filter(Boolean).join(' · ');
+
+    let mini;
+    if (a.classe === 'imagem') {
+      mini = `<img src="${url}" alt="${nome}" loading="lazy" />`;
+    } else if (a.classe === 'video') {
+      mini = `<video src="${url}" preload="metadata" muted playsinline></video>`;
+    } else if (a.classe === 'audio') {
+      mini = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6Z"/></svg>`;
+    } else {
+      mini = `<span class="arq-sigla">${escapeHtml(siglaArquivo(a.nome))}</span>`;
+    }
+
+    return `<a class="arq-card" href="${url}" target="_blank" rel="noopener noreferrer" title="${nome}">
+      <span class="arq-miniatura ${a.classe}">${mini}</span>
+      <span class="arq-corpo">
+        <span class="arq-nome">${nome}</span>
+        <span class="arq-meta">${escapeHtml(meta)} · ${escapeHtml(tamanhoLegivel(a.tamanho))}</span>
+      </span>
+    </a>`;
+  }).join('');
+}
+
+/* ------------------------------------------------------------------ */
+/* Conversas privadas no painel esquerdo                               */
+/* ------------------------------------------------------------------ */
+/* As abas no topo do chat continuam existindo; isto aqui é o espelho
+   delas no painel, que é onde o Discord coloca. A vantagem é o badge de
+   não-lidas ficar visível sem precisar estar olhando o chat.          */
+
+function desenharListaDms() {
+  const box = $('#lista-dms');
+  if (!box) return;
+
+  const ids = Array.from(estado.privados.keys());
+  const totalNaoLidas = ids.reduce((s, id) => s + (estado.naoLidas.get(id) || 0), 0);
+
+  // o cabeçalho ganha o contador quando há mensagens novas
+  const rot = document.querySelector('.rot-cat-dms');
+  if (rot) rot.textContent = totalNaoLidas
+    ? `Conversas (${totalNaoLidas > 9 ? '9+' : totalNaoLidas})`
+    : 'Conversas';
+
+  const partes = [`<li><button class="dm-item${estado.conversa ? '' : ' ativa'}" data-com="" type="button">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/></svg>
+      <span class="dm-nome">Sala</span>
+    </button></li>`];
+
+  for (const id of ids) {
+    const p = acharPessoa(id);
+    const nome = (p && p.nome) || estado.nomes.get(id) || 'Conversa';
+    const n = estado.naoLidas.get(id) || 0;
+    const dado = { id, nome, avatar: (p && p.avatar) || '', cor: (p && p.cor) || 0 };
+
+    partes.push(`<li><button class="dm-item${estado.conversa === id ? ' ativa' : ''}" data-com="${escapeHtml(id)}" type="button">
+      ${avatarHtml(dado, 'avatar')}
+      <span class="dm-nome">${escapeHtml(nome)}</span>
+      ${n ? `<i class="ponto-nao-lido">${n > 9 ? '9+' : n}</i>` : ''}
+    </button></li>`);
+  }
+
+  box.innerHTML = partes.join('');
+
+  box.querySelectorAll('.dm-item').forEach(b => {
+    b.addEventListener('click', () => {
+      abrirConversa(b.dataset.com || '');
+      if (estado.canal === 'arquivos') trocarCanal('geral');
+    });
+  });
+}
+
+/* Escolher com quem conversar. Mostra só quem está na sala agora, que é
+   a única gente com quem dá para conversar — o servidor endereça o
+   privado para quem está conectado na mesma sala.                     */
+function abrirSeletorPessoa() {
+  const box = $('#lista-escolher-pessoa');
+  if (!box) return;
+
+  const candidatos = estado.participantes.filter(p => p.id !== estado.meuId);
+
+  if (!candidatos.length) {
+    box.innerHTML = `<li class="escolha-vazia">Você é a única pessoa na sala por enquanto.<br>` +
+      `Compartilhe o código da sala para alguém entrar — aí dá para conversar.</li>`;
+  } else {
+    box.innerHTML = candidatos.map(p => {
+      const dado = { id: p.id, nome: p.nome, avatar: p.avatar || '', cor: p.cor || 0 };
+      return `<li><button class="escolha-pessoa" data-com="${escapeHtml(p.id)}" type="button">
+        ${avatarHtml(dado, 'avatar')}
+        <span class="escolha-nome">${escapeHtml(p.nome || 'Alguém')}</span>
+        <span class="escolha-dica">conversar</span>
+      </button></li>`;
+    }).join('');
+
+    box.querySelectorAll('.escolha-pessoa').forEach(b => {
+      b.addEventListener('click', () => {
+        fecharModal('#modal-nova-dm');
+        abrirConversa(b.dataset.com);
+        if (estado.canal === 'arquivos') trocarCanal('geral');
+      });
+    });
+  }
+
+  abrirModal('#modal-nova-dm');
+}
+
+/* ------------------------------------------------------------------ */
+/* Troca de canal                                                      */
+/* ------------------------------------------------------------------ */
+/* '#geral' é o chat; '#arquivos' é a galeria. O campo de digitação
+   some na galeria para não dar a entender que existe um segundo chat. */
+function trocarCanal(nome) {
+  const alvo = (nome === 'arquivos') ? 'arquivos' : 'geral';
+  estado.canal = alvo;
+
+  document.querySelectorAll('.canal[data-canal]').forEach(c => {
+    c.classList.toggle('ativo', c.dataset.canal === alvo);
+  });
+
+  const chat = $('#lista-chat');
+  const galeria = $('#painel-arquivos');
+  const form = $('#form-chat');
+  const soltar = $('#zona-soltar');
+
+  if (alvo === 'arquivos') {
+    if (chat) chat.hidden = true;
+    if (galeria) galeria.hidden = false;
+    if (form) form.hidden = true;
+    if (soltar) soltar.hidden = true;
+    desenharArquivos();
+  } else {
+    if (chat) chat.hidden = false;
+    if (galeria) galeria.hidden = true;
+    if (form) form.hidden = false;
+    desenharChat();
+  }
+
+  // cabeçalho do chat acompanha o canal
+  const ic = document.querySelector('.ic-canal-chat');
+  if (ic) ic.textContent = '#';
+
+  const campo = $('#in-chat');
+  if (campo && alvo === 'geral') {
+    campo.placeholder = estado.conversa ? 'Mensagem privada' : 'Mensagem na Sala';
+  }
+
+  const cab = document.querySelector('.chat-cabecalho');
+  if (cab) cab.classList.toggle('em-arquivos', alvo === 'arquivos');
 }
 
 /* ------------------------------------------------------------------ */
@@ -2804,24 +3058,32 @@ function inicializar() {
     });
   });
 
-  // Marcar o canal ativo na lista. Os canais de texto são visuais por
-  // enquanto: o app tem uma única conversa por sala, então trocar de canal
-  // só move o destaque e avisa o usuário.
+  // '#geral' abre o chat; '#arquivos' abre a galeria do que já foi
+  // compartilhado. Os dois são canais de verdade agora.
   document.querySelectorAll('.canal[data-canal]').forEach(c => {
-    c.addEventListener('click', () => {
-      document.querySelectorAll('.canal[data-canal]').forEach(o => o.classList.remove('ativo'));
-      c.classList.add('ativo');
-      const rot = c.querySelector('.rot-canal');
-      const nome = rot ? rot.textContent.trim() : 'canal';
-      const inChat = $('#in-chat');
-      if (inChat) inChat.placeholder = 'Mensagem em ' + nome;
-      const ic = document.querySelector('.ic-canal-chat');
-      if (ic) ic.textContent = '#';
-      if (c.dataset.canal !== 'geral') {
-        aviso('O canal "' + nome + '" ainda está em construção — por ora todo o chat fica em geral.', 'ok');
-      }
+    c.addEventListener('click', () => trocarCanal(c.dataset.canal));
+  });
+
+  /* filtros e envio do canal de arquivos */
+  document.querySelectorAll('.arq-filtro').forEach(b => {
+    b.addEventListener('click', () => {
+      estado.filtroArquivos = b.dataset.tipo || 'tudo';
+      desenharArquivos();
     });
   });
+
+  const btnEnviarArq = $('#btn-enviar-arq');
+  if (btnEnviarArq) btnEnviarArq.addEventListener('click', () => {
+    // Volta para o chat e abre o seletor de arquivo: o envio continua
+    // acontecendo no chat da sala, que é o único lugar com destino.
+    trocarCanal('geral');
+    const campo = $('#in-anexo');
+    if (campo) setTimeout(() => campo.click(), 0);
+  });
+
+  /* nova conversa privada */
+  const btnNovaDm = $('#btn-nova-dm');
+  if (btnNovaDm) btnNovaDm.addEventListener('click', abrirSeletorPessoa);
 
   $('#ctrl-cheia').addEventListener('click', () => {
     const alvo = $('#area-video');
