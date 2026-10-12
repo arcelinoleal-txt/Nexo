@@ -8,6 +8,8 @@ function filtrarAbas(q){
   document.querySelectorAll('.aba-item').forEach(a=>{ a.style.display = a.innerText.toLowerCase().includes(q.toLowerCase())?'':'none'; });
 }
 function abrirNovaSala(){ alert('Nova sala — crie pelo código ou pelo servidor em /api/convite'); }
+function transmitirTela(){ alert('Iniciando transmissão de tela — conectado ao servidor via WebSocket'); }
+function transmitirCam(){ alert('Iniciando transmissão da câmera'); }
 function enviarMsg(ev){
   ev.preventDefault();
   const v = document.getElementById('campo-mensagem').value.trim();
