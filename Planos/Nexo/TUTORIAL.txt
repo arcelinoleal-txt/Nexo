@@ -1,0 +1,215 @@
+=================================================================
+   NEXO  —  como usar
+   Tutorial rápido para mandar para quem vai entrar na sua sala
+=================================================================
+
+Se alguém te mandou este arquivo, é porque você vai usar o Nexo.
+Lê com calma, leva uns 5 minutos, e depois é só abrir o app.
+
+----------------------------------------------------------------
+  1. INSTALAR (SÓ NA PRIMEIRA VEZ)
+----------------------------------------------------------------
+Dê dois cliques em  Nexo-Setup-1.0.0.exe.
+
+O Windows pode mostrar "Seu PC está protegido" ou pedir
+confirmação. É normal: o programa é novo e ainda não é
+conhecido da Microsoft. Clique em  MAIS INFORMAÇÕES  e
+depois em  EXECUTAR ASSIM MESMO.
+
+Na tela de instalação, clique em  AVANÇAR  até o fim e
+DEPOIS EM  CONCLUIR. Pronto — vai aparecer um ícone do
+Nexo na área de trabalho.
+
+Na instalação o Windows vai perguntar se pode liberar o
+Nexo no Firewall.  CLIQUE EM PERMITIR (ou SIM).
+Sem isso, as outras pessoas não conseguem entrar na sua sala.
+
+----------------------------------------------------------------
+  2. O QUE É O NEXO
+----------------------------------------------------------------
+Um programa para você ver a tela do seu amigo, falar com todo
+mundo ao mesmo tempo e conversar no chat — tudo junto, de graça.
+
+Não tem plano pago. Não tem anúncio. Não tem pegadinha.
+
+----------------------------------------------------------------
+  3. ENTRAR NUMA SALA
+----------------------------------------------------------------
+Tem dois jeitos:
+
+  CRIAR SALA ..... você abre a sala e recebe um código de
+                    6 letras. Manda esse código para a galera
+                    e todo mundo entra na mesma sala.
+
+  ENTRAR COM CÓDIGO .. se alguém já te mandou o código,
+                    cola ele no quadradinho e clica em
+                    Entrar. Pronto, você está dentro.
+
+O código da sala aparece sempre no topo da tela. É só clicar
+nele que o CONVITE é copiado para você colar na conversa.
+
+O QUE É ESSE CONVITE?
+É o código mais o endereço do seu computador, junto, parecido
+com isto:
+
+    KJ7P2M@192.168.0.15:3000
+
+Quem recebe cola esse texto inteiro no quadradinho e já cai
+na sala certa — não precisa abrir Configuração nem digitar
+IP nenhum. É só colar e dar Enter.
+
+IMPORTANTE: as duas pessoas precisam estar na MESMA internet
+(mesma casa, mesmo Wi-Fi). Se cada um estiver na sua casa,
+não dá — o Nexo roda na rede local de vocês dois.
+
+----------------------------------------------------------------
+  4. SE ALGUÉM NÃO CONSEGUE ENTRAR
+----------------------------------------------------------------
+Na ordem, confira isto:
+
+  a) As duas pessoas estão na mesma rede? Mesmo Wi-Fi?
+     Se não estiverem, não vai entrar mesmo.
+
+  b) Quem criou a sala abriu o Firewall? Na primeira vez o
+     Windows pergunta e ele precisa clicar em PERMITIR.
+     Se perdeu o aviso: Painel de Controle > Firewall do
+     Windows > Permitir app passar > marcar o Nexo.
+
+  c) O convite está inteiro? Tem que ter o @ e o endereço
+     depois dele. Se só tiver as 6 letras, o app acha que
+     está no seu próprio computador.
+
+  d) Tente de novo. Às vezes o Wi-Fi demora um segundo para
+     os dois se enxergarem.
+
+----------------------------------------------------------------
+  5. SEU NOME E SEU AVATAR
+----------------------------------------------------------------
+No ícone de perfil, no canto superior direito, você escolhe:
+
+  - o seu nome (o que os outros vão ver)
+  - um emoji para o avatar
+  - uma cor
+
+Dá para mudar quando quiser. A mudança vale na hora para
+todo mundo que está na sala.
+
+----------------------------------------------------------------
+  6. MICROFONE E CÂMERA
+----------------------------------------------------------------
+Na barra de baixo tem os botões MICROFONE e CÂMERA.
+Clicou, ligou. Clicou de novo, desligou.
+
+Se a sua voz não estiver saindo, abra CONFIGURAÇÕES (ícone
+de engrenagem) e veja em ÁUDIO:
+
+  - Microfone ... escolha qual é o seu
+  - Fone ........ escolha onde você quer ouvir
+  - Ouvir meu próprio microfone ... desligado por padrão,
+    de propósito. O seu som vai só para quem está assistindo.
+    Ligue só se quiser conferir se está saindo voz.
+
+----------------------------------------------------------------
+  7. TRANSMITIR A TELA
+----------------------------------------------------------------
+Clique em TRANSMITIR, escolha a tela ou a janela e pronto.
+
+A imagem sai na qualidade nativa do seu monitor — ou seja,
+no tamanho real, sem cortar e sem rebaixar.
+
+Para parar, clique de novo em TRANSMITIR (ou use o botão
+vermelho que aparece sobre o vídeo).
+
+Dica importante do Windows: se a imagem chegar pequena ou
+borrada para o outro lado, vá em Ajustes > Tela e deixe a
+escala em 100%. Com escala ampliada o Windows entrega a
+imagem menor e não tem app que conserte isso.
+
+----------------------------------------------------------------
+  8. FALAR COM TODO MUNDO (VOZ)
+----------------------------------------------------------------
+Quem está na sala ouve você enquanto o microfone estiver
+ligado. Não precisa fazer mais nada — a voz vai junto com
+a imagem.
+
+Quem estiver transmitindo a tela continua ouvindo e falando
+normalmente. Uma pessoa pode transmitir e conversar ao
+mesmo tempo.
+
+Se você se ouvir com atraso, é porque tem uma janela do
+Nexo aberta no MESMO computador seu tocando a sua voz.
+Feche essa janela e some.
+
+----------------------------------------------------------------
+  9. CHAT DA SALA
+----------------------------------------------------------------
+À direita fica o chat. Todo mundo na sala lê o que você manda.
+
+Dá para mandar:
+  - mensagem de texto
+  - imagem
+  - vídeo
+  - link
+  - documento
+
+Para mandar arquivo, é só arrastar para o campo de mensagem.
+
+----------------------------------------------------------------
+  10. CONVERSA INDIVIDUAL (SÓ VOCÊS DOIS)
+----------------------------------------------------------------
+Passe o mouse por cima do nome de alguém na lista de
+participantes. Vai aparecer um ícone de balãozinho de
+conversa. Clicou, abriu uma conversa só de vocês dois.
+
+A conversa tem uma aba própria, do lado da aba "Sala".
+Só vocês dois leem. Ninguém mais desvia.
+
+Quando chegar mensagem sua, o balão fica com um númerozinho
+indicando que você ainda não leu.
+
+----------------------------------------------------------------
+  11. O SININHO
+----------------------------------------------------------------
+No topo da janela tem um sininho. Ele guarda:
+
+  - mensagens que chegaram enquanto você não estava olhando
+  - avisos de atualização do app, com a lista do que mudou
+
+Clicou no sininho, aparece a lista. Tem o botão "Marcar como
+lidas" para zerar.
+
+----------------------------------------------------------------
+  12. TEMAS
+----------------------------------------------------------------
+Quer mudar a cara do app? Vá em CONFIGURAÇÕES > APARÊNCIA.
+
+Tem 11 temas: o Meia-Noite (o original) e 10 de anime —
+Zenitsu, Sukuna, Naruto, Evangelion, One Piece, Death Note,
+Pokémon, Gojo, Chainsaw Man e My Hero Academia.
+
+Trocou, vale na hora. Fica guardado no seu computador.
+
+----------------------------------------------------------------
+  13. FECHAR SEM PERDER A SALA
+----------------------------------------------------------------
+Se você fechar a janela do Nexo, ele NÃO sai da sala.
+Ele só some e continua rodando em segundo plano.
+
+Para voltar, é só abrir de novo pelo ícone na bandeja
+(a bandeja é aquele cantinho do Windows, perto do relógio).
+
+Para sair de vez, clique em SAIR dentro do app.
+
+----------------------------------------------------------------
+  14. NÃO ENTENDEU ALGUMA COISA?
+----------------------------------------------------------------
+O próprio app tem um tutorial passo a passo, que aparece
+sozinho na primeira vez que você abre.
+
+Se quiser ver de novo: CONFIGURAÇÕES > GERAL >
+"Ver tutorial de novo".
+
+=================================================================
+   Nexo — feito por Leal program
+   Sem assinatura. Sem anúncio. Só funciona.
+=================================================================

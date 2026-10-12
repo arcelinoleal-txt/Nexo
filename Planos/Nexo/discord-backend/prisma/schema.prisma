@@ -1,0 +1,12 @@
+/* ================================================================
+   Prisma Schema - Discord Clone Database
+   ================================================================ */
+
+generator client {
+  provider = "postgresql"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}

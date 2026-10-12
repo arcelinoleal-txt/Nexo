@@ -1,0 +1,30 @@
+/* ================================================================
+   TypeScript Configuration - Discord Backend
+   ================================================================ */
+
+import { PrismaConfig } from '@prisma/client';
+
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useUnknownInCatchVariables": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist/out-tsc",
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*"],
+  "files": ["src/db.ts"]
+}
