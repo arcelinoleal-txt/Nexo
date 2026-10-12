@@ -1,9 +1,12 @@
 {
-  "versao": "1.8.0",
-  "atualizadoEm": "2026-10-10",
+  "versao": "1.11.0",
+  "atualizadoEm": "2026-10-12",
   "download": null,
   "novidades": [
-    "Aviso de atualização agora tem botão Baixar atualização (preencha o campo download aqui com o link do .exe novo)",
-    "Servidor repassa o link de download para o app"
+    "Seção Amigos: adicione pessoas pelo nome, aceite ou recuse pedidos e veja quem já é seu amigo",
+    "De dentro de um amigo, um clique abre a conversa privada direto",
+    "Corrigidos os acentos quebrados que apareciam espalhados pela interface",
+    "Corrigido um travamento que derrubava o servidor inteiro ao abrir /arquivos/",
+    "Melhorias na lista de participantes e nos arquivos da sala"
   ]
 }

@@ -2,9 +2,12 @@
 
 | Versão | Data | Status | O que mudou |
 |--------|------|--------|-------------|
+| **1.11.0** | 12/10/2026 15:02 | ✅ **ATUAL** — `versoes/v1.11.0/` | **Sistema de amizades completo**: busca por nome, pedir/aceitar/recusar/remover, lista de amigos e um clique abre a conversa privada. **Acentos corrigidos** (edits via PowerShell liam como ANSI e regravavam como UTF-8, quebrando `você`/`sessão` na interface). **Crash corrigido**: abrir `/arquivos/` derrubava o servidor inteiro (`EISDIR` sem tratamento) — no Railway isso deixava o Nexo fora do ar pra todo mundo |
+| **1.10.0** | 12/10/2026 11:42 | ✅ `versoes/v1.10.0/` | Login persistente com **Lembrar de mim** + botão **Sair da conta** no painel do usuário |
+| **1.9.0** | 12/10/2026 10:44 | ✅ `versoes/v1.9.0/` | Canal **#arquivos** com galeria de anexos e filtros + **conversas privadas** no painel com badge de não-lidas e seletor de nova conversa |
 | **1.0.0** | 10/10/2026 00:17 | Base — `instalador original/` | App completo (v1.0 base) |
 | **1.7.0** | 10/10/2026 21:33 | ✅ Layout Discord | Colisão `.tela` corrigida + grid posicionado + coluna de servidores + acabamento visual |
-| **1.8.0** | 10/10/2026 22:05 | ✅ **ATUAL** — `versoes/v1.8.0/` | Aviso de atualização ganhou botão **Baixar atualização** (usa campo `download` do versao.json) |
+| **1.8.0** | 10/10/2026 22:05 | ✅ `versoes/v1.8.0/` | Aviso de atualização ganhou botão **Baixar atualização** (usa campo `download` do versao.json) |
 | **1.6.0** | 10/10/2026 20:30 | ✅ **DEFINITIVA** — `versoes/v1.6.0/` | **Bug raiz corrigido**: `#tela-sala` estava aninhada dentro do `div#modal-recuperar` (tag `</div>` desbalanceada) → sala invisível/tela preta. Validado por parser HTML + render Electron real |
 | **1.1.0** | 10/10/2026 19:43 | ✅ Corrigido — `versoes/v1.1.0/` | GPU crash corrigido (tela preta ao entrar); vídeo espelhado removido; contador sincronizado; aviso z-index ajustado |
 | 1.1.0 | — | Próxima | Correções pós-teste do 1.0 (ver abaixo) |
