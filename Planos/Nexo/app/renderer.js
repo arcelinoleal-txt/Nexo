@@ -76,9 +76,18 @@ const estado = {
 /* Persistência                                                        */
 /* ------------------------------------------------------------------ */
 
-const padraoServidor = DESKTOP
-  ? 'ws://localhost:3000'
-  : (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
+/* Endereço padrão do servidor. Se o app estiver servido por um endereço
+   (local ou publicado) ele reaproveita o próprio endereço — é o caso do
+   navegador e do servidor local. Quando abre direto do arquivo (desktop ou
+   duplo clique no index.html) não há host, então ele já vem apontando para a
+   instância publicada no Railway, que atende igual quem está na sua rede e
+   quem está do outro lado da internet. Quem rodar um servidor local troca o
+   endereço na tela de entrada ou em Configurações. */
+const SERVIDOR_PRODUCAO = 'wss://nexo-production-0b47.up.railway.app';
+
+const padraoServidor = location.host
+  ? (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host
+  : SERVIDOR_PRODUCAO;
 
 function carregar(chave, padrao) {
   try {
@@ -433,6 +442,8 @@ function aoEntrarNaSala(dados) {
   definirErroEntrada('');
 
   $('#codigo-sala').textContent = dados.codigo;
+  const codLateral = $('#codigo-sala-painel');
+  if (codLateral) codLateral.textContent = dados.codigo;
   $('#tela-entrada').hidden = true;
   $('#tela-sala').hidden = false;
   $('#info-conexao').textContent = 'Servidor: ' + estado.servidor;
@@ -1352,6 +1363,39 @@ function desenharParticipantes() {
     const holder = li.querySelector('.ponto-status-holder');
     if (holder) holder.remove();
   });
+
+  desenharPainelUsuario(ordenados);
+}
+
+/* Espelho de "eu" no rodapé do painel esquerdo (igual ao painel do usuário
+   do Discord): avatar com status, nome e os botões de mídia.             */
+function desenharPainelUsuario(ordenados) {
+  const eu = (ordenados || []).find(p => p.id === estado.meuId) || {};
+  const nome = eu.nome || estado.perfil.nome || 'Você';
+
+  const elNome = $('#nome-user');
+  if (elNome) elNome.textContent = nome;
+
+  const elStatus = $('#status-user');
+  if (elStatus) {
+    if (eu.tela) elStatus.textContent = 'Compartilhando tela';
+    else if (eu.camera) elStatus.textContent = 'Câmera ligada';
+    else if (eu.mudo) elStatus.textContent = 'Sem áudio';
+    else elStatus.textContent = 'Conectado';
+  }
+
+  const av = $('#avatar-user');
+  if (av) {
+    const conteudo = eu.avatar
+      ? `<span class="emoji">${escapeHtml(eu.avatar)}</span>`
+      : escapeHtml(iniciais(nome));
+    av.style.background = corDe(eu.cor || 0);
+    av.style.color = textoSobreFundo(eu.cor || 0);
+    av.innerHTML = conteudo + `<i class="ponto-status${eu.mudo ? ' off' : ''}"></i>`;
+  }
+
+  const st = $('#status-user');
+  if (st) st.title = nome;
 }
 
 function desenharBotoesDeMidia() {
@@ -2717,13 +2761,19 @@ function inicializar() {
     aviso('Saiu da conta.', 'ok');
   });
 
-  $('#chip-codigo').addEventListener('click', async () => {
+  async function copiarCodigoSala() {
     if (!estado.codigo) return;
     // Garante o convite pronto: ele leva o endereço junto, então dá para
     // quem recebe colar num computador diferente e entrar direto.
     if (!estado.convite || estado.convite === estado.codigo) await montarConvite();
     const texto = estado.convite || estado.codigo;
     const completo = texto !== estado.codigo;
+    const codLateral = $('#codigo-sala-painel');
+    if (codLateral && codLateral.parentElement) {
+      const chip = codLateral.parentElement;
+      chip.classList.add('copiado');
+      setTimeout(() => chip.classList.remove('copiado'), 1400);
+    }
     try {
       await navigator.clipboard.writeText(texto);
       aviso(completo
@@ -2732,7 +2782,9 @@ function inicializar() {
     } catch {
       aviso(completo ? 'Convite da sala: ' + texto : 'Código da sala: ' + texto, 'ok');
     }
-  });
+  }
+  $('#chip-codigo').addEventListener('click', copiarCodigoSala);
+  $('#btn-copiar-cod')?.addEventListener('click', copiarCodigoSala);
 
   /* ---------------- mídia ---------------- */
   $('#btn-micro').addEventListener('click', alternarMicrofone);
@@ -2742,6 +2794,34 @@ function inicializar() {
   $('#btn-tela').addEventListener('click', iniciarTransmissao);
   $('#ctrl-tela').addEventListener('click', iniciarTransmissao);
   $('#btn-sair-som').addEventListener('click', sairDaSala);
+
+  /* ---------------- canais (estilo Discord) ---------------- */
+  // Recolher/abrir categoria da lista de canais.
+  document.querySelectorAll('.cat-titulo').forEach(t => {
+    t.addEventListener('click', () => {
+      const aberto = t.getAttribute('aria-expanded') === 'true';
+      t.setAttribute('aria-expanded', aberto ? 'false' : 'true');
+    });
+  });
+
+  // Marcar o canal ativo na lista. Os canais de texto são visuais por
+  // enquanto: o app tem uma única conversa por sala, então trocar de canal
+  // só move o destaque e avisa o usuário.
+  document.querySelectorAll('.canal[data-canal]').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('.canal[data-canal]').forEach(o => o.classList.remove('ativo'));
+      c.classList.add('ativo');
+      const rot = c.querySelector('.rot-canal');
+      const nome = rot ? rot.textContent.trim() : 'canal';
+      const inChat = $('#in-chat');
+      if (inChat) inChat.placeholder = 'Mensagem em ' + nome;
+      const ic = document.querySelector('.ic-canal-chat');
+      if (ic) ic.textContent = '#';
+      if (c.dataset.canal !== 'geral') {
+        aviso('O canal "' + nome + '" ainda está em construção — por ora todo o chat fica em geral.', 'ok');
+      }
+    });
+  });
 
   $('#ctrl-cheia').addEventListener('click', () => {
     const alvo = $('#area-video');

@@ -6,12 +6,11 @@
   <title>Nexo</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="estilo.css" />
-  <link rel="stylesheet" href="estilo-premium.css" />
 </head>
 <body>
 
   <!-- ============================ ENTRADA ============================ -->
-  <section id="tela-entrada" class="tela" hidden>
+  <section id="tela-entrada" class="tela">
     <!-- Titlebar customizada (arrastável, com controles de janela) -->
     <header class="barra-topo arrastavel barra-entrada">
       <div class="topo-esq">
@@ -127,8 +126,8 @@
 
       <div class="campo">
         <label for="in-servidor">Servidor</label>
-        <input id="in-servidor" type="text" maxlength="200" placeholder="wss://seu-servidor.com" autocomplete="off" spellcheck="false" />
-        <small>No seu computador use <code>ws://localhost:3000</code>.</small>
+        <input id="in-servidor" type="text" maxlength="200" value="wss://nexo-production-0b47.up.railway.app" placeholder="wss://seu-servidor.com" autocomplete="off" spellcheck="false" />
+        <small>Já vem pronto para a sala online. Para testar na sua rede local troque por <code>ws://localhost:3000</code>.</small>
       </div>
 
       <button id="btn-criar" class="btn gradiente grande">Criar sala</button>
@@ -272,39 +271,72 @@
       </div>
     </header>
 
-    <!-- ------------------------ painel esquerdo ------------------------ -->
+    <!-- ------------------- painel esquerdo (estilo Discord) ------------------- -->
     <aside class="painel-esq">
-      <div class="bloco">
-        <h2 class="titulo-bloco">Sua mídia</h2>
-
-        <div class="grade-botoes">
-          <button id="btn-micro" class="btn-midia" title="Ligar/desligar microfone">
-            <span class="ic" data-on="mic" data-off="mic-off"></span>
-            <small>Microfone</small>
-          </button>
-          <button id="btn-camera" class="btn-midia" title="Ligar/desligar câmera">
-            <span class="ic" data-on="cam" data-off="cam-off"></span>
-            <small>Câmera</small>
-          </button>
-          <button id="btn-tela" class="btn-midia" title="Compartilhar tela">
-            <span class="ic" data-on="screen" data-off="screen"></span>
-            <small>Transmitir</small>
-          </button>
-          <button id="btn-sair-som" class="btn-midia perigo" title="Sair da sala">
-            <span class="ic" data-on="sair" data-off="sair"></span>
-            <small>Sair</small>
-          </button>
-        </div>
-
-        <div id="aviso-limite" class="aviso" hidden>
-          Muita gente conectada. Até 8 pessoas a imagem fica fluida; acima disso
-          vale um servidor SFU (mediasoup/janus).
-        </div>
+      <!-- cabeçalho do servidor -->
+      <div class="cab-servidor">
+        <strong class="nome-srv">Nexo</strong>
+        <button class="cod-srv" id="btn-copiar-cod" type="button" title="Copiar código da sala">
+          <span id="codigo-sala-painel">------</span>
+          <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
+        </button>
       </div>
 
-      <div class="bloco flex-1">
-        <h2 class="titulo-bloco">Participantes <span id="cont-pessoas" class="cont">0</span></h2>
-        <ul id="lista-pessoas" class="lista-pessoas"></ul>
+      <!-- lista de canais -->
+      <div class="lista-canais">
+        <section class="cat-canais">
+          <button class="cat-titulo" type="button" aria-expanded="true">
+            <svg class="seta-cat" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="m7 10 5 5 5-5z"/></svg>
+            Texto
+          </button>
+          <button class="canal ativo" type="button" data-canal="geral" title="Chat da sala">
+            <span class="ic-canal">#</span><span class="rot-canal">geral</span>
+          </button>
+          <button class="canal" type="button" data-canal="arquivos" title="Arquivos compartilhados">
+            <span class="ic-canal">#</span><span class="rot-canal">arquivos</span>
+          </button>
+        </section>
+
+        <section class="cat-canais">
+          <button class="cat-titulo" type="button" aria-expanded="true">
+            <svg class="seta-cat" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="m7 10 5 5 5-5z"/></svg>
+            Transmissão
+          </button>
+          <div class="canal voz ativo">
+            <svg class="ic-canal svg" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M11 5 6.5 9H3v6h3.5L11 19V5Zm4.5 3.5a5 5 0 0 1 0 7l1.4 1.4a7 7 0 0 0 0-9.8L15.5 8.5Zm2.8-2.8a9 9 0 0 1 0 12.6l1.4 1.4a11 11 0 0 0 0-15.4l-1.4 1.4Z"/></svg>
+            <span class="rot-canal">Sala de voz</span>
+            <span id="cont-pessoas" class="cont-canal">0</span>
+          </div>
+          <ul id="lista-pessoas" class="lista-pessoas"></ul>
+        </section>
+      </div>
+
+      <div id="aviso-limite" class="aviso" hidden>
+        Muita gente conectada. Até 8 pessoas a imagem fica fluida; acima disso
+        vale um servidor SFU (mediasoup/janus).
+      </div>
+
+      <!-- painel do usuário (rodapé) -->
+      <div class="painel-usuario">
+        <div class="avatar-user" id="avatar-user"><i class="ponto-status"></i></div>
+        <div class="info-user">
+          <strong id="nome-user">Você</strong>
+          <small id="status-user">Conectado</small>
+        </div>
+        <div class="acoes-user">
+          <button id="btn-micro" class="btn-ico-user" type="button" title="Ligar/desligar microfone">
+            <span class="ic" data-on="mic" data-off="mic-off"></span>
+          </button>
+          <button id="btn-camera" class="btn-ico-user" type="button" title="Ligar/desligar câmera">
+            <span class="ic" data-on="cam" data-off="cam-off"></span>
+          </button>
+          <button id="btn-tela" class="btn-ico-user" type="button" title="Compartilhar tela">
+            <span class="ic" data-on="screen" data-off="screen"></span>
+          </button>
+          <button id="btn-sair-som" class="btn-ico-user perigo" type="button" title="Sair da sala">
+            <span class="ic" data-on="sair" data-off="sair"></span>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -359,10 +391,14 @@
     <!-- ----------------------------- chat ----------------------------- -->
     <aside class="painel-chat" id="painel-chat">
       <div class="chat-cabecalho">
+        <span class="ic-canal-chat" aria-hidden="true">#</span>
         <div class="abas-conversa" id="abas-conversa">
           <button class="aba-conversa ativa" data-com="" type="button">Sala</button>
         </div>
-        <span id="cont-chat" class="cont">0</span>
+        <div class="acoes-cab-chat">
+          <span class="rot-mensagens">mensagens</span>
+          <span id="cont-chat" class="cont">0</span>
+        </div>
       </div>
 
       <div id="lista-chat" class="lista-chat">
@@ -391,15 +427,17 @@
           <button type="button" class="icone-btn" id="btn-tirar-anexo" title="Tirar o anexo">×</button>
         </div>
 
-        <button type="button" class="icone-btn anexo-botao" id="btn-anexar"
-                title="Anexar arquivo (imagem, vídeo, documento) — ou arraste para o chat">
-          <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M16.5 6v11.5a4.5 4.5 0 0 1-9 0V5a3 3 0 0 1 6 0v10.5a1.5 1.5 0 0 1-3 0V6H9v9.5a3 3 0 0 0 6 0V5a4.5 4.5 0 0 0-9 0v12.5a6 6 0 0 0 12 0V6Z"/></svg>
-        </button>
         <input id="in-anexo" type="file" hidden
                accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.7z,.json,.md,.csv" />
 
-        <input id="in-chat" type="text" maxlength="500" placeholder="Enviar mensagem" autocomplete="off" />
-        <button type="submit" class="btn pequeno gradiente">Enviar</button>
+        <div class="linha-digitar">
+          <button type="button" class="icone-btn anexo-botao" id="btn-anexar"
+                  title="Anexar arquivo (imagem, vídeo, documento) — ou arraste para o chat">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M16.5 6v11.5a4.5 4.5 0 0 1-9 0V5a3 3 0 0 1 6 0v10.5a1.5 1.5 0 0 1-3 0V6H9v9.5a3 3 0 0 0 6 0V5a4.5 4.5 0 0 0-9 0v12.5a6 6 0 0 0 12 0V6Z"/></svg>
+          </button>
+          <input id="in-chat" type="text" maxlength="500" placeholder="Mensagem na Sala" autocomplete="off" />
+          <button type="submit" class="btn-enviar" title="Enviar mensagem (Enter)">Enviar</button>
+        </div>
       </form>
     </aside>
 
@@ -841,40 +879,6 @@
   <script src="loja.js"></script>
   <script src="configuracoes.js"></script>
   <script src="profile.js"></script>
-  <script src="premium.js"></script>
-
-  <!-- ===== LAYOUT PREMIUM (REA + Discord + models) ===== -->
-  <section id="app-montado">
-    <aside class="sidebar-conversa">
-      <div class="sidebar-header"><span>Salas & Conversas</span><button onclick="abrirNovaSala()">+</button></div>
-      <div class="sidebar-busca"><input placeholder="Buscar sala" oninput="filtrarAbas(this.value)"></div>
-      <nav class="lista-abas" id="lista-abas">
-        <a class="aba-item ativa" href="#" onclick="selecionarAba(this,'sala1')"><div class="aba-avatar">✦</div><div class="aba-info"><div class="aba-nome">Sala Principais</div><div class="aba-sub">3 pessoas online</div></div><span class="aba-badge">2</span></a>
-        <a class="aba-item" href="#" onclick="selecionarAba(this,'sala2')"><div class="aba-avatar" style="background:linear-gradient(135deg,#facc15,#f97316)">🔥</div><div class="aba-info"><div class="aba-nome">Anime Talk</div><div class="aba-sub">5 pessoas</div></div></a>
-        <a class="aba-item" href="#" onclick="selecionarAba(this,'privado')"><div class="aba-avatar" style="background:linear-gradient(135deg,#ec4899,#8b5cf6)">💬</div><div class="aba-info"><div class="aba-nome">Conversa Privada</div><div class="aba-sub">Você + 2</div></div><span class="aba-badge">1</span></a>
-      </nav>
-    </aside>
-    <main class="chat-principal">
-      <header class="chat-topo"><h2 class="chat-titulo">Sala Principais <span class="sala-status"><span class="ponto"></span>Online</span></h2></header>
-      <div class="chat-corpo" id="chat-corpo">
-        <!-- Transmissão (como Discord: vídeo do participante) -->
-        <div class="transmissao-area" style="margin-bottom:14px;background:#121225;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;"><span style="font-weight:700;color:#fff;">Transmissão</span><span style="font-size:11px;color:#b5bac1;">Sala Principais</span></div>
-          <video id="video-transmissao" autoplay playsinline muted style="width:100%;max-height:340px;border-radius:14px;background:linear-gradient(135deg,#151927,#0f1220);border:1px solid rgba(255,255,255,.08);"></video>
-          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
-            <button class="btn-transmissao tela" onclick="transmitirTela()">📺 Transmitir tela</button>
-            <button class="btn-transmissao cam" onclick="transmitirCam()">📷 Câmera</button>
-          </div>
-        </div>
-        <div class="msg"><div class="msg-avatar">G</div><div class="msg-body"><div class="msg-cabe"><span class="msg-autor">Gustavo</span><span class="msg-hora">agora</span></div><div class="msg-texto">E ai galera, entrou na sala! REA analisou o Discord e agora o Nexo tá bonito kkk 😎</div></div></div>
-        <div class="msg"><div class="msg-avatar" style="background:linear-gradient(135deg,#facc15,#f97316)">F</div><div class="msg-body"><div class="msg-cabe"><span class="msg-autor">Fernanda</span><span class="msg-hora">2 min atrás</span></div><div class="msg-texto">A aba de Configurações ficou perfeita! Parece Discord mesmo.</div></div></div>
-      </div>
-      <form class="chat-input-area" onsubmit="enviarMsg(event)">
-        <input id="campo-mensagem" type="text" maxlength="500" placeholder="Enviar mensagem..." autocomplete="off" />
-        <button type="submit">Enviar</button>
-      </form>
-    </main>
-  </section>
 
 </body>
 </html>

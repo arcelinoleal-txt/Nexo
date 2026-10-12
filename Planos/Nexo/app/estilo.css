@@ -711,61 +711,240 @@ select {
   border-right: 1px solid rgba(0,0,0,.25);
 }
 
-.bloco { padding: 16px 14px; border-bottom: 1px solid var(--borda); }
-.bloco.flex-1 { flex: 1; overflow: hidden; display: flex; flex-direction: column; border-bottom: 0; }
+/* ------------------- cabeçalho do servidor (Discord) ------------------ */
 
-.titulo-bloco {
-  margin: 0 0 13px;
-  font-size: 10.5px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--texto-fraco);
+.cab-servidor {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+  height: 48px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid rgba(0,0,0,.35);
+  box-shadow: 0 1px 0 rgba(0,0,0,.18);
+  flex-shrink: 0;
+  cursor: default;
+  transition: background var(--trans);
 }
-.cont {
-  background: var(--superficie-3);
+.cab-servidor:hover { background: rgba(255,255,255,.03); }
+.nome-srv {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--texto);
+  letter-spacing: -.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cod-srv {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  background: rgba(255,255,255,.04);
   color: var(--texto-suave);
-  border-radius: 999px;
-  padding: 1px 8px;
   font-size: 11px;
   font-weight: 700;
-}
-
-.grade-botoes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-}
-
-.btn-midia {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-  padding: 13px 6px 11px;
-  border-radius: var(--raio);
-  background: var(--superficie-2);
-  border: 1px solid var(--borda);
-  color: var(--texto);
+  letter-spacing: 1.4px;
+  cursor: pointer;
   transition: all var(--trans);
 }
-.btn-midia:hover { background: var(--superficie-3); border-color: var(--borda-forte); transform: translateY(-2px); }
-.btn-midia .ic { display: grid; place-items: center; color: var(--verde); }
-.btn-midia small { font-size: 11px; color: var(--texto-suave); font-weight: 600; }
+.cod-srv:hover { background: rgba(109,94,252,.18); border-color: rgba(109,94,252,.45); color: #cfc9ff; }
+.cod-srv.copiado { background: rgba(34,197,94,.2); border-color: rgba(34,197,94,.5); color: #86efac; }
 
-.btn-midia.desligado .ic { color: var(--vermelho); }
-.btn-midia.ativo {
-  background: linear-gradient(135deg, rgba(109,94,252,.3), rgba(168,85,247,.22));
-  border-color: rgba(140,110,255,.55);
-  box-shadow: 0 6px 20px rgba(109,94,252,.28);
+/* ---------------------- lista de canais (Discord) -------------------- */
+
+.lista-canais {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 8px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #1a1b1e transparent;
 }
-.btn-midia.ativo .ic { color: #fff; }
-.btn-midia.ativo small { color: #fff; }
-.btn-midia.perigo .ic { color: var(--vermelho); }
-.btn-midia.perigo:hover { background: rgba(244,63,94,.16); border-color: rgba(244,63,94,.4); }
+.lista-canais::-webkit-scrollbar { width: 6px; }
+.lista-canais::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 3px; }
+
+.cat-canais { margin-bottom: 14px; }
+
+.cat-titulo {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  padding: 2px 4px 4px 2px;
+  margin-bottom: 2px;
+  border: 0;
+  background: none;
+  color: var(--texto-fraco);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  cursor: pointer;
+  transition: color var(--trans);
+}
+.cat-titulo:hover { color: var(--texto-suave); }
+.seta-cat { transition: transform var(--trans); flex-shrink: 0; }
+.cat-titulo[aria-expanded="false"] .seta-cat { transform: rotate(-90deg); }
+.cat-titulo[aria-expanded="false"] + .canal,
+.cat-titulo[aria-expanded="false"] ~ .canal { display: none; }
+
+.canal {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 8px;
+  margin-bottom: 2px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto-suave);
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.canal:hover { background: rgba(255,255,255,.045); color: var(--texto); }
+.canal.ativo { background: rgba(255,255,255,.085); color: var(--texto); }
+.canal.voz.ativo { background: rgba(255,255,255,.085); }
+
+.ic-canal {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  flex-shrink: 0;
+  color: var(--texto-fraco);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+}
+.ic-canal.svg { color: var(--texto-fraco); }
+.canal:hover .ic-canal, .canal.ativo .ic-canal { color: var(--texto-suave); }
+.rot-canal { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.cont-canal {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(109,94,252,.25);
+  color: #b9b1ff;
+  font-size: 10.5px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ---------------- participantes recuados (voz, Discord) -------------- */
+
+.lista-pessoas {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 2px 4px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+.lista-pessoas li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 4px 20px;
+  margin-bottom: 1px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: var(--texto-fraco);
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.lista-pessoas li:hover { background: rgba(255,255,255,.05); color: var(--texto-suave); }
+.lista-pessoas li.eu { color: var(--texto-suave); }
+.lista-pessoas .avatar { width: 24px; height: 24px; font-size: 11px; }
+.lista-pessoas .avatar .ponto-status { width: 9px; height: 9px; border-width: 2px; border-color: var(--discord-sidebar-canais); }
+.lista-pessoas .nome-pessoa { font-weight: 500; }
+.lista-pessoas .selo { display: none; }
+.lista-pessoas .selo.tela, .lista-pessoas .selo.mudo { display: inline-flex; padding: 1px 4px; font-size: 8.5px; }
+.lista-pessoas .btn-msg-pessoa {
+  margin-left: auto;
+  opacity: 0;
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 4px;
+  background: rgba(255,255,255,.07);
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: all var(--trans);
+}
+.lista-pessoas li:hover .btn-msg-pessoa { opacity: 1; }
+.lista-pessoas .btn-msg-pessoa:hover { background: var(--acento); color: #fff; }
+
+/* --------------- painel do usuário (rodapé, Discord) ----------------- */
+
+.painel-usuario {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 7px 7px 8px;
+  background: #232428;
+  border-top: 1px solid rgba(0,0,0,.35);
+  flex-shrink: 0;
+}
+.avatar-user {
+  position: relative;
+  width: 30px; height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--acento);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  overflow: visible;
+}
+.avatar-user .emoji { font-size: 15px; line-height: 1; }
+.avatar-user .ponto-status {
+  position: absolute;
+  right: -2px; bottom: -2px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--verde);
+  border: 2.5px solid #232428;
+}
+.avatar-user .ponto-status.off { background: var(--vermelho); }
+
+.info-user { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.info-user strong {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.info-user small { font-size: 10.5px; color: var(--texto-fraco); }
+
+.acoes-user { display: flex; gap: 3px; flex-shrink: 0; }
+
+.btn-ico-user {
+  width: 30px; height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--texto-suave);
+  cursor: pointer;
+  transition: background var(--trans), color var(--trans);
+}
+.btn-ico-user:hover { background: rgba(255,255,255,.08); color: var(--texto); }
+.btn-ico-user svg { width: 17px; height: 17px; }
+.btn-ico-user.desligado { color: var(--vermelho); }
+.btn-ico-user.desligado:hover { background: rgba(244,63,94,.16); color: #ff8a9b; }
+.btn-ico-user.perigo:hover { background: rgba(244,63,94,.2); color: #ff8a9b; }
 
 .aviso {
   margin-top: 14px;
@@ -780,27 +959,6 @@ select {
   z-index: 2;
 }
 
-.lista-pessoas {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  flex: 1;
-}
-.lista-pessoas li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
-  margin-bottom: 3px;
-  border-radius: var(--raio);
-  font-size: 14px;
-  color: var(--texto-suave);
-  transition: background var(--trans);
-}
-.lista-pessoas li:hover { background: var(--superficie-2); color: var(--texto); }
-.lista-pessoas li.eu { background: rgba(109,94,252,.09); }
-
 .avatar {
   position: relative;
   display: grid;
@@ -811,14 +969,16 @@ select {
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
 }
+.avatar img { border-radius: 50%; }
 .avatar .emoji { font-size: 16px; line-height: 1; }
 .avatar .ponto-status {
   position: absolute; right: -1px; bottom: -1px;
   width: 11px; height: 11px; border-radius: 50%;
   background: var(--verde);
   border: 2.5px solid var(--superficie);
+  z-index: 2;
 }
 .avatar .ponto-status.off { background: var(--texto-fraco); }
 
@@ -2026,11 +2186,11 @@ body {
 /* itens de lista: hover suave e selecao como no Discord */
 .lista-pessoas li {
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 4px 6px 4px 20px;
   transition: background var(--trans), color var(--trans);
 }
 .lista-pessoas li:hover { background: rgba(255,255,255,.05); color: var(--texto); }
-.lista-pessoas li.eu { background: rgba(88,101,242,.16); color: var(--texto); }
+.lista-pessoas li.eu { background: transparent; color: var(--texto-suave); }
 
 /* botoes de midia: mais limpos, quadrados arredondados iguais ao Discord */
 .btn-midia {
@@ -2126,12 +2286,40 @@ body {
 .controles-flutuantes .ctrl-principal.ativo { background: var(--discord-accent-perigo); }
 .controles-flutuantes .ctrl-principal.ativo:hover { background: #a12828; }
 
-/* chat: mensagens com hover e cabecalho limpo */
+/* chat: mensagens com hover e cabecalho estilo Discord */
 .chat-cabecalho {
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(0,0,0,.22);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(0,0,0,.25);
+  box-shadow: 0 1px 0 rgba(0,0,0,.12);
   font-weight: 700;
   font-size: 14.5px;
+  flex-shrink: 0;
+}
+.ic-canal-chat {
+  color: var(--texto-fraco);
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.acoes-cab-chat {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.rot-mensagens {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  color: var(--texto-fraco);
 }
 .msg { padding: 3px 0; border-radius: 4px; transition: background var(--trans); }
 .msg:hover { background: rgba(255,255,255,.02); }
@@ -2139,45 +2327,95 @@ body {
 .texto-msg { color: #dbdee1; }
 
 /* campo de digitar — caixa escura arredondada igual ao Discord */
-.area-digitar { padding: 12px 14px 16px; }
-.area-digitar input {
-  border-radius: 10px;
-  background: rgba(255,255,255,.045);
-  border: 1px solid transparent;
-  padding: 12px 14px;
+.area-digitar {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 8px;
+  padding: 0 16px 20px;
+  border-top: 0;
+}
+.area-digitar .anexo-pendente { order: 0; flex: none; }
+.linha-digitar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #383a40;
+  border-radius: 8px;
+  padding: 0 12px;
+  transition: background var(--trans);
+}
+.linha-digitar:focus-within { background: #3d4048; }
+.linha-digitar .anexo-botao {
+  flex: 0 0 auto;
+  color: var(--texto-suave);
+  background: transparent;
+  border: 0;
+  padding: 6px;
+  margin-left: -4px;
+  border-radius: 6px;
+}
+.linha-digitar .anexo-botao:hover { color: var(--texto); background: rgba(255,255,255,.06); }
+.linha-digitar #in-chat {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 12px 0;
   font-size: 14.5px;
-  transition: border-color var(--trans), background var(--trans);
+  color: #dbdee1;
 }
-.area-digitar input:focus {
-  border-color: rgba(88,101,242,.6);
-  background: rgba(255,255,255,.06);
+.linha-digitar #in-chat:focus {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
 }
+.linha-digitar #in-chat::placeholder { color: #6d6f78; }
+.btn-enviar {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 11px;
+  background: var(--acento);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: .5;
+  transition: opacity var(--trans), background var(--trans), transform var(--trans);
+}
+.linha-digitar:focus-within .btn-enviar { opacity: 1; }
+.btn-enviar:hover { opacity: 1; background: #4752c4; }
+.btn-enviar:active { transform: scale(.95); }
 
-/* abas de conversa — segmentadas como no Discord */
+/* abas de conversa — nome do canal em destaque como no Discord */
 .abas-conversa {
   display: inline-flex;
-  gap: 3px;
-  padding: 3px;
-  background: rgba(255,255,255,.045);
-  border-radius: 9px;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.abas-conversa::-webkit-scrollbar { display: none; }
 .aba-conversa {
   border: 0;
   background: transparent;
-  color: var(--texto-suave);
-  padding: 5px 12px;
-  border-radius: 7px;
-  font-size: 12.5px;
+  color: var(--texto-fraco);
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 14.5px;
   font-weight: 650;
   cursor: pointer;
   transition: background var(--trans), color var(--trans);
-  max-width: 130px;
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.aba-conversa:hover { color: var(--texto); }
-.aba-conversa.ativa { background: rgba(255,255,255,.1); color: #fff; }
+.aba-conversa:hover { color: var(--texto); background: rgba(255,255,255,.05); }
+.aba-conversa.ativa { background: rgba(255,255,255,.08); color: #fff; }
 
 /* barra de info do rodape — discreta */
 .barra-info {
