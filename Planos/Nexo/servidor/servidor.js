@@ -47,7 +47,10 @@ const MIME = {
 
 /* Diretórios graváveis. Em desenvolvimento ficam ao lado do código; no app
    empacotado o .asar é somente leitura, então o main.js aponta
-   NEXO_DIR_DADOS para a pasta de dados do usuário antes de subir tudo. */
+   NEXO_DIR_DADOS para a pasta de dados do usuário antes de subir tudo.
+   No Railway o mesmo mecanismo recebe o volume persistente: se existir a
+   variável NEXO_DIR_DADOS apontando para o volume montado, os arquivos
+   enviados sobrevivem aos deploys; senão valem o padrão (efêmero). */
 const DIR_DADOS = process.env.NEXO_DIR_DADOS || __dirname;
 const DIR_ARQUIVOS = path.join(DIR_DADOS, 'arquivos');
 const MAX_ARQUIVO = Number(process.env.NEXO_MAX_ARQUIVO) || 25 * 1024 * 1024; // 25MB padrão
@@ -717,9 +720,15 @@ const batida = setInterval(() => {
 wss.on('close', () => clearInterval(batida));
 
 servidor.listen(PORTA, '0.0.0.0', () => {
+  // Onde os anexos ficam salvos é a diferença entre um deploy e o próximo:
+  // com NEXO_DIR_DADOS num volume do Railway os arquivos sobrevivem; sem
+  // volume (ou em dev) o diretório é efêmero e some no próximo start. Deixar
+  // isso no log evita ficar caçando por que a imagem do primo não abre.
+  const persistente = !!process.env.NEXO_DIR_DADOS;
   console.log('-------------------------------------------------------');
   console.log('  Nexo servidor online');
   console.log(`  Interface : http://localhost:${PORTA}`);
   console.log(`  WebSocket : ws://localhost:${PORTA}`);
+  console.log(`  Arquivos  : ${DIR_ARQUIVOS}  (${persistente ? 'pasta configurada' : 'efêmero - some ao reiniciar'})`);
   console.log('-------------------------------------------------------');
 });
