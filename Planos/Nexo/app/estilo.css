@@ -1748,7 +1748,8 @@ input[type="range"]::-webkit-slider-thumb {
    espremido (era exatamente o que aparecia na tela de perfil). */
 #modal-perfil .modal-corpo,
 #modal-corte .modal-corpo,
-#modal-nova-dm .modal-corpo {
+#modal-nova-dm .modal-corpo,
+#modal-novo-amigo .modal-corpo {
   flex-direction: column;
   overflow-y: auto;
 }
@@ -2810,15 +2811,27 @@ body {
   line-height: 1.45;
 }
 
-/* item de amigo / pedido */
-.item-amigo,
-.item-pedido {
+/* item de amigo: <li> com dois filhos — botao de abrir + botao de remover */
+.item-amigo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 0 4px 0 0;
+  margin-bottom: 2px;
+  border-radius: 6px;
+  transition: background var(--trans);
+}
+.item-amigo:hover { background: rgba(255,255,255,.045); }
+
+/* botao que ocupa a largura: avatar + nome, abre a conversa */
+.amigo-abrir {
   display: flex;
   align-items: center;
   gap: 8px;
-  width: 100%;
-  padding: 5px 7px;
-  margin-bottom: 2px;
+  flex: 1;
+  min-width: 0;
+  padding: 5px 3px 5px 7px;
   border: 0;
   border-radius: 6px;
   background: none;
@@ -2829,12 +2842,29 @@ body {
   cursor: pointer;
   transition: background var(--trans), color var(--trans);
 }
-.item-amigo:hover,
+.amigo-abrir:hover { color: var(--texto); }
+
+/* item de pedido (continua sendo um unico bloco com as acoes) */
+.item-pedido {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 7px;
+  margin-bottom: 2px;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto-suave);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  transition: background var(--trans), color var(--trans);
+}
 .item-pedido:hover { background: rgba(255,255,255,.045); color: var(--texto); }
 
-.item-amigo .avatar,
+.amigo-abrir .avatar,
 .item-pedido .avatar { width: 24px; height: 24px; font-size: 11px; flex-shrink: 0; }
-.item-amigo .avatar .ponto-status,
+.amigo-abrir .avatar .ponto-status,
 .item-pedido .avatar .ponto-status { width: 9px; height: 9px; border-width: 2px; border-color: var(--discord-sidebar-canais); }
 
 .item-nome {
@@ -2866,7 +2896,8 @@ body {
 }
 .btn-pedido:hover { background: var(--acento); color: #fff; }
 .btn-pedido.aceitar:hover { background: #23a55a; }
-.btn-pedido.recusar:hover { background: #da373c; }
+.btn-pedido.recusar:hover,
+.btn-pedido.remover:hover { background: #da373c; }
 
 /* ===================================================================
    MODAL ADICIONAR AMIGO

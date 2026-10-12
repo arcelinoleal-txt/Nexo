@@ -1,7 +1,7 @@
-﻿'use strict';
+'use strict';
 
 /* ==================================================================
-   Nexo â€” interface, mÃ­dia e WebRTC em malha
+   Nexo — interface, mídia e WebRTC em malha
    ================================================================== */
 
 const $ = (sel) => document.querySelector(sel);
@@ -16,8 +16,8 @@ const RTC_CONFIG = {
   ]
 };
 
-const EMOJIS = ['ðŸ˜€', 'ðŸ˜Ž', 'ðŸ¤–', 'ðŸ‘»', 'ðŸ”¥', 'â­', 'ðŸŽ§', 'ðŸŽ®', 'ðŸ¦Š', 'ðŸ±', 'ðŸ¼', 'ðŸ¦‰',
-  'ðŸš€', 'ðŸ’¬', 'ðŸŽ¬', 'ðŸŽ¯', 'ðŸ¦„', 'ðŸŒŸ', 'ðŸ’œ', 'âš¡', 'ðŸŒˆ', 'ðŸ©', 'ðŸ§ ', 'ðŸ› ï¸'];
+const EMOJIS = ['😀', '😎', '🤖', '👻', '🔥', '⭐', '🎧', '🎮', '🦊', '🐱', '🐼', '🦉',
+  '🚀', '💬', '🎬', '🎯', '🦄', '🌟', '💜', '⚡', '🌈', '🍩', '🧠', '🛠️'];
 
 const CORES = [258, 210, 175, 140, 95, 45, 20, 340, 300, 275, 235, 0];
 
@@ -29,21 +29,25 @@ const estado = {
   convite: null,
   conectado: false,
 
-  perfil: { nome: '', avatar: 'ðŸ˜€', cor: 258 },
+  perfil: { nome: '', avatar: '😀', cor: 258 },
   participantes: [],
 
-  // conta: preenchido por carregarSessao(); null = sem sessÃ£o nenhuma
+  // conta: preenchido por carregarSessao(); null = sem sessão nenhuma
   token: null,
   usuario: null,
 
-  // mÃ­dia local
+  // amizades: preenchido por carregarAmizades()
+  amigos: [],
+  pedidosAmizade: [],
+
+  // mídia local
   streamMicro: null,
   streamTela: null,
   streamCamera: null,
   microLigado: true,
   analisador: null,
 
-  // mÃ­dia remota: streamId -> MediaStream / elemento
+  // mídia remota: streamId -> MediaStream / elemento
   streams: new Map(),
   els: new Map(),
   tilesVisiveis: '',
@@ -52,7 +56,7 @@ const estado = {
   pcs: new Map(),
   filaIce: new Map(),
 
-  // dispositivos / preferÃªncias
+  // dispositivos / preferências
   disp: { micro: '', fone: '', camera: '' },
   eco: true,
   volume: 100,
@@ -65,7 +69,7 @@ const estado = {
   // conversas
   historico: [],        // chat da sala
   privados: new Map(),  // id -> mensagens de conversa individual
-  naoLidas: new Map(),  // id -> quantas nÃ£o li ainda
+  naoLidas: new Map(),  // id -> quantas não li ainda
   nomes: new Map(),     // id -> nome (guardo mesmo se a pessoa sair)
   conversa: '',         // '' = chat da sala; senao id da outra pessoa
   anexo: null,          // arquivo escolhido, ainda nao enviado
@@ -76,16 +80,16 @@ const estado = {
 };
 
 /* ------------------------------------------------------------------ */
-/* PersistÃªncia                                                        */
+/* Persistência                                                        */
 /* ------------------------------------------------------------------ */
 
-/* EndereÃ§o padrÃ£o do servidor. Se o app estiver servido por um endereÃ§o
-   (local ou publicado) ele reaproveita o prÃ³prio endereÃ§o â€” Ã© o caso do
+/* Endereço padrão do servidor. Se o app estiver servido por um endereço
+   (local ou publicado) ele reaproveita o próprio endereço — é o caso do
    navegador e do servidor local. Quando abre direto do arquivo (desktop ou
-   duplo clique no index.html) nÃ£o hÃ¡ host, entÃ£o ele jÃ¡ vem apontando para a
-   instÃ¢ncia publicada no Railway, que atende igual quem estÃ¡ na sua rede e
-   quem estÃ¡ do outro lado da internet. Quem rodar um servidor local troca o
-   endereÃ§o na tela de entrada ou em ConfiguraÃ§Ãµes. */
+   duplo clique no index.html) não há host, então ele já vem apontando para a
+   instância publicada no Railway, que atende igual quem está na sua rede e
+   quem está do outro lado da internet. Quem rodar um servidor local troca o
+   endereço na tela de entrada ou em Configurações. */
 const SERVIDOR_PRODUCAO = 'wss://nexo-production-0b47.up.railway.app';
 
 const padraoServidor = location.host
@@ -104,7 +108,7 @@ function salvar(chave, valor) {
 }
 
 function carregarPreferencias() {
-  estado.perfil = Object.assign({ nome: '', avatar: 'ðŸ˜€', cor: 258 }, carregar('perfil', {}));
+  estado.perfil = Object.assign({ nome: '', avatar: '😀', cor: 258 }, carregar('perfil', {}));
   estado.disp = Object.assign({ micro: '', fone: '', camera: '' }, carregar('disp', {}));
   estado.eco = carregar('eco', true);
   estado.volume = carregar('volume', 100);
@@ -119,7 +123,7 @@ function carregarPreferencias() {
 }
 
 /* ------------------------------------------------------------------ */
-/* UtilitÃ¡rios de interface                                            */
+/* Utilitários de interface                                            */
 /* ------------------------------------------------------------------ */
 
 let relogioAviso = null;
@@ -134,7 +138,7 @@ function aviso(texto, tipo = '') {
 }
 
 function horaDe(ms) {
-  /* Sempre 24 horas â€” Ã© o formato do Brasil e o que vocÃª pediu. */
+  /* Sempre 24 horas — é o formato do Brasil e o que você pediu. */
   try { return new Date(ms).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false }); }
   catch { return ''; }
 }
@@ -155,7 +159,7 @@ function desconectarEstado(texto) {
   const el = $('#estado-conn');
   el.className = 'estado-conn ' + (texto === 'conectado' ? 'on' : texto === 'desconectado' ? 'off' : '');
   const rotulo = texto === 'conectado' ? 'conectado'
-    : texto === 'desconectado' ? 'desconectado' : 'conectandoâ€¦';
+    : texto === 'desconectado' ? 'desconectado' : 'conectando…';
   el.innerHTML = '<i class="ponto"></i> ' + rotulo;
 }
 
@@ -178,7 +182,7 @@ function enviar(msg) {
 function abrirConexao(url) {
   return new Promise((resolve, reject) => {
     let ws;
-    try { ws = new WebSocket(url); } catch { reject(new Error('EndereÃ§o de servidor invÃ¡lido.')); return; }
+    try { ws = new WebSocket(url); } catch { reject(new Error('Endereço de servidor inválido.')); return; }
 
     let feito = false;
     const limite = setTimeout(() => {
@@ -189,27 +193,27 @@ function abrirConexao(url) {
     }, 9000);
 
     ws.onopen = () => { if (feito) return; feito = true; clearTimeout(limite); resolve(ws); };
-    ws.onerror = () => { if (feito) return; feito = true; clearTimeout(limite); reject(new Error('NÃ£o foi possÃ­vel conectar ao servidor.')); };
-    ws.onclose = () => { if (feito) return; feito = true; clearTimeout(limite); reject(new Error('O servidor fechou a conexÃ£o.')); };
+    ws.onerror = () => { if (feito) return; feito = true; clearTimeout(limite); reject(new Error('Não foi possível conectar ao servidor.')); };
+    ws.onclose = () => { if (feito) return; feito = true; clearTimeout(limite); reject(new Error('O servidor fechou a conexão.')); };
   });
 }
 
 /* ------------------------------------------------------------------ */
 /* Convite da sala                                                     */
 /* ------------------------------------------------------------------ */
-/* Um cÃ³digo de 6 letras sÃ³ encontra sala dentro do MESMO computador,
-   porque o app instalado tem servidor prÃ³prio. Para alguÃ©m entrar de
-   outro PC, o convite carrega o endereÃ§o junto:
+/* Um código de 6 letras só encontra sala dentro do MESMO computador,
+   porque o app instalado tem servidor próprio. Para alguém entrar de
+   outro PC, o convite carrega o endereço junto:
 
         ABCDEF@192.168.0.15:3000
 
-   A pessoa cola esse texto inteiro no campo de cÃ³digo e jÃ¡ cai na sala
-   certa â€” sem abrir ConfiguraÃ§Ã£o nem digitar IP na mÃ£o. Sem endereÃ§o
-   alcanÃ§Ã¡vel, volta o cÃ³digo puro e o app segue pelo servidor padrÃ£o. */
+   A pessoa cola esse texto inteiro no campo de código e já cai na sala
+   certa — sem abrir Configuração nem digitar IP na mão. Sem endereço
+   alcançável, volta o código puro e o app segue pelo servidor padrão. */
 
 /** Aceita "ABCDEF", "ABCDEF@ip", "ABCDEF@ip:porta" e "nexo://ABCDEF@ip".
- *  Sobrevive a maiÃºsculas/minÃºsculas e a espaÃ§os soltos, porque o que vem
- *  de gente colando mensagem costuma vir bagunÃ§ado. */
+ *  Sobrevive a maiúsculas/minúsculas e a espaços soltos, porque o que vem
+ *  de gente colando mensagem costuma vir bagunçado. */
 function lerConvite(texto) {
   const t = String(texto || '').trim().toUpperCase();
   const cheio = t.match(/^(?:nexo:)?(?:\/\/)?([A-Z0-9]{6})\s*@\s*(\[[0-9A-F:]+\]|[0-9A-Z._-]+)(?:\s*:\s*(\d{1,5}))?$/i);
@@ -224,7 +228,7 @@ function lerConvite(texto) {
   return null;
 }
 
-/** Pergunta ao servidor onde ele estÃ¡ e monta o convite da sala atual. */
+/** Pergunta ao servidor onde ele está e monta o convite da sala atual. */
 async function montarConvite() {
   if (!estado.codigo) return null;
   try {
@@ -232,11 +236,11 @@ async function montarConvite() {
     const r = await fetch(origem + '/api/convite', { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
-    if (!d || !d.ip) throw new Error('servidor sem endereÃ§o');
+    if (!d || !d.ip) throw new Error('servidor sem endereço');
     estado.convite = estado.codigo + '@' + d.ip + ':' + (d.porta || 3000);
   } catch {
-    // Sem convite completo o cÃ³digo ainda funciona para quem estÃ¡ no
-    // mesmo computador; deixamos o bÃ¡sico e seguimos.
+    // Sem convite completo o código ainda funciona para quem está no
+    // mesmo computador; deixamos o básico e seguimos.
     estado.convite = estado.codigo;
   }
   return estado.convite;
@@ -244,10 +248,10 @@ async function montarConvite() {
 
 async function entrarNaSala(codigo) {
   definirErroEntrada('');
-  definirStatusEntrada('Conectando ao servidorâ€¦');
+  definirStatusEntrada('Conectando ao servidor…');
 
   // Fecha a tentativa anterior e desliga os handlers dela. Sem isso um
-  // onclose velho podia atirar "a conexÃ£o caiu" por cima da tentativa nova.
+  // onclose velho podia atirar "a conexão caiu" por cima da tentativa nova.
   if (estado.ws) {
     try {
       estado.ws.onclose = null;
@@ -273,10 +277,10 @@ async function entrarNaSala(codigo) {
   estado.ws = ws;
   ws.onmessage = (ev) => { try { processarMensagem(JSON.parse(ev.data)); } catch { /* ignora */ } };
   ws.onclose = desconectado;
-  ws.onerror = () => { /* o onclose abaixo cuida do aviso ao usuÃ¡rio */ };
+  ws.onerror = () => { /* o onclose abaixo cuida do aviso ao usuário */ };
 
   estado.entrando = true;
-  definirStatusEntrada(codigo ? 'Entrando na salaâ€¦' : 'Criando salaâ€¦');
+  definirStatusEntrada(codigo ? 'Entrando na sala…' : 'Criando sala…');
 
   enviar(codigo
     ? { tipo: 'entrar', codigo, nome: estado.perfil.nome, avatar: estado.perfil.avatar, cor: estado.perfil.cor }
@@ -284,12 +288,12 @@ async function entrarNaSala(codigo) {
 }
 
 function desconectado() {
-  // Caiu no meio da tentativa de abrir sala: sem este ramo o usuÃ¡rio ficaria
-  // preso em "Criando salaâ€¦" para sempre, sem nenhuma mensagem.
+  // Caiu no meio da tentativa de abrir sala: sem este ramo o usuário ficaria
+  // preso em "Criando sala…" para sempre, sem nenhuma mensagem.
   if (estado.entrando) {
     estado.entrando = false;
     definirStatusEntrada('');
-    definirErroEntrada('A conexÃ£o com o servidor caiu antes de abrir a sala. Confira o endereÃ§o do servidor.');
+    definirErroEntrada('A conexão com o servidor caiu antes de abrir a sala. Confira o endereço do servidor.');
     return;
   }
   if (!estado.codigo) return;
@@ -300,18 +304,18 @@ function desconectado() {
   $('#tela-sala').hidden = true;
   $('#tela-entrada').hidden = false;
   definirStatusEntrada('');
-  definirErroEntrada('A conexÃ£o com o servidor caiu. Sua sala foi encerrada.');
+  definirErroEntrada('A conexão com o servidor caiu. Sua sala foi encerrada.');
 }
 
 /* ------------------------------------------------------------------ */
-/* Avisos ao usuÃ¡rio                                                   */
+/* Avisos ao usuário                                                   */
 /* ------------------------------------------------------------------ */
 
-/* Som de mensagem sintetizado na hora â€” nÃ£o precisa de arquivo nenhum
+/* Som de mensagem sintetizado na hora — não precisa de arquivo nenhum
    dentro do pacote e o tom fica do jeito que a gente quer. */
 function tocarAvisoDeMensagem() {
   if (!carregar('notaSom', false)) return;
-  if (!document.hidden && document.hasFocus()) return;   // jÃ¡ estÃ¡ olhando
+  if (!document.hidden && document.hasFocus()) return;   // já está olhando
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
@@ -330,7 +334,7 @@ function tocarAvisoDeMensagem() {
       osc.stop(agora + 0.7 + i * 0.09);
     });
     setTimeout(() => { try { ctx.close(); } catch { /* ignora */ } }, 1200);
-  } catch { /* sem Ã¡udio: segue sem som */ }
+  } catch { /* sem áudio: segue sem som */ }
 }
 
 /* Acessibilidade: classes no <body> que o CSS responde na hora. */
@@ -356,7 +360,7 @@ function processarMensagem(msg) {
 
     case 'erro':
       if (!estado.codigo) {
-        // a flag tem que cair ANTES do close: senÃ£o o aviso de "conexÃ£o caiu"
+        // a flag tem que cair ANTES do close: senão o aviso de "conexão caiu"
         // sobrescreveria a mensagem de erro de verdade do servidor
         estado.entrando = false;
         definirStatusEntrada('');
@@ -390,7 +394,7 @@ function processarMensagem(msg) {
       }
       break;
 
-    // conversa individual: sÃ³ entre eu e a pessoa endereÃ§ada
+    // conversa individual: só entre eu e a pessoa endereçada
     case 'privado':
       if (msg.msg) {
         anexarMensagemPrivada(msg.msg);
@@ -401,7 +405,7 @@ function processarMensagem(msg) {
       }
       break;
 
-    // histÃ³rico da conversa individual que eu pedi ao abrir a aba
+    // histórico da conversa individual que eu pedi ao abrir a aba
     case 'historico-privado':
       if (msg.com && Array.isArray(msg.mensagens)) {
         estado.privados.set(msg.com, msg.mensagens);
@@ -438,8 +442,8 @@ function aoEntrarNaSala(dados) {
   estado.participantes = dados.participantes || [];
   estado.conectado = true;
 
-  // Monta o convite sem segurar a entrada na sala: ele sÃ³ Ã© exibido
-  // quando a pessoa for compartilhar o cÃ³digo.
+  // Monta o convite sem segurar a entrada na sala: ele só é exibido
+  // quando a pessoa for compartilhar o código.
   montarConvite();
 
   definirStatusEntrada('');
@@ -452,7 +456,9 @@ function aoEntrarNaSala(dados) {
   $('#tela-sala').hidden = false;
   $('#info-conexao').textContent = 'Servidor: ' + estado.servidor;
 
-  // "Lembrar de mim" â€” salva nome e servidor pra prÃ³xima vez
+  carregarAmizades();
+
+  // "Lembrar de mim" - salva nome e servidor pra próxima vez
   if (estado.lembrar) {
     localStorage.setItem('nexo.nomeSalvo', $('#in-nome').value.trim());
     localStorage.setItem('nexo.servidorSalvo', $('#in-servidor').value.trim());
@@ -472,7 +478,7 @@ function aoEntrarNaSala(dados) {
   atualizarTiles();
   iniciarMonitorDeQualidade();
 
-  // quem chega agora inicia a conexÃ£o com quem jÃ¡ estava
+  // quem chega agora inicia a conexão com quem já estava
   for (const p of estado.participantes) {
     if (p.id !== estado.meuId) conectarPara(p.id);
   }
@@ -481,7 +487,7 @@ function aoEntrarNaSala(dados) {
 }
 
 /* ------------------------------------------------------------------ */
-/* WebRTC â€” malha completa                                             */
+/* WebRTC — malha completa                                             */
 /* ------------------------------------------------------------------ */
 
 function trilhaDe(stream, tipo) {
@@ -530,9 +536,9 @@ function criarPC(peerId, iniciador) {
 }
 
 /**
- * Quem inicia a conexÃ£o de um par: regra determinÃ­stica (id maior inicia).
+ * Quem inicia a conexão de um par: regra determinística (id maior inicia).
  * Sem isso os dois lados podem abrir ao mesmo tempo e o navegador acaba
- * negociando duas linhas de Ã¡udio duplicadas.
+ * negociando duas linhas de áudio duplicadas.
  */
 function devoIniciar(peerId) {
   return String(estado.meuId || '') > String(peerId || '');
@@ -544,7 +550,7 @@ function conectarPara(peerId) {
   criarPC(peerId, true); // negotiationneeded dispara a oferta
 }
 
-/** cria uma oferta quando o navegador diz que Ã© preciso renegociar */
+/** cria uma oferta quando o navegador diz que é preciso renegociar */
 async function renegociar(peerId) {
   const pc = estado.pcs.get(peerId);
   if (!pc) return;
@@ -561,7 +567,7 @@ async function renegociar(peerId) {
     await pc.setLocalDescription(oferta);
     enviar({ tipo: 'oferta', para: peerId, sdp: pc.localDescription.sdp });
   } catch (erro) {
-    console.warn('[nexo] renegociaÃ§Ã£o falhou:', erro.message);
+    console.warn('[nexo] renegociação falhou:', erro.message);
   } finally {
     pc._renegociando = false;
     if (pc._fila) {
@@ -577,7 +583,7 @@ async function receberOferta(peerId, sdp) {
 
   const pc = criarPC(peerId, false);
 
-  // glÃ¢re: chegou uma oferta enquanto a minha estava no ar â€” cedo (rollback)
+  // glâre: chegou uma oferta enquanto a minha estava no ar — cedo (rollback)
   if (pc.signalingState === 'have-local-offer') {
     try { await pc.setLocalDescription({ type: 'rollback' }); } catch { /* ignora */ }
     pc._fila = true;
@@ -652,7 +658,7 @@ function anexarTrilhasFaltantes(pc) {
   const quero = {};
   for (const [trilha] of locais) quero[trilha.kind] = (quero[trilha.kind] || 0) + 1;
 
-  // quantas linhas desse tipo jÃ¡ estÃ£o carregando alguma trilha minha
+  // quantas linhas desse tipo já estão carregando alguma trilha minha
   const pronto = {};
   for (const s of pc.getSenders()) {
     if (s.track && quero[s.track.kind]) pronto[s.track.kind] = (pronto[s.track.kind] || 0) + 1;
@@ -660,7 +666,7 @@ function anexarTrilhasFaltantes(pc) {
 
   for (const [trilha, stream] of locais) {
     if (pc.getSenders().some(s => s.track === trilha)) continue;
-    // jÃ¡ existe uma linha desse tipo com minha mÃ­dia: nÃ£o criar outra
+    // já existe uma linha desse tipo com minha mídia: não criar outra
     if ((pronto[trilha.kind] || 0) >= quero[trilha.kind]) continue;
 
     const tx = pc.getTransceivers().find(t =>
@@ -693,7 +699,7 @@ function encerrarPar(peerId) {
   limparMidiaDoPeer(peerId);
 }
 
-/** garante que todo mundo da sala tenha uma conexÃ£o comigo */
+/** garante que todo mundo da sala tenha uma conexão comigo */
 function reconectarFaltantes() {
   for (const p of estado.participantes) {
     if (p.id !== estado.meuId && !estado.pcs.has(p.id)) conectarPara(p.id);
@@ -701,7 +707,7 @@ function reconectarFaltantes() {
 }
 
 /* ------------------------------------------------------------------ */
-/* MÃ­dia remota                                                        */
+/* Mídia remota                                                        */
 /* ------------------------------------------------------------------ */
 
 function streamRemoto(streamId) {
@@ -719,14 +725,14 @@ function elementoRemoto(streamId) {
     el.dataset.stream = streamId;
     el.srcObject = streamRemoto(streamId);
     estado.els.set(streamId, el);
-    contÃªinerDeAudio().appendChild(el);
+    contêinerDeAudio().appendChild(el);
     aplicarSaida(el);
   }
   return el;
 }
 
 let _contAudio = null;
-function contÃªinerDeAudio() {
+function contêinerDeAudio() {
   if (_contAudio && document.body.contains(_contAudio)) return _contAudio;
   _contAudio = document.createElement('div');
   _contAudio.id = 'audios-ocultos';
@@ -744,22 +750,22 @@ function aoReceberTrilha(peerId, ev) {
   if (!ev.track) return;
 
   // Trilhas anexadas com replaceTrack() chegam SEM MediaStream no evento.
-  // Sem uma chave, o Ã¡udio seria descartado em silÃªncio e ninguÃ©m ouviria
-  // ninguÃ©m â€” por isso usamos uma chave sintÃ©tica por par + tipo.
+  // Sem uma chave, o áudio seria descartado em silêncio e ninguém ouviria
+  // ninguém — por isso usamos uma chave sintética por par + tipo.
   const realStreamId = ev.streams && ev.streams[0] ? ev.streams[0].id : null;
-  // Usa o ID real do stream se vier, senÃ£o cria chave sintÃ©tica por par+tipo
+  // Usa o ID real do stream se vier, senão cria chave sintética por par+tipo
   const sid = realStreamId || ('remoto:' + peerId + ':' + ev.track.kind);
 
   // Garante que o stream local existe antes de adicionar a trilha
   let s = streamRemoto(sid);
   if (!s.getTracks().includes(ev.track)) {
     s.addTrack(ev.track);
-    // Se nÃ£o tiver stream associated, criamos um novo MediaStream para segurar a trilha
+    // Se não tiver stream associated, criamos um novo MediaStream para segurar a trilha
     if (s.getTracks().length === 1 && !realStreamId) {
       // Primeira trilha adicionada sem stream: cria um container stream
       const newStream = new MediaStream();
       newStream.addTrack(ev.track);
-      s = streamRemoto(sid, newStream); // substituÃ­mos o referÃªncia
+      s = streamRemoto(sid, newStream); // substituímos o referência
       // Atualiza o elemento para usar o novo stream
       const el = elementoRemoto(sid);
       el.srcObject = newStream;
@@ -776,7 +782,7 @@ function aoReceberTrilha(peerId, ev) {
   ev.track.addEventListener('unmute', aoMudar);
   ev.track.addEventListener('removetrack', aoMudar);
 
-  // Tenta tocar o vÃ­deo; se falhar (polÃ­tica de autoplay), ignora silenciosamente
+  // Tenta tocar o vídeo; se falhar (política de autoplay), ignora silenciosamente
   el.play().catch(() => {});
   aplicarSaida(el);
   atualizarTiles();
@@ -803,16 +809,16 @@ function rotuloReal(sid) {
   const possuiCam = !!(p.camera && p.camera === sid);
   const souEu = p.id === estado.meuId;
 
-  if (possuiTela) return { texto: souEu ? 'VocÃª Â· tela' : p.nome, tipo: 'tela', eu: souEu };
-  if (possuiCam) return { texto: souEu ? 'VocÃª Â· cÃ¢mera' : p.nome, tipo: 'camera', eu: souEu };
+  if (possuiTela) return { texto: souEu ? 'Você · tela' : p.nome, tipo: 'tela', eu: souEu };
+  if (possuiCam) return { texto: souEu ? 'Você · câmera' : p.nome, tipo: 'camera', eu: souEu };
 
-  // chave sintÃ©tica (trilha vinda de replaceTrack, sem stream no evento)
+  // chave sintética (trilha vinda de replaceTrack, sem stream no evento)
   if (el.dataset.trilha === 'video') {
     const tipo = (p.camera && !p.tela) ? 'camera' : 'tela';
-    return { texto: souEu ? 'VocÃª Â· vÃ­deo' : p.nome, tipo, eu: souEu };
+    return { texto: souEu ? 'Você · vídeo' : p.nome, tipo, eu: souEu };
   }
 
-  return { texto: souEu ? 'VocÃª' : p.nome, tipo: 'audio', eu: souEu };
+  return { texto: souEu ? 'Você' : p.nome, tipo: 'audio', eu: souEu };
 }
 
 function sincronizarComPresenca() {
@@ -820,8 +826,8 @@ function sincronizarComPresenca() {
     const peer = el.dataset.peer;
     if (!peer || peer === estado.meuId) continue;
 
-    // sÃ³ vÃ­deo: o Ã¡udio Ã© a linha de voz e nunca pode ser derrubado aqui,
-    // senÃ£o o mudo temporÃ¡rio de uma pessoa derrubaria a chamada inteira
+    // só vídeo: o áudio é a linha de voz e nunca pode ser derrubado aqui,
+    // senão o mudo temporário de uma pessoa derrubaria a chamada inteira
     const s = estado.streams.get(sid);
     if (!s || !s.getVideoTracks().length) continue;
 
@@ -829,7 +835,7 @@ function sincronizarComPresenca() {
     if (!p) continue;
     if (p.tela === sid || p.camera === sid) continue;
 
-    // o dono nÃ£o anuncia mais essa fonte de vÃ­deo: derruba na marra,
+    // o dono não anuncia mais essa fonte de vídeo: derruba na marra,
     // porque a trilha remota pode ficar "live" depois que o remetente para
     s.getTracks().forEach(t => { try { t.stop(); } catch { /* ignora */ } });
     try { el.pause(); } catch { /* ignora */ }
@@ -876,11 +882,11 @@ function atualizarTiles() {
   grade.hidden = false;
   $('#placeholder').hidden = true;
 
-  // prÃ©via local
-  for (const [rotulo, stream] of [['tela', estado.streamTela], ['cÃ¢mera', estado.streamCamera]]) {
+  // prévia local
+  for (const [rotulo, stream] of [['tela', estado.streamTela], ['câmera', estado.streamCamera]]) {
     if (!stream || !stream.getVideoTracks().some(t => t.readyState === 'live')) continue;
     const tile = document.createElement('div');
-    // classe 'camera' (sem acento, pro CSS) ou 'tela' â€” controla espelhamento
+    // classe 'camera' (sem acento, pro CSS) ou 'tela' — controla espelhamento
     tile.className = 'tile local ' + (rotulo === 'tela' ? 'tela' : 'camera');
     const v = document.createElement('video');
     v.autoplay = true; v.playsInline = true; v.muted = true;
@@ -888,7 +894,7 @@ function atualizarTiles() {
     tile.appendChild(v);
     const lab = document.createElement('span');
     lab.className = 'rotulo-tile';
-    lab.innerHTML = '<span class="mini-ic ok">â—</span> VocÃª Â· ' + rotulo;
+    lab.innerHTML = '<span class="mini-ic ok">●</span> Você · ' + rotulo;
     tile.appendChild(lab);
     grade.appendChild(tile);
   }
@@ -916,7 +922,7 @@ function atualizarTiles() {
 function desenharRotulos() {
   document.querySelectorAll('.rotulo-tile[data-sid]').forEach(lab => {
     const info = rotuloReal(lab.dataset.sid);
-    lab.innerHTML = '<span class="mini-ic ok">â—</span> ' + escapeHtml(info.texto || 'â€¢');
+    lab.innerHTML = '<span class="mini-ic ok">●</span> ' + escapeHtml(info.texto || '•');
   });
 }
 
@@ -925,7 +931,7 @@ function escapeHtml(t) {
 }
 
 /* ------------------------------------------------------------------ */
-/* MÃ­dia local: microfone, cÃ¢mera e tela                               */
+/* Mídia local: microfone, câmera e tela                               */
 /* ------------------------------------------------------------------ */
 
 async function iniciarMidiaLocal() {
@@ -963,7 +969,7 @@ async function ligarMicrofone(silencioso) {
     desenharBotoesDeMidia();
     atualizarRodapeDispositivos();
   } catch (erro) {
-    if (!silencioso) aviso('NÃ£o consegui usar o microfone: ' + motivoMedia(erro), 'erro');
+    if (!silencioso) aviso('Não consegui usar o microfone: ' + motivoMedia(erro), 'erro');
     estado.streamMicro = null;
     enviar({ tipo: 'estado', micro: false });
     pararMedidor();
@@ -1023,9 +1029,9 @@ async function ligarCamera() {
     await listarDispositivos();
     desenharBotoesDeMidia();
     atualizarTiles();
-    aviso('CÃ¢mera ligada.', 'ok');
+    aviso('Câmera ligada.', 'ok');
   } catch (erro) {
-    aviso('NÃ£o consegui usar a cÃ¢mera: ' + motivoMedia(erro), 'erro');
+    aviso('Não consegui usar a câmera: ' + motivoMedia(erro), 'erro');
   }
 }
 
@@ -1104,7 +1110,7 @@ async function iniciarTransmissao() {
     const largura = Number(estado.resolucao) || 0;
 
     // Nativa: pede o tamanho fisico real do monitor (devicePixelRatio incluso)
-    // e nao forÃ§a 16:9 - assim nem ultrawide nem notebook tem o que aparece
+    // e nao força 16:9 - assim nem ultrawide nem notebook tem o que aparece
     // cortado nem rebaixado na transmissao.
     const dpr = window.devicePixelRatio || 1;
     const alvoW = largura > 0 ? largura : Math.round(screen.width * dpr);
@@ -1125,14 +1131,14 @@ async function iniciarTransmissao() {
       trilha.addEventListener('ended', () => encerrarTela());
       const cfg = trilha.getSettings ? trilha.getSettings() : {};
       if (cfg.frameRate && cfg.frameRate < fps) {
-        aviso(`Sua tela entregou ${Math.round(cfg.frameRate)} fps (vocÃª pediu ${fps}). O limite vem da taxa da sua tela, da CPU ou da rede.`);
+        aviso(`Sua tela entregou ${Math.round(cfg.frameRate)} fps (você pediu ${fps}). O limite vem da taxa da sua tela, da CPU ou da rede.`);
       }
       // se veio abaixo do tamanho do monitor, avisa em vez de entregar
       // uma transmissao capenga sem a pessoa perceber.
       if (cfg.width && cfg.height && cfg.width < alvoW * 0.9) {
-        aviso(`Transmitindo em ${cfg.width}Ã—${cfg.height} e nÃ£o em ${alvoW}Ã—${alvoH}. O Windows pode estar com escala de texto ampliada â€” em Ajustes > Tela, deixe em 100% para mandar tudo nativo.`, 'erro');
+        aviso(`Transmitindo em ${cfg.width}×${cfg.height} e não em ${alvoW}×${alvoH}. O Windows pode estar com escala de texto ampliada — em Ajustes > Tela, deixe em 100% para mandar tudo nativo.`, 'erro');
       } else if (cfg.width && cfg.height) {
-        console.info(`[nexo] transmissao nativa: ${cfg.width}Ã—${cfg.height} @ ${Math.round(cfg.frameRate || 0)}fps`);
+        console.info(`[nexo] transmissao nativa: ${cfg.width}×${cfg.height} @ ${Math.round(cfg.frameRate || 0)}fps`);
       }
     }
 
@@ -1141,10 +1147,10 @@ async function iniciarTransmissao() {
 
     desenharBotoesDeMidia();
     atualizarTiles();
-    aviso('TransmissÃ£o iniciada. Compartilhe o cÃ³digo da sala!', 'ok');
+    aviso('Transmissão iniciada. Compartilhe o código da sala!', 'ok');
   } catch (erro) {
     if (erro && erro.name !== 'NotAllowedError') {
-      aviso('NÃ£o foi possÃ­vel capturar a tela: ' + motivoMedia(erro), 'erro');
+      aviso('Não foi possível capturar a tela: ' + motivoMedia(erro), 'erro');
     }
   }
 }
@@ -1199,8 +1205,8 @@ function pararMedidor() {
 
 function motivoMedia(erro) {
   const n = erro && erro.name;
-  if (n === 'NotAllowedError' || n === 'SecurityError') return 'permissÃ£o negada';
-  if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'dispositivo nÃ£o encontrado';
+  if (n === 'NotAllowedError' || n === 'SecurityError') return 'permissão negada';
+  if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'dispositivo não encontrado';
   if (n === 'NotReadableError') return 'dispositivo ocupado por outro programa';
   return (erro && erro.message) || 'erro desconhecido';
 }
@@ -1210,9 +1216,9 @@ async function listarDispositivos() {
   try {
     const devs = await navigator.mediaDevices.enumerateDevices();
 
-    preencherSelect('#sel-micro', devs.filter(d => d.kind === 'audioinput'), estado.disp.micro, 'PadrÃ£o do sistema');
-    preencherSelect('#sel-fone', devs.filter(d => d.kind === 'audiooutput'), estado.disp.fone, 'PadrÃ£o do sistema');
-    preencherSelect('#sel-camera', devs.filter(d => d.kind === 'videoinput'), estado.disp.camera, 'PadrÃ£o do sistema');
+    preencherSelect('#sel-micro', devs.filter(d => d.kind === 'audioinput'), estado.disp.micro, 'Padrão do sistema');
+    preencherSelect('#sel-fone', devs.filter(d => d.kind === 'audiooutput'), estado.disp.fone, 'Padrão do sistema');
+    preencherSelect('#sel-camera', devs.filter(d => d.kind === 'videoinput'), estado.disp.camera, 'Padrão do sistema');
 
     const temSaida = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype;
     const campoFone = $('#sel-fone');
@@ -1249,9 +1255,9 @@ function atualizarRodapeDispositivos() {
   const micro = estado.streamMicro
     ? (estado.streamMicro.getAudioTracks()[0]?.label || 'microfone ativo')
     : 'sem microfone';
-  const cam = estado.streamCamera ? 'cÃ¢mera ligada' : null;
+  const cam = estado.streamCamera ? 'câmera ligada' : null;
   const partes = [micro, cam, estado.streamTela ? 'tela transmitindo' : null].filter(Boolean);
-  el.textContent = partes.join(' Â· ');
+  el.textContent = partes.join(' · ');
 }
 
 async function aplicarSaida(el) {
@@ -1261,7 +1267,7 @@ async function aplicarSaida(el) {
     if (estado.disp.fone && typeof el.setSinkId === 'function' && el.srcObject) {
       await el.setSinkId(estado.disp.fone);
     }
-  } catch { /* navegador nÃ£o permite */ }
+  } catch { /* navegador não permite */ }
 }
 
 function aplicarSaidaEmTudo() {
@@ -1299,14 +1305,14 @@ function atualizarMonitorMicro() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Desenho: participantes, botÃµes, rodapÃ©                              */
+/* Desenho: participantes, botões, rodapé                              */
 /* ------------------------------------------------------------------ */
 
 function avatarHtml(p, classe) {
   const cor = corDe(p.cor || 0);
   let conteudo;
   if (ehFoto(p.avatar)) {
-    // foto: preenche o redondo preservando a proporÃ§Ã£o (object-fit: cover)
+    // foto: preenche o redondo preservando a proporção (object-fit: cover)
     conteudo = `<img src="${p.avatar}" alt="" />`;
   } else if (p.avatar) {
     conteudo = `<span class="emoji">${escapeHtml(p.avatar)}</span>`;
@@ -1330,9 +1336,9 @@ function desenharParticipantes() {
     const souEu = p.id === estado.meuId;
     if (p.nome) estado.nomes.set(p.id, p.nome);
     const selos = [];
-    if (souEu) selos.push('<span class="selo eu">vocÃª</span>');
+    if (souEu) selos.push('<span class="selo eu">você</span>');
     if (p.tela) selos.push('<span class="selo tela">tela</span>');
-    if (p.camera) selos.push('<span class="selo camera">cÃ¢mera</span>');
+    if (p.camera) selos.push('<span class="selo camera">câmera</span>');
     if (p.mudo) selos.push('<span class="selo mudo">mudo</span>');
 
     return `<li class="${souEu ? 'eu' : ''}" data-id="${escapeHtml(p.id)}">
@@ -1353,7 +1359,7 @@ function desenharParticipantes() {
     });
   });
 
-  // clicar na pessoa abre o perfil dela (o botÃ£o de conversa jÃ¡ trata o clique)
+  // clicar na pessoa abre o perfil dela (o botão de conversa já trata o clique)
   lista.querySelectorAll('li').forEach(li => {
     li.addEventListener('click', (ev) => {
       if (ev.target.closest('.btn-msg-pessoa')) return;
@@ -1376,15 +1382,15 @@ function desenharParticipantes() {
 
   desenharPainelUsuario(ordenados);
 
-  // nomes e avatares podem ter mudado â€” repinta as conversas privadas
+  // nomes e avatares podem ter mudado — repinta as conversas privadas
   desenharListaDms();
 }
 
-/* Espelho de "eu" no rodapÃ© do painel esquerdo (igual ao painel do usuÃ¡rio
-   do Discord): avatar com status, nome e os botÃµes de mÃ­dia.             */
+/* Espelho de "eu" no rodapé do painel esquerdo (igual ao painel do usuário
+   do Discord): avatar com status, nome e os botões de mídia.             */
 function desenharPainelUsuario(ordenados) {
   const eu = (ordenados || []).find(p => p.id === estado.meuId) || {};
-  const nome = eu.nome || estado.perfil.nome || 'VocÃª';
+  const nome = eu.nome || estado.perfil.nome || 'Você';
 
   const elNome = $('#nome-user');
   if (elNome) elNome.textContent = nome;
@@ -1392,8 +1398,8 @@ function desenharPainelUsuario(ordenados) {
   const elStatus = $('#status-user');
   if (elStatus) {
     if (eu.tela) elStatus.textContent = 'Compartilhando tela';
-    else if (eu.camera) elStatus.textContent = 'CÃ¢mera ligada';
-    else if (eu.mudo) elStatus.textContent = 'Sem Ã¡udio';
+    else if (eu.camera) elStatus.textContent = 'Câmera ligada';
+    else if (eu.mudo) elStatus.textContent = 'Sem áudio';
     else elStatus.textContent = 'Conectado';
   }
 
@@ -1438,10 +1444,10 @@ function desenharBotoesDeMidia() {
   const titulo = $('#titulo-transmissao');
   if (titulo) {
     const outrosTela = estado.participantes.find(p => p.id !== estado.meuId && p.tela);
-    if (telaOk) titulo.textContent = 'VocÃª estÃ¡ transmitindo sua tela';
-    else if (estado.streamCamera && !outrosTela) titulo.textContent = 'VocÃª estÃ¡ com a cÃ¢mera ligada';
+    if (telaOk) titulo.textContent = 'Você está transmitindo sua tela';
+    else if (estado.streamCamera && !outrosTela) titulo.textContent = 'Você está com a câmera ligada';
     else if (outrosTela) titulo.textContent = `Tela de ${outrosTela.nome}`;
-    else titulo.textContent = 'Aguardando transmissÃ£o';
+    else titulo.textContent = 'Aguardando transmissão';
   }
 
   const semVideo = !telaOk && !estado.streamCamera &&
@@ -1458,10 +1464,10 @@ function atualizarRodapeConexao() {
   const total = estado.pcs.size;
   const ok = Array.from(estado.pcs.values())
     .filter(pc => pc.connectionState === 'connected').length;
-  el.textContent = `Servidor: ${estado.servidor} Â· ${ok}/${total} pares WebRTC conectados`;
+  el.textContent = `Servidor: ${estado.servidor} · ${ok}/${total} pares WebRTC conectados`;
 }
 
-/* qualidade ao vivo: resoluÃ§Ã£o e fps que estÃ£o chegando indo/indo */
+/* qualidade ao vivo: resolução e fps que estão chegando indo/indo */
 let relatorioQualidade = null;
 
 function iniciarMonitorDeQualidade() {
@@ -1476,13 +1482,13 @@ function iniciarMonitorDeQualidade() {
       .find(t => t.readyState === 'live');
     const trilha = meuLocal || alheio;
 
-    if (!trilha) { el.textContent = 'sem vÃ­deo'; return; }
+    if (!trilha) { el.textContent = 'sem vídeo'; return; }
 
     const cfg = trilha.getSettings ? trilha.getSettings() : {};
     const w = cfg.width || 0;
     const h = cfg.height || 0;
     const fps = cfg.framesPerSecond ? Math.round(cfg.framesPerSecond) : 0;
-    el.textContent = (w ? `${w}Ã—${h}` : 'â€”') + (fps ? ` Â· ${fps} fps` : '');
+    el.textContent = (w ? `${w}×${h}` : '—') + (fps ? ` · ${fps} fps` : '');
   }, 1500);
 }
 
@@ -1494,9 +1500,9 @@ function pararMonitorDeQualidade() {
 /* ------------------------------------------------------------------ */
 /* Mini-janela flutuante                                               */
 /* ------------------------------------------------------------------ */
-/* Um quadradinho arrastÃ¡vel com a transmissÃ£o, para quem estÃ¡ sÃ³
+/* Um quadradinho arrastável com a transmissão, para quem está só
    assistindo continuar vendo enquanto mexe em outra coisa. Fechar a
-   mini-janela NÃƒO corta nada: o vÃ­deo continua caindo, sÃ³ some da
+   mini-janela NÃO corta nada: o vídeo continua caindo, só some da
    tela.                                                              */
 
 let _miniVideo = null;
@@ -1517,14 +1523,14 @@ function atualizarMiniJanela() {
   const s = sid ? estado.streams.get(sid) : null;
   const info = sid ? rotuloReal(sid) : null;
 
-  // rotuloReal devolve {texto, tipo, eu} â€” era .nome, que nao existe, e o
+  // rotuloReal devolve {texto, tipo, eu} — era .nome, que nao existe, e o
   // titulo ficava sempre "Assistindo" mesmo quando dava pra ver de quem era.
   $('#mini-titulo').textContent = (info && info.texto) ? info.texto : 'Assistindo';
 
   if (!s) {
     const vazio = $('#mini-corpo').querySelector('.mini-vazio');
     if (!vazio) {
-      $('#mini-corpo').innerHTML = '<p class="mini-vazio">NinguÃ©m estÃ¡ transmitindo agora.</p>';
+      $('#mini-corpo').innerHTML = '<p class="mini-vazio">Ninguém está transmitindo agora.</p>';
     }
     if (_miniVideo) { _miniVideo.srcObject = null; _miniVideo.remove(); _miniVideo = null; }
     return;
@@ -1537,14 +1543,14 @@ function atualizarMiniJanela() {
     _miniVideo = document.createElement('video');
     _miniVideo.autoplay = true;
     _miniVideo.playsInline = true;
-    // mudo de propÃ³sito: o Ã¡udio jÃ¡ sai pelo elemento principal, e tocar
+    // mudo de propósito: o áudio já sai pelo elemento principal, e tocar
     // duas vezes seria eco na hora de quem usa fone.
     _miniVideo.muted = true;
     $('#mini-corpo').appendChild(_miniVideo);
   }
 
   if (_miniVideo.srcObject !== s) _miniVideo.srcObject = s;
-  _miniVideo.play().catch(() => { /* autoplay recusado: nÃ£o Ã© crÃ­tico */ });
+  _miniVideo.play().catch(() => { /* autoplay recusado: não é crítico */ });
 }
 
 function alternarMiniJanela() {
@@ -1573,14 +1579,14 @@ function arrastarMiniJanela() {
   let startX = 0, startY = 0, iniX = 0, iniY = 0, arrastando = false;
 
   cabeca.addEventListener('pointerdown', (ev) => {
-    if (ev.target.closest('button')) return;   // o Ã— nÃ£o arrasta
+    if (ev.target.closest('button')) return;   // o × não arrasta
     const r = painel.getBoundingClientRect();
     startX = ev.clientX; startY = ev.clientY;
     iniX = r.left; iniY = r.top;
     arrastando = true;
     painel.style.right = 'auto';
-    // setPointerCapture pode falhar num evento sintÃ©tico ou com o ponteiro
-    // jÃ¡ solto â€” nÃ£o vale derrubar o arrasto por causa disso
+    // setPointerCapture pode falhar num evento sintético ou com o ponteiro
+    // já solto — não vale derrubar o arrasto por causa disso
     try { cabeca.setPointerCapture(ev.pointerId); } catch { /* ignora */ }
     ev.preventDefault();
   });
@@ -1600,16 +1606,16 @@ function arrastarMiniJanela() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Anexos no chat: imagem, vÃ­deo, Ã¡udio e documento                    */
+/* Anexos no chat: imagem, vídeo, áudio e documento                    */
 /* ------------------------------------------------------------------ */
-/* O servidor jÃ¡ aceitava /api/upload e jÃ¡ higienizava msg.anexo â€” o
+/* O servidor já aceitava /api/upload e já higienizava msg.anexo — o
    que faltava era a interface: escolher, subir com barra de progresso
    e desenhar na conversa. Este bloco fecha essa ponte.                */
 
 const TAM_MAX_ARQUIVO = 25 * 1024 * 1024;
 const RE_URL_FORTE = /^https?:\/\/[^\s<>"']+$/i;
 
-/* O Electron carrega a pÃ¡gina de file://, entao URL relativa
+/* O Electron carrega a página de file://, entao URL relativa
    (/arquivos/...) nao resolve nada. Tudo vira absoluto aqui. */
 function origemHttp() {
   return String(estado.servidor || padraoServidor)
@@ -1619,9 +1625,9 @@ function origemHttp() {
 function absolvaUrl(u) {
   const s = String(u || '');
   if (!s) return '';
-  // endereÃ§o pronto (http, data: de prÃ©via local, blob: de mÃ­dia capturada)
+  // endereço pronto (http, data: de prévia local, blob: de mídia capturada)
   if (/^(https?:|data:|blob:)/i.test(s)) return s;
-  // caminho do servidor (/arquivos/...): fica relativo de propÃ³sito, para
+  // caminho do servidor (/arquivos/...): fica relativo de propósito, para
   // funcionar igual na sua rede e do outro lado da internet
   if (s.startsWith('/')) return origemHttp() + s;
   return origemHttp() + '/' + s;
@@ -1706,7 +1712,7 @@ function ligarAnexos(raiz) {
       img.remove();
       const aviso = document.createElement('span');
       aviso.className = 'anexo-erro-texto';
-      aviso.textContent = 'nÃ£o foi possÃ­vel carregar';
+      aviso.textContent = 'não foi possível carregar';
       const alvo = caixa.querySelector('.anexo-visual') || caixa;
       alvo.appendChild(aviso);
     };
@@ -1777,7 +1783,7 @@ function escolherAnexos(lista) {
     estado.anexo = null;
     mostrarPendente(arquivo, {
       erro: true, pct: 0,
-      texto: 'Arquivo grande demais â€” o limite Ã© 25MB.'
+      texto: 'Arquivo grande demais — o limite é 25MB.'
     });
     aviso('Arquivo acima de 25MB.');
     return;
@@ -1785,11 +1791,11 @@ function escolherAnexos(lista) {
 
   estado.anexo = { arquivo, url: '', nome: arquivo.name, tipo: arquivo.type, tamanho: arquivo.size };
   desenharMiniatura(arquivo);
-  mostrarPendente(arquivo, { pct: 4, texto: 'Enviandoâ€¦' });
+  mostrarPendente(arquivo, { pct: 4, texto: 'Enviando…' });
   subirAnexo(arquivo);
 }
 
-/* XHR em vez de fetch: sÃ³ o XHR dÃ¡ progresso de subida de verdade. */
+/* XHR em vez de fetch: só o XHR dá progresso de subida de verdade. */
 function subirAnexo(arquivo) {
   const url = origemHttp() + '/api/upload?nome=' + encodeURIComponent(arquivo.name);
   const xhr = new XMLHttpRequest();
@@ -1799,7 +1805,7 @@ function subirAnexo(arquivo) {
   xhr.upload.onprogress = (ev) => {
     if (!vivo() || !ev.lengthComputable) return;
     const pct = Math.round((ev.loaded / ev.total) * 96);
-    mostrarPendente(arquivo, { pct, texto: 'Enviandoâ€¦ ' + pct + '%' });
+    mostrarPendente(arquivo, { pct, texto: 'Enviando… ' + pct + '%' });
   };
 
   xhr.onload = () => {
@@ -1812,7 +1818,7 @@ function subirAnexo(arquivo) {
       estado.anexo.tipo = resp.tipo || arquivo.type;
       estado.anexo.tamanho = resp.tamanho || arquivo.size;
       estado.anexo.erro = false;
-      mostrarPendente(arquivo, { pct: 100, pronto: true, texto: 'Pronto â€” tecle Enter para enviar' });
+      mostrarPendente(arquivo, { pct: 100, pronto: true, texto: 'Pronto — tecle Enter para enviar' });
     } else {
       const erro = (resp && resp.erro) ? resp.erro : ('Falha no envio (' + xhr.status + ').');
       estado.anexo.erro = true;
@@ -1824,8 +1830,8 @@ function subirAnexo(arquivo) {
   xhr.onerror = () => {
     if (!vivo()) return;
     estado.anexo.erro = true;
-    mostrarPendente(arquivo, { erro: true, pct: 0, texto: 'Sem conexÃ£o com o servidor.' });
-    aviso('NÃ£o consegui enviar o arquivo.');
+    mostrarPendente(arquivo, { erro: true, pct: 0, texto: 'Sem conexão com o servidor.' });
+    aviso('Não consegui enviar o arquivo.');
   };
 
   xhr.open('POST', url);
@@ -1847,10 +1853,10 @@ function montarEnvio() {
     return { texto, anexo };
   }
   if (a) {
-    // ainda subindo (ou falhou): nÃ£o deixa o Enter sumir com o texto
+    // ainda subindo (ou falhou): não deixa o Enter sumir com o texto
     aviso(estado.anexo.erro
-      ? 'O anexo falhou â€” escolha o arquivo de novo.'
-      : 'O arquivo ainda estÃ¡ subindo, aguarde ficar "Pronto".');
+      ? 'O anexo falhou — escolha o arquivo de novo.'
+      : 'O arquivo ainda está subindo, aguarde ficar "Pronto".');
     return null;
   }
   if (!texto) return null;
@@ -1861,7 +1867,7 @@ function montarEnvio() {
 
 function enviarParaConversa(carga) {
   if (estado.conversa) {
-    // conversa individual: mostra do meu lado na hora e manda sÃ³ pra ela
+    // conversa individual: mostra do meu lado na hora e manda só pra ela
     anexarMensagemPrivada({
       de: estado.meuId, para: estado.conversa,
       nome: estado.perfil.nome, avatar: estado.perfil.avatar,
@@ -1882,7 +1888,7 @@ function abrirLuzia(src) {
     lz = document.createElement('div');
     lz.id = 'luzia';
     lz.className = 'luzia hidden';
-    lz.innerHTML = '<img alt=""><button class="luzia-fechar" type="button" title="Fechar">Ã—</button>';
+    lz.innerHTML = '<img alt=""><button class="luzia-fechar" type="button" title="Fechar">×</button>';
     document.body.appendChild(lz);
     lz.addEventListener('click', (ev) => {
       if (ev.target === lz || ev.target.classList.contains('luzia-fechar')) {
@@ -1927,10 +1933,10 @@ function anexarMensagem(item, silencioso) {
   estado.historico.push(item);
   if (estado.historico.length > 400) estado.historico.shift();
 
-  // galeria aberta: um anexo novo aparece lÃ¡ na hora, sem trocar de canal
+  // galeria aberta: um anexo novo aparece lá na hora, sem trocar de canal
   if (estado.canal === 'arquivos' && item.anexo) desenharArquivos();
 
-  // estou olhando uma conversa individual: sÃ³ guarda, nÃ£o atira na tela errada
+  // estou olhando uma conversa individual: só guarda, não atira na tela errada
   if (estado.conversa) return;
 
   const lista = $('#lista-chat');
@@ -1945,7 +1951,7 @@ function anexarMensagem(item, silencioso) {
 /* ------------------------------------------------------------------ */
 /* Conversa individual                                                 */
 /* ------------------------------------------------------------------ */
-/* SÃ³ eu e a pessoa enderecada. O servidor guarda num balde separado do
+/* Só eu e a pessoa enderecada. O servidor guarda num balde separado do
    chat da sala, entao quem entra depois nao desvia conversa alheia.   */
 
 function acharPessoa(id) {
@@ -1971,7 +1977,7 @@ function anexarMensagemPrivada(item) {
   if (estado.conversa !== outro) {
     estado.naoLidas.set(outro, (estado.naoLidas.get(outro) || 0) + 1);
   }
-  // galeria aberta tambÃ©m recebe anexos vindos de conversas privadas
+  // galeria aberta também recebe anexos vindos de conversas privadas
   if (estado.canal === 'arquivos' && item.anexo) desenharArquivos();
 
   montarAbasConversa();
@@ -1999,7 +2005,7 @@ function montarAbasConversa() {
     b.addEventListener('click', () => abrirConversa(b.dataset.com || ''));
   });
 
-  // o painel esquerdo espelha as mesmas conversas, com badge de nÃ£o-lidas
+  // o painel esquerdo espelha as mesmas conversas, com badge de não-lidas
   desenharListaDms();
 }
 
@@ -2011,7 +2017,7 @@ function abrirConversa(id) {
     estado.naoLidas.delete(id);
     if (!estado.privados.has(id)) {
       estado.privados.set(id, []);
-      // pede o histÃ³rico que jÃ¡ existiu entre nÃ³s dois
+      // pede o histórico que já existiu entre nós dois
       enviar({ tipo: 'historico-privado', para: id });
     }
   }
@@ -2035,13 +2041,13 @@ function desenharChat() {
     const p = acharPessoa(estado.conversa);
     if (!msgs.length) {
       lista.innerHTML = `<div class="chat-vazio">Conversa com <b>${escapeHtml(p ? p.nome : 'essa pessoa')}</b>.` +
-        ` SÃ³ vocÃªs dois leem isto.</div>`;
+        ` Só vocês dois leem isto.</div>`;
     }
     msgs.forEach(m => lista.appendChild(criarMsgEl(m)));
     $('#cont-chat').textContent = msgs.length;
   } else {
     if (!estado.historico.length) {
-      lista.innerHTML = '<div class="chat-vazio">Ainda nÃ£o hÃ¡ mensagens. Diga oi!</div>';
+      lista.innerHTML = '<div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>';
     }
     estado.historico.forEach(m => lista.appendChild(criarMsgEl(m)));
     $('#cont-chat').textContent = estado.historico.length;
@@ -2053,10 +2059,10 @@ function desenharChat() {
 /* ------------------------------------------------------------------ */
 /* Canal #arquivos                                                     */
 /* ------------------------------------------------------------------ */
-/* NÃ£o existe um segundo fluxo de mensagens. O canal mostra, organizado
-   em galeria, tudo que jÃ¡ foi anexado no chat da sala e nas conversas
-   privadas â€” assim ele Ã© de verdade sem pedir nada novo ao servidor que
-   jÃ¡ estÃ¡ publicado. Quem entra na sala depois recebe o histÃ³rico e a
+/* Não existe um segundo fluxo de mensagens. O canal mostra, organizado
+   em galeria, tudo que já foi anexado no chat da sala e nas conversas
+   privadas — assim ele é de verdade sem pedir nada novo ao servidor que
+   já está publicado. Quem entra na sala depois recebe o histórico e a
    galeria enche sozinha.                                              */
 
 function classificarAnexo(a) {
@@ -2074,7 +2080,7 @@ function coletarArquivos() {
   const empurrar = (item) => {
     const a = item && item.anexo;
     if (!a || !a.url) return;
-    if (visto.has(a.url)) return;      // anexo repetido aparece uma vez sÃ³
+    if (visto.has(a.url)) return;      // anexo repetido aparece uma vez só
     visto.add(a.url);
     saida.push({
       nome: a.nome || 'arquivo',
@@ -2094,10 +2100,10 @@ function coletarArquivos() {
 }
 
 function quemEnviou(id) {
-  if (!id) return 'alguÃ©m';
-  if (id === estado.meuId) return 'vocÃª';
+  if (!id) return 'alguém';
+  if (id === estado.meuId) return 'você';
   const p = acharPessoa(id);
-  return (p && p.nome) || estado.nomes.get(id) || 'alguÃ©m';
+  return (p && p.nome) || estado.nomes.get(id) || 'alguém';
 }
 
 function desenharArquivos() {
@@ -2117,7 +2123,7 @@ function desenharArquivos() {
     if (todos.length) {
       const bytes = todos.reduce((s, a) => s + (a.tamanho || 0), 0);
       resumo.innerHTML = `<b>${todos.length}</b> ${todos.length === 1 ? 'item' : 'itens'}` +
-        ` Â· ${escapeHtml(tamanhoLegivel(bytes))} no total`;
+        ` · ${escapeHtml(tamanhoLegivel(bytes))} no total`;
     } else {
       resumo.textContent = '';
     }
@@ -2127,7 +2133,7 @@ function desenharArquivos() {
     grade.innerHTML = todos.length
       ? `<div class="arq-vazio">Nada em <b>${escapeHtml(filtro)}</b> por enquanto.</div>`
       : `<div class="arq-vazio">Nenhum arquivo compartilhado ainda.<br>` +
-        `Toque no <b>clipe</b> do chat â€” ou arraste um arquivo pra dentro dele â€”<br>` +
+        `Toque no <b>clipe</b> do chat — ou arraste um arquivo pra dentro dele —<br>` +
         `que tudo aparece aqui, organizado por tipo.</div>`;
     return;
   }
@@ -2136,7 +2142,7 @@ function desenharArquivos() {
     const url = escapeHtml(absolvaUrl(a.url));
     const nome = escapeHtml(a.nome);
     const meta = [quemEnviou(a.de), a.hora ? horaDe(a.hora) : '']
-      .filter(Boolean).join(' Â· ');
+      .filter(Boolean).join(' · ');
 
     let mini;
     if (a.classe === 'imagem') {
@@ -2153,7 +2159,7 @@ function desenharArquivos() {
       <span class="arq-miniatura ${a.classe}">${mini}</span>
       <span class="arq-corpo">
         <span class="arq-nome">${nome}</span>
-        <span class="arq-meta">${escapeHtml(meta)} Â· ${escapeHtml(tamanhoLegivel(a.tamanho))}</span>
+        <span class="arq-meta">${escapeHtml(meta)} · ${escapeHtml(tamanhoLegivel(a.tamanho))}</span>
       </span>
     </a>`;
   }).join('');
@@ -2162,9 +2168,9 @@ function desenharArquivos() {
 /* ------------------------------------------------------------------ */
 /* Conversas privadas no painel esquerdo                               */
 /* ------------------------------------------------------------------ */
-/* As abas no topo do chat continuam existindo; isto aqui Ã© o espelho
-   delas no painel, que Ã© onde o Discord coloca. A vantagem Ã© o badge de
-   nÃ£o-lidas ficar visÃ­vel sem precisar estar olhando o chat.          */
+/* As abas no topo do chat continuam existindo; isto aqui é o espelho
+   delas no painel, que é onde o Discord coloca. A vantagem é o badge de
+   não-lidas ficar visível sem precisar estar olhando o chat.          */
 
 function desenharListaDms() {
   const box = $('#lista-dms');
@@ -2173,7 +2179,7 @@ function desenharListaDms() {
   const ids = Array.from(estado.privados.keys());
   const totalNaoLidas = ids.reduce((s, id) => s + (estado.naoLidas.get(id) || 0), 0);
 
-  // o cabeÃ§alho ganha o contador quando hÃ¡ mensagens novas
+  // o cabeçalho ganha o contador quando há mensagens novas
   const rot = document.querySelector('.rot-cat-dms');
   if (rot) rot.textContent = totalNaoLidas
     ? `Conversas (${totalNaoLidas > 9 ? '9+' : totalNaoLidas})`
@@ -2207,9 +2213,9 @@ function desenharListaDms() {
   });
 }
 
-/* Escolher com quem conversar. Mostra sÃ³ quem estÃ¡ na sala agora, que Ã©
-   a Ãºnica gente com quem dÃ¡ para conversar â€” o servidor endereÃ§a o
-   privado para quem estÃ¡ conectado na mesma sala.                     */
+/* Escolher com quem conversar. Mostra só quem está na sala agora, que é
+   a única gente com quem dá para conversar — o servidor endereça o
+   privado para quem está conectado na mesma sala.                     */
 function abrirSeletorPessoa() {
   const box = $('#lista-escolher-pessoa');
   if (!box) return;
@@ -2217,14 +2223,14 @@ function abrirSeletorPessoa() {
   const candidatos = estado.participantes.filter(p => p.id !== estado.meuId);
 
   if (!candidatos.length) {
-    box.innerHTML = `<li class="escolha-vazia">VocÃª Ã© a Ãºnica pessoa na sala por enquanto.<br>` +
-      `Compartilhe o cÃ³digo da sala para alguÃ©m entrar â€” aÃ­ dÃ¡ para conversar.</li>`;
+    box.innerHTML = `<li class="escolha-vazia">Você é a única pessoa na sala por enquanto.<br>` +
+      `Compartilhe o código da sala para alguém entrar — aí dá para conversar.</li>`;
   } else {
     box.innerHTML = candidatos.map(p => {
       const dado = { id: p.id, nome: p.nome, avatar: p.avatar || '', cor: p.cor || 0 };
       return `<li><button class="escolha-pessoa" data-com="${escapeHtml(p.id)}" type="button">
         ${avatarHtml(dado, 'avatar')}
-        <span class="escolha-nome">${escapeHtml(p.nome || 'AlguÃ©m')}</span>
+        <span class="escolha-nome">${escapeHtml(p.nome || 'Alguém')}</span>
         <span class="escolha-dica">conversar</span>
       </button></li>`;
     }).join('');
@@ -2244,8 +2250,8 @@ function abrirSeletorPessoa() {
 /* ------------------------------------------------------------------ */
 /* Troca de canal                                                      */
 /* ------------------------------------------------------------------ */
-/* '#geral' Ã© o chat; '#arquivos' Ã© a galeria. O campo de digitaÃ§Ã£o
-   some na galeria para nÃ£o dar a entender que existe um segundo chat. */
+/* '#geral' é o chat; '#arquivos' é a galeria. O campo de digitação
+   some na galeria para não dar a entender que existe um segundo chat. */
 function trocarCanal(nome) {
   const alvo = (nome === 'arquivos') ? 'arquivos' : 'geral';
   estado.canal = alvo;
@@ -2272,7 +2278,7 @@ function trocarCanal(nome) {
     desenharChat();
   }
 
-  // cabeÃ§alho do chat acompanha o canal
+  // cabeçalho do chat acompanha o canal
   const ic = document.querySelector('.ic-canal-chat');
   if (ic) ic.textContent = '#';
 
@@ -2344,7 +2350,7 @@ function sairDaSala() {
   estado.codigo = null;
   estado.meuId = null;
   estado.participantes = [];
-  $('#lista-chat').innerHTML = '<div class="chat-vazio">Ainda nÃ£o hÃ¡ mensagens. Diga oi!</div>';
+  $('#lista-chat').innerHTML = '<div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>';
   $('#tela-sala').hidden = true;
   $('#tela-entrada').hidden = false;
   definirStatusEntrada('');
@@ -2375,7 +2381,7 @@ function limparTudo() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Modais: configuraÃ§Ãµes e perfil                                      */
+/* Modais: configurações e perfil                                      */
 /* ------------------------------------------------------------------ */
 
 function abrirModal(sel) { $(sel).hidden = false; }
@@ -2395,7 +2401,7 @@ const TEMAS = [
   { id: 'evangelion',  nome: 'Evangelion',       cores: ['#8b5cf6', '#39ff88'] },
   { id: 'onepiece',    nome: 'One Piece',        cores: ['#e0b23c', '#1d4ed8'] },
   { id: 'deathnote',   nome: 'Death Note',       cores: ['#ffffff', '#e50914'] },
-  { id: 'pokemon',     nome: 'PokÃ©mon',          cores: ['#ffcb05', '#3b6fe0'] },
+  { id: 'pokemon',     nome: 'Pokémon',          cores: ['#ffcb05', '#3b6fe0'] },
   { id: 'gojo',        nome: 'Gojo',             cores: ['#38bdf8', '#2563eb'] },
   { id: 'chainsawman', nome: 'Chainsaw Man',     cores: ['#dc2626', '#f59e0b'] },
   { id: 'mha',         nome: 'My Hero Academia', cores: ['#22c55e', '#ef4444'] }
@@ -2439,16 +2445,16 @@ function montarGradeTemas() {
 /* ------------------------------------------------------------------ */
 /* Foto de perfil: escolher, cortar e guardar                          */
 /* ------------------------------------------------------------------ */
-/* A pessoa pega um arquivo do computador, arrasta e dÃ¡ zoom dentro do
+/* A pessoa pega um arquivo do computador, arrasta e dá zoom dentro do
    redondo, e confirma. Guardamos um quadrado 256x256 recortado da
-   regiÃ£o visÃ­vel â€” Ã© recorte, nÃ£o encolhimento forÃ§ado, entÃ£o a imagem
-   mantÃ©m a proporÃ§Ã£o original e nunca sai distorcida.                 */
+   região visível — é recorte, não encolhimento forçado, então a imagem
+   mantém a proporção original e nunca sai distorcida.                 */
 
 const LADO_FOTO = 256;
 
-/* Foto colada em base64. O teste Ã© deliberadamente apertado: o que vem
-   de fora do nosso computador sÃ³ entra se for exatamente uma imagem
-   base64 conhecida â€” nada que consiga virar script dentro do <img>. */
+/* Foto colada em base64. O teste é deliberadamente apertado: o que vem
+   de fora do nosso computador só entra se for exatamente uma imagem
+   base64 conhecida — nada que consiga virar script dentro do <img>. */
 const RE_FOTO = /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/]+={0,2}$/;
 function ehFoto(avatar) {
   return typeof avatar === 'string' && RE_FOTO.test(avatar);
@@ -2461,7 +2467,7 @@ function aplicarTransforme() {
   if (!el) return;
   const dw = corte.natW * corte.escala;
   const dh = corte.natH * corte.escala;
-  // a foto nunca pode fugir da Ã¡rea: segura pelas bordas
+  // a foto nunca pode fugir da área: segura pelas bordas
   corte.tx = Math.min(0, Math.max(LADO_FOTO - dw, corte.tx));
   corte.ty = Math.min(0, Math.max(LADO_FOTO - dh, corte.ty));
   el.style.transform = `translate(${corte.tx}px, ${corte.ty}px) scale(${corte.escala})`;
@@ -2480,12 +2486,12 @@ function abrirCorte(dataUrl) {
     corte.natW = el.naturalWidth;
     corte.natH = el.naturalHeight;
     if (!corte.natW || !corte.natH) {
-      aviso('NÃ£o consegui ler essa imagem.', 'erro');
+      aviso('Não consegui ler essa imagem.', 'erro');
       return;
     }
     // escala base = "cobrir": o menor lado da foto tem que tapar o
-    // quadrado, senÃ£o sobraria barra vazia no redondo quando a foto Ã©
-    // mais alta que larga. O lado que sobrar dÃ¡ para arrastar depois.
+    // quadrado, senão sobraria barra vazia no redondo quando a foto é
+    // mais alta que larga. O lado que sobrar dá para arrastar depois.
     corte.base = LADO_FOTO / Math.min(corte.natW, corte.natH);
     corte.escala = corte.base;
     const zoom = $('#range-zoom');
@@ -2529,7 +2535,7 @@ function ligarArrasteCorte() {
   area.addEventListener('pointercancel', soltar);
 }
 
-/** Recorta a Ã¡rea visÃ­vel e devolve um quadrado 256x256 em base64. */
+/** Recorta a área visível e devolve um quadrado 256x256 em base64. */
 function recortarFoto() {
   const el = $('#corte-img');
   if (!el || !corte.natW) return null;
@@ -2541,8 +2547,8 @@ function recortarFoto() {
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
-  // o que estÃ¡ dentro do quadrado, medido na imagem original:
-  // como a escala Ã© uniforme nos dois eixos, a proporÃ§Ã£o se mantÃ©m.
+  // o que está dentro do quadrado, medido na imagem original:
+  // como a escala é uniforme nos dois eixos, a proporção se mantém.
   const sx = -corte.tx / corte.escala;
   const sy = -corte.ty / corte.escala;
   const l = LADO_FOTO / corte.escala;
@@ -2564,19 +2570,19 @@ function aoEscolherFoto(ev) {
   if (!arq) return;
 
   if (arq.type && !arq.type.startsWith('image/')) {
-    aviso('Esse arquivo nÃ£o Ã© uma imagem.', 'erro');
+    aviso('Esse arquivo não é uma imagem.', 'erro');
     return;
   }
 
   const leitor = new FileReader();
   leitor.onload = () => abrirCorte(String(leitor.result));
-  leitor.onerror = () => aviso('NÃ£o consegui abrir essa imagem.', 'erro');
+  leitor.onerror = () => aviso('Não consegui abrir essa imagem.', 'erro');
   leitor.readAsDataURL(arq);
 }
 
 function aplicarCorteNoPerfil() {
   const foto = recortarFoto();
-  if (!foto) { aviso('NÃ£o consegui recortar essa imagem.', 'erro'); return; }
+  if (!foto) { aviso('Não consegui recortar essa imagem.', 'erro'); return; }
 
   estado.perfil.avatar = foto;
   salvar('perfil', estado.perfil);
@@ -2589,7 +2595,7 @@ function aplicarCorteNoPerfil() {
 }
 
 function removerFotoDoPerfil() {
-  estado.perfil.avatar = 'ðŸ˜€';
+  estado.perfil.avatar = '😀';
   salvar('perfil', estado.perfil);
   atualizarPreviewPerfil();
   montarGradeEmojis();
@@ -2639,7 +2645,7 @@ function atualizarPreviewPerfil() {
   if (!el) return;
 
   const temFoto = ehFoto(estado.perfil.avatar);
-  // com foto, a cor fica sÃ³ no aro â€” pÃ´r gradiente atrÃ¡s escureceria a imagem
+  // com foto, a cor fica só no aro — pôr gradiente atrás escureceria a imagem
   el.style.background = temFoto ? 'var(--superficie-2)' : corDe(estado.perfil.cor);
   el.innerHTML = temFoto
     ? `<img src="${estado.perfil.avatar}" alt="" />`
@@ -2688,13 +2694,13 @@ function abrirPerfilPessoa(id) {
   }
   alvo.style.background = `linear-gradient(135deg, ${corDe(p.cor || 0)}, ${corDe(((p.cor || 0) + 55) % 360)})`;
 
-  $('#pessoa-nome').textContent = p.nome || 'â€”';
+  $('#pessoa-nome').textContent = p.nome || '—';
   $('#pessoa-nome').style.color = corDe(p.cor || 0);
 
   const selos = [];
-  if (souEu) selos.push('<span class="selo eu">vocÃª</span>');
+  if (souEu) selos.push('<span class="selo eu">você</span>');
   if (p.tela) selos.push('<span class="selo tela">transmitindo tela</span>');
-  if (p.camera) selos.push('<span class="selo camera">cÃ¢mera ligada</span>');
+  if (p.camera) selos.push('<span class="selo camera">câmera ligada</span>');
   if (p.mudo) selos.push('<span class="selo mudo">mudo</span>');
   else if (p.micro) selos.push('<span class="selo ok">microfone ativo</span>');
   if (p.idle) selos.push('<span class="selo">sem transmitir</span>');
@@ -2720,16 +2726,16 @@ async function testarCamera() {
       box.hidden = true;
     };
   } catch (erro) {
-    aviso('Teste de cÃ¢mera falhou: ' + motivoMedia(erro), 'erro');
+    aviso('Teste de câmera falhou: ' + motivoMedia(erro), 'erro');
   }
 }
 
 /* ------------------------------------------------------------------ */
 /* Conta: entrar, criar, recuperar senha                               */
 /* ------------------------------------------------------------------ */
-/* O servidor jÃ¡ sabia fazer tudo isso desde o comeÃ§o â€” cadastro, login,
-   cÃ³digo no e-mail, cÃ³digo de suporte â€” e ficou sem tela. Aqui Ã© sÃ³ a
-   ponte: chama a API, guarda a sessÃ£o e desenha quem entrou.            */
+/* O servidor já sabia fazer tudo isso desde o começo — cadastro, login,
+   código no e-mail, código de suporte — e ficou sem tela. Aqui é só a
+   ponte: chama a API, guarda a sessão e desenha quem entrou.            */
 
 async function apiConta(caminho, corpo, metodo) {
   const r = await fetch(origemHttp() + caminho, {
@@ -2752,8 +2758,8 @@ function carregarSessao() {
     estado.token = localStorage.getItem('nexo.token') || null;
     estado.usuario = JSON.parse(localStorage.getItem('nexo.usuario') || 'null');
   } catch { estado.token = null; estado.usuario = null; }
-  // token sem usuÃ¡rio (ou usuÃ¡rio sem token) nÃ£o Ã© sessÃ£o nenhuma â€” se
-  // um dos dois faltar, a pessoa entra como visitante e ninguÃ©m Ã© enganado
+  // token sem usuário (ou usuário sem token) não é sessão nenhuma — se
+  // um dos dois faltar, a pessoa entra como visitante e ninguém é enganado
   if (!estado.token || !estado.usuario || !estado.usuario.id) {
     estado.token = null;
     estado.usuario = null;
@@ -2768,7 +2774,7 @@ function gravarSessao(token, usuario) {
     else localStorage.removeItem('nexo.token');
     if (usuario) localStorage.setItem('nexo.usuario', JSON.stringify(usuario));
     else localStorage.removeItem('nexo.usuario');
-  } catch { /* sem espaÃ§o: a sessÃ£o vale sÃ³ nesta janela */ }
+  } catch { /* sem espaço: a sessão vale só nesta janela */ }
 
   // Quem acabou de entrar passa a aparecer com o nome da conta. Sem isso
   // a pessoa cria conta e continua batendo no chat com o nome antigo.
@@ -2843,13 +2849,13 @@ function atualizarBlocoConta() {
     }
   }
   const n = $('#conta-mini-nome');
-  if (n) n.textContent = estado.usuario.nome || 'â€”';
+  if (n) n.textContent = estado.usuario.nome || '—';
 }
 
-/* O cÃ³digo de suporte Ã© entregue uma Ãºnica vez, na resposta do cadastro
-   (publico() nÃ£o o inclui de propÃ³sito). Guardo aqui no computador da
-   pessoa para que ela possa reler quando quiser â€” no servidor ele sÃ³ volta
-   com e-mail + senha, e a senha nÃ£o fica guardada nem aqui nem lÃ¡. */
+/* O código de suporte é entregue uma única vez, na resposta do cadastro
+   (publico() não o inclui de propósito). Guardo aqui no computador da
+   pessoa para que ela possa reler quando quiser — no servidor ele só volta
+   com e-mail + senha, e a senha não fica guardada nem aqui nem lá. */
 function verCodigoSuporte() {
   const alvo = $('#conta-suporte-txt');
   if (!alvo) return;
@@ -2862,14 +2868,14 @@ function verCodigoSuporte() {
   } catch { codigo = ''; }
 
   alvo.textContent = codigo
-    ? 'Guarde isto â€” Ã© o seu cÃ³digo de suporte: ' + codigo
-    : 'Este cÃ³digo foi entregue na hora em que vocÃª criou a conta e nÃ£o ' +
+    ? 'Guarde isto — é o seu código de suporte: ' + codigo
+    : 'Este código foi entregue na hora em que você criou a conta e não ' +
       'aparece mais por aqui. Sem problema: no servidor ele continua ' +
       'guardado e volta junto com o seu e-mail e a sua senha.';
 }
 
 /* ------------------------------------------------------------------ */
-/* InicializaÃ§Ã£o                                                       */
+/* Inicialização                                                       */
 /* ------------------------------------------------------------------ */
 
 function preencherCriador() {
@@ -2880,7 +2886,7 @@ function preencherCriador() {
   if (!ver) return;
   ver.textContent = '1.0.0';
 
-  // tenta ler a versÃ£o publicada pelo servidor para nÃ£o mostrar nÃºmero velho
+  // tenta ler a versão publicada pelo servidor para não mostrar número velho
   (async () => {
     try {
       let base = null;
@@ -2894,7 +2900,7 @@ function preencherCriador() {
       if (!r.ok) return;
       const d = await r.json();
       if (d && d.versao) ver.textContent = d.versao;
-    } catch { /* offline: mantÃ©m 1.0.0 */ }
+    } catch { /* offline: mantém 1.0.0 */ }
   })();
 }
 
@@ -2919,12 +2925,12 @@ function inicializar() {
   montarGradeTemas();
 
   /* ---------------- entrada ---------------- */
-  // "Lembrar de mim" â€” auto-preenche nome/servidor se marcado
+  // "Lembrar de mim" — auto-preenche nome/servidor se marcado
   const chkLembrar = $('#in-lembrar');
   if (chkLembrar) {
     chkLembrar.checked = estado.lembrar;
     if (estado.lembrar) {
-      // carrega o que a pessoa salvou da Ãºltima vez
+      // carrega o que a pessoa salvou da última vez
       const nomeSalvo = localStorage.getItem('nexo.nomeSalvo');
       const servidorSalvo = localStorage.getItem('nexo.servidorSalvo');
       if (nomeSalvo) $('#in-nome').value = nomeSalvo;
@@ -2947,8 +2953,8 @@ function inicializar() {
   $('#btn-entrar').addEventListener('click', acaoEntrar);
   inicializarAmigos();
   $('#in-codigo').addEventListener('input', (ev) => {
-    // SÃ³ o que um convite precisa: letras, nÃºmeros e o que separa o
-    // endereÃ§o ( @ : . - [ ] ). EspaÃ§os nas pontas caem sozinhos.
+    // Só o que um convite precisa: letras, números e o que separa o
+    // endereço ( @ : . - [ ] ). Espaços nas pontas caem sozinhos.
     ev.target.value = ev.target.value
       .toUpperCase()
       .replace(/[^A-Z0-9@:.\[\]\-]/g, '');
@@ -2981,7 +2987,7 @@ function inicializar() {
     const email = $('#in-email').value.trim().toLowerCase();
     const senha = $('#in-senha').value;
     if (!email || !senha) return;
-    mostrarStatusConta('Entrandoâ€¦');
+    mostrarStatusConta('Entrando…');
     try {
       const d = await apiConta('/api/conta/entrar', { email, senha });
       gravarSessao(d.token, d.usuario);
@@ -2989,6 +2995,7 @@ function inicializar() {
         try { localStorage.setItem('nexo.suporte', d.suporte); } catch {}
       }
       mostrarStatusConta('Entrou como ' + d.usuario.nome + '.');
+      carregarAmizades();
     } catch (e) {
       mostrarErroConta(e.message);
     }
@@ -3001,14 +3008,15 @@ function inicializar() {
     const email = $('#in-email-novo').value.trim().toLowerCase();
     const senha = $('#in-senha-nova').value;
     if (!nome || !email || !senha) return;
-    mostrarStatusConta('Criando contaâ€¦');
+    mostrarStatusConta('Criando conta…');
     try {
       const d = await apiConta('/api/conta/cadastrar', { nome, email, senha });
       gravarSessao(d.token, d.usuario);
       if (d.suporte) {
         try { localStorage.setItem('nexo.suporte', d.suporte); } catch {}
       }
-      mostrarStatusConta('Conta criada â€” bem-vindo, ' + d.usuario.nome + '!');
+      mostrarStatusConta('Conta criada - bem-vindo, ' + d.usuario.nome + '!');
+      carregarAmizades();
     } catch (e) {
       mostrarErroConta(e.message);
     }
@@ -3024,34 +3032,34 @@ function inicializar() {
     $('#in-rec-email').focus();
   });
 
-  // BotÃ£o "Mandar cÃ³digo para o e-mail" no modal recuperar
+  // Botão "Mandar código para o e-mail" no modal recuperar
   $('#btn-mandar-codigo')?.addEventListener('click', async () => {
     const email = $('#in-rec-email').value.trim().toLowerCase();
     if (!email) { mostrarErroRecuperar('Digite o e-mail primeiro.'); return; }
-    mostrarStatusRecuperar('Enviando cÃ³digoâ€¦');
+    mostrarStatusRecuperar('Enviando código…');
     try {
       await apiConta('/api/conta/esqueci', { email });
-      mostrarStatusRecuperar('CÃ³digo enviado! Confira a caixa de entrada (e spam).');
+      mostrarStatusRecuperar('Código enviado! Confira a caixa de entrada (e spam).');
     } catch (e) {
       mostrarErroRecuperar(e.message);
     }
   });
 
-  // BotÃ£o "Trocar minha senha" no modal recuperar
+  // Botão "Trocar minha senha" no modal recuperar
   $('#btn-trocar-senha')?.addEventListener('click', async () => {
     const email = $('#in-rec-email').value.trim().toLowerCase();
     const codigo = $('#in-rec-codigo').value.trim();
     const senha = $('#in-rec-senha').value;
     const suporte = $('#check-rec-suporte').checked;
     if (!email || !codigo || !senha) { mostrarErroRecuperar('Preencha tudo.'); return; }
-    mostrarStatusRecuperar('Trocando senhaâ€¦');
+    mostrarStatusRecuperar('Trocando senha…');
     try {
       if (suporte) {
         await apiConta('/api/conta/redefinir-suporte', { email, suporte: codigo, senha });
       } else {
         await apiConta('/api/conta/redefinir', { email, codigo, senha });
       }
-      mostrarStatusRecuperar('Senha trocada â€” agora pode entrar.');
+      mostrarStatusRecuperar('Senha trocada — agora pode entrar.');
       setTimeout(() => {
         $('#modal-recuperar').hidden = true;
         $('#form-entrar').hidden = false;
@@ -3067,15 +3075,15 @@ function inicializar() {
     }
   });
 
-  // Mostrar/ocultar ajuda do cÃ³digo de suporte
+  // Mostrar/ocultar ajuda do código de suporte
   $('#check-rec-suporte')?.addEventListener('change', (ev) => {
     const ajuda = $('#ajuda-rec-codigo');
     if (ajuda) ajuda.textContent = ev.target.checked
-      ? 'Este Ã© o cÃ³digo que vocÃª recebeu quando criou a conta (nÃ£o o do e-mail).'
-      : 'NÃ£o achou a mensagem? Olhe a caixa de spam. Se vocÃª guardou o cÃ³digo de suporte, troque o tipo de cÃ³digo aqui embaixo.';
+      ? 'Este é o código que você recebeu quando criou a conta (não o do e-mail).'
+      : 'Não achou a mensagem? Olhe a caixa de spam. Se você guardou o código de suporte, troque o tipo de código aqui embaixo.';
   });
 
-  // Ver cÃ³digo de suporte
+  // Ver código de suporte
   $('#btn-ver-suporte')?.addEventListener('click', verCodigoSuporte);
 
   // Sair da conta
@@ -3087,7 +3095,7 @@ function inicializar() {
 
   async function copiarCodigoSala() {
     if (!estado.codigo) return;
-    // Garante o convite pronto: ele leva o endereÃ§o junto, entÃ£o dÃ¡ para
+    // Garante o convite pronto: ele leva o endereço junto, então dá para
     // quem recebe colar num computador diferente e entrar direto.
     if (!estado.convite || estado.convite === estado.codigo) await montarConvite();
     const texto = estado.convite || estado.codigo;
@@ -3101,16 +3109,16 @@ function inicializar() {
     try {
       await navigator.clipboard.writeText(texto);
       aviso(completo
-        ? 'Convite copiado! Quem receber cola no campo de cÃ³digo e entra direto.'
-        : 'CÃ³digo copiado: ' + texto, 'ok');
+        ? 'Convite copiado! Quem receber cola no campo de código e entra direto.'
+        : 'Código copiado: ' + texto, 'ok');
     } catch {
-      aviso(completo ? 'Convite da sala: ' + texto : 'CÃ³digo da sala: ' + texto, 'ok');
+      aviso(completo ? 'Convite da sala: ' + texto : 'Código da sala: ' + texto, 'ok');
     }
   }
   $('#chip-codigo').addEventListener('click', copiarCodigoSala);
   $('#btn-copiar-cod')?.addEventListener('click', copiarCodigoSala);
 
-  /* ---------------- mÃ­dia ---------------- */
+  /* ---------------- mídia ---------------- */
   $('#btn-micro').addEventListener('click', alternarMicrofone);
   $('#ctrl-micro').addEventListener('click', alternarMicrofone);
   $('#btn-camera').addEventListener('click', alternarCamera);
@@ -3119,8 +3127,12 @@ function inicializar() {
   $('#ctrl-tela').addEventListener('click', iniciarTransmissao);
   $('#btn-sair-som').addEventListener('click', sairDaSala);
   $('#btn-sair-conta-painel').addEventListener('click', () => {
-    if (confirm('Sair da conta? VocÃª voltarÃ¡ para a tela de entrada.')) {
+    if (confirm('Sair da conta? Você voltará para a tela de entrada.')) {
       gravarSessao(null, null);
+      estado.amigos = [];
+      estado.pedidosAmizade = [];
+      desenharListaAmigos();
+      desenharListaPedidos();
       atualizarBlocoConta();
       $('#tela-sala').hidden = true;
       $('#tela-entrada').hidden = false;
@@ -3133,10 +3145,10 @@ function inicializar() {
       estado.privados.clear();
       estado.naoLidas.clear();
       estado.conversa = '';
-      $('#lista-chat').innerHTML = '<div class="chat-vazio">Ainda nÃ£o hÃ¡ mensagens. Diga oi!</div>';
+      $('#lista-chat').innerHTML = '<div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>';
       montarAbasConversa();
       desenharParticipantes();
-      $('#info-conexao').textContent = 'â€”';
+      $('#info-conexao').textContent = '—';
     }
   });
 
@@ -3149,8 +3161,8 @@ function inicializar() {
     });
   });
 
-  // '#geral' abre o chat; '#arquivos' abre a galeria do que jÃ¡ foi
-  // compartilhado. Os dois sÃ£o canais de verdade agora.
+  // '#geral' abre o chat; '#arquivos' abre a galeria do que já foi
+  // compartilhado. Os dois são canais de verdade agora.
   document.querySelectorAll('.canal[data-canal]').forEach(c => {
     c.addEventListener('click', () => trocarCanal(c.dataset.canal));
   });
@@ -3166,7 +3178,7 @@ function inicializar() {
   const btnEnviarArq = $('#btn-enviar-arq');
   if (btnEnviarArq) btnEnviarArq.addEventListener('click', () => {
     // Volta para o chat e abre o seletor de arquivo: o envio continua
-    // acontecendo no chat da sala, que Ã© o Ãºnico lugar com destino.
+    // acontecendo no chat da sala, que é o único lugar com destino.
     trocarCanal('geral');
     const campo = $('#in-anexo');
     if (campo) setTimeout(() => campo.click(), 0);
@@ -3179,18 +3191,18 @@ function inicializar() {
   $('#ctrl-cheia').addEventListener('click', () => {
     const alvo = $('#area-video');
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else if (alvo && alvo.requestFullscreen) alvo.requestFullscreen().catch(() => aviso('Tela cheia indisponÃ­vel.'));
+    else if (alvo && alvo.requestFullscreen) alvo.requestFullscreen().catch(() => aviso('Tela cheia indisponível.'));
   });
 
-  /* ---------------- configuraÃ§Ãµes ---------------- */
+  /* ---------------- configurações ---------------- */
   $('#btn-config').addEventListener('click', async () => {
     // Abre primeiro, lista os aparelhos depois. Se o navegador demorar a
-    // responder o enumerateDevices() â€” permissÃ£o de microfone pendente, por
-    // exemplo â€” as configuraÃ§Ãµes nÃ£o podem ficar esperando: o botÃ£o tem que
-    // abrir SEMPRE, mesmo sem Ã¡udio nenhum no sistema.
+    // responder o enumerateDevices() — permissão de microfone pendente, por
+    // exemplo — as configurações não podem ficar esperando: o botão tem que
+    // abrir SEMPRE, mesmo sem áudio nenhum no sistema.
     abrirModal('#modal-config');
     preencherContaConfig();
-    try { await listarDispositivos(); } catch (_e) { /* sem Ã¡udio: abre mesmo assim */ }
+    try { await listarDispositivos(); } catch (_e) { /* sem áudio: abre mesmo assim */ }
   });
 
   /* painel "Conta": o que os outros veem, agora e no futuro */
@@ -3208,13 +3220,13 @@ function inicializar() {
       }
     }
     const n = $('#conta-nome'); if (n) n.textContent = estado.perfil.nome || 'Sem nome';
-    const nf = $('#conta-nome-ficha'); if (nf) nf.textContent = estado.perfil.nome || 'â€”';
+    const nf = $('#conta-nome-ficha'); if (nf) nf.textContent = estado.perfil.nome || '—';
     const sub = $('#conta-sub');
     if (sub) sub.textContent = String(estado.perfil.avatar || '').length > 2
       ? 'Foto de perfil' : 'Emoji de perfil';
-    const s = $('#conta-servidor'); if (s) s.textContent = estado.servidor || 'â€”';
-    // a versÃ£o jÃ¡ Ã© resolvida na aba do criador â€” copio daÃ­ em vez de
-    // perguntar de novo ao servidor toda vez que abre as configuraÃ§Ãµes
+    const s = $('#conta-servidor'); if (s) s.textContent = estado.servidor || '—';
+    // a versão já é resolvida na aba do criador — copio daí em vez de
+    // perguntar de novo ao servidor toda vez que abre as configurações
     const v = $('#conta-versao');
     if (v) v.textContent = ($('#versao-app') || {}).textContent || '1.0.0';
   }
@@ -3251,7 +3263,7 @@ function inicializar() {
   ligar('#check-texto-grande', 'textoGrande', aplicarAcessibilidade);
 
   ligar('#check-verificar-atualizacao', 'verificarAtualizacao', (v) => {
-    // Notificacoes Ã© um objeto vivo: atribuir aqui jÃ¡ muda o comportamento
+    // Notificacoes é um objeto vivo: atribuir aqui já muda o comportamento
     // do setInterval que roda a cada minuto.
     if (typeof Notificacoes !== 'undefined') Notificacoes.semAtualizacao = !v;
   });
@@ -3259,18 +3271,18 @@ function inicializar() {
   const empurrarPreferenciaBandeja = (valor) => {
     if (!DESKTOP || !window.nexoDesktop || !window.nexoDesktop.definirPreferencia) return;
     Promise.resolve(window.nexoDesktop.definirPreferencia('fecharParaBandeja', valor))
-      .catch(() => { /* fora do Electron: nÃ£o hÃ¡ o que fazer */ });
+      .catch(() => { /* fora do Electron: não há o que fazer */ });
   };
   ligar('#check-fechar-bandeja', 'fecharBandeja', empurrarPreferenciaBandeja);
 
-  /* O horÃ¡rio Ã© sempre 24h (brasileiro) â€” nÃ£o tem opÃ§Ã£o de 12h de propÃ³sito. */
+  /* O horário é sempre 24h (brasileiro) — não tem opção de 12h de propósito. */
   const fuso = $('#fuso-hora');
   if (fuso) {
     try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'â€”';
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '—';
       const off = -new Date().getTimezoneOffset() / 60;
       fuso.textContent = `${tz} (UTC${off >= 0 ? '+' : ''}${off})`;
-    } catch { fuso.textContent = 'â€”'; }
+    } catch { fuso.textContent = '—'; }
   }
 
   const btnLimparHist = $('#btn-limpar-historico');
@@ -3311,16 +3323,16 @@ function inicializar() {
     ov.addEventListener('mousedown', (ev) => { if (ev.target === ov) ov.hidden = true; });
   });
 
-  /* ---------------- configuraÃ§Ãµes ---------------- */
+  /* ---------------- configurações ---------------- */
   const TITULOS_ABA = {
     conta: 'Conta',
     dados: 'Dados e privacidade',
-    'voz-video': 'Voz e vÃ­deo',
-    notificacoes: 'NotificaÃ§Ãµes',
-    aparencia: 'AparÃªncia',
+    'voz-video': 'Voz e vídeo',
+    notificacoes: 'Notificações',
+    aparencia: 'Aparência',
     acessibilidade: 'Acessibilidade',
     sistema: 'Sistema',
-    idioma: 'Idioma e horÃ¡rio',
+    idioma: 'Idioma e horário',
     criador: 'Leal program',
     loja: 'Loja',
     adicionar_amigo: 'Adicionar amigo'
@@ -3358,12 +3370,12 @@ function inicializar() {
     aba.addEventListener('click', () => abrirAbaConfig(aba.dataset.aba));
   });
 
-  // Gera os botÃµes de tema na aba AparÃªncia
+  // Gera os botões de tema na aba Aparência
   function gerarTemas() {
     const grade = $('#grade-temas');
     if (!grade) return;
     
-    // Temas padrÃ£o (anime + meia-noite)
+    // Temas padrão (anime + meia-noite)
     const temas = [
       { id: 'meia-noite', rotulo: 'Meia-Noite', cores: '--fundo: #080a10; --acento: #6d5efc;' },
       { id: 'zenitsu', rotulo: 'Zenitsu (SL)', cores: '--acento: #facc15;' },
@@ -3393,18 +3405,18 @@ function inicializar() {
       grade.appendChild(btn);
     });
     
-    // BotÃ£o de tema personalizado
+    // Botão de tema personalizado
     const btnPersonalizado = document.createElement('button');
     btnPersonalizado.type = 'button';
     btnPersonalizado.className = 'btn-tema';
     btnPersonalizado.id = 'btn-novo-tema';
-    btnPersonalizado.innerHTML = 'ðŸŽ¨ Tema personalizado';
+    btnPersonalizado.innerHTML = '🎨 Tema personalizado';
     btnPersonalizado.onclick = () => {
       $('#input-novo-tema').click();
     };
     grade.appendChild(btnPersonalizado);
     
-    // Input de cor pessoal (oculto por padrÃ£o, aparece quando clica no botÃ£o)
+    // Input de cor pessoal (oculto por padrão, aparece quando clica no botão)
     const inputCor = document.createElement('input');
     inputCor.type = 'color';
     inputCor.id = 'input-novo-tema';
@@ -3416,7 +3428,7 @@ function inicializar() {
       const temaPersonalizado = `personalizado-${h}`;
       document.body.dataset.tema = temaPersonalizado;
       salvar('tema', temaPersonalizado);
-      // Aplicar cor personalizada via CSS variÃ¡veis inline
+      // Aplicar cor personalizada via CSS variáveis inline
       document.body.style.setProperty('--acento', cor);
       aviso('Tema personalizado criado', 'ok');
       $('#input-novo-tema').hide();
@@ -3425,15 +3437,15 @@ function inicializar() {
     grade.appendChild(inputCor);
   }
   
-  // Inicializar geraÃ§Ã£o de temas ao carregar
+  // Inicializar geração de temas ao carregar
   setTimeout(gerarTemas, 100);
   
   // === LOJA DE TEMAAS ===
   function gerarLoja() {
-    // SerÃ¡ chamado quando a aba loja for aberta
+    // Será chamado quando a aba loja for aberta
   }
   
-  // FunÃ§Ã£o para abrir a loja e gerar os cards
+  // Função para abrir a loja e gerar os cards
   function abrirLoja() {
     const grade = $('#grade-temas-loja');
     if (!grade) return;
@@ -3450,9 +3462,9 @@ function inicializar() {
       card.onclick = () => {
         document.body.dataset.tema = t.id;
         salvar('tema', t.id);
-        // Atualizar variÃ¡veis CSS
+        // Atualizar variáveis CSS
         document.body.style.setProperty('--acento', t.corAcento);
-        // Atualizar cor de texto do botÃ£o se necessÃ¡rio
+        // Atualizar cor de texto do botão se necessário
         const botao = document.querySelector('.aba-modal.ativa');
         if (botao && botao.dataset.aba === 'loja') {
           aviso(`Tema aplicado: ${t.rotulo}`, 'ok');
@@ -3461,12 +3473,12 @@ function inicializar() {
       grade.appendChild(card);
     });
     
-    // BotÃ£o para tema personalizado
+    // Botão para tema personalizado
     const btnPersonalizado = document.createElement('div');
     btnPersonalizado.className = 'card-tema-loja';
     btnPersonalizado.style.border = '2px dashed var(--borda)';
     btnPersonalizado.innerHTML = `
-      <span class="card-rotulo">ðŸŽ¨ Tema personalizado</span>
+      <span class="card-rotulo">🎨 Tema personalizado</span>
     `;
     btnPersonalizado.onclick = () => {
       $('#input-novo-tema').click();
@@ -3480,12 +3492,12 @@ function inicializar() {
     abaLoja.addEventListener('click', (ev) => {
       ev.stopPropagation();
       abrirAbaConfig('loja');
-      // Pequeno delay para garantir que o painel apareÃ§a antes de gerar conteÃºdo
+      // Pequeno delay para garantir que o painel apareça antes de gerar conteúdo
       setTimeout(() => {
-        // Se o painel aba-loja nÃ£o existir no HTML, criamos dinamicamente
+        // Se o painel aba-loja não existir no HTML, criamos dinamicamente
         let painel = document.getElementById('aba-loja');
         if (!painel) {
-          // Inserir apÃ³s o painel do criador
+          // Inserir após o painel do criador
           const pai = document.querySelector('.config-paginas');
           if (pai) {
             const novoPainel = document.createElement('div');
@@ -3498,7 +3510,7 @@ function inicializar() {
               <div class="config-linha">
                 <div>
                   <strong>Como aplicar um tema</strong>
-                  <small>Selecione um tema e ele serÃ¡ salvo automaticamente.</small>
+                  <small>Selecione um tema e ele será salvo automaticamente.</small>
                 </div>
               </div>
             `;
@@ -3512,7 +3524,7 @@ function inicializar() {
   }
 
   // Busca no topo da barra lateral, como no Discord: filtra as abas e
-  // esconde os tÃ­tulos de grupo que nÃ£o sobrou ninguÃ©m embaixo deles.
+  // esconde os títulos de grupo que não sobrou ninguém embaixo deles.
   const buscaConfig = $('#busca-config');
   if (buscaConfig) {
     const filtrar = () => {
@@ -3553,7 +3565,7 @@ function inicializar() {
     estado.disp.fone = ev.target.value;
     salvar('disp', estado.disp);
     await aplicarSaidaEmTudo();
-    aviso('SaÃ­da de Ã¡udio alterada.', 'ok');
+    aviso('Saída de áudio alterada.', 'ok');
   });
   $('#check-eco').addEventListener('change', async (ev) => {
     estado.eco = ev.target.checked;
@@ -3572,7 +3584,7 @@ function inicializar() {
   $('#sel-fps').addEventListener('change', (ev) => {
     estado.fps = Number(ev.target.value) || 60;
     salvar('fps', estado.fps);
-    if (estado.streamTela) aviso('As novas configuraÃ§Ãµes de fps valem na prÃ³xima vez que vocÃª transmitir.');
+    if (estado.streamTela) aviso('As novas configurações de fps valem na próxima vez que você transmitir.');
   });
   $('#sel-resolucao').addEventListener('change', (ev) => {
     estado.resolucao = Number(ev.target.value) || 0;
@@ -3593,7 +3605,7 @@ function inicializar() {
   /* ---------------- mini-janela flutuante ---------------- */
   $('#btn-mini')?.addEventListener('click', alternarMiniJanela);
   $('#mini-fechar')?.addEventListener('click', () => {
-    // sÃ³ esconde o quadradinho: a transmissÃ£o continua caindo em silÃªncio
+    // só esconde o quadradinho: a transmissão continua caindo em silêncio
     $('#mini-janela').hidden = true;
     $('#btn-mini')?.classList.remove('ativo');
   });
@@ -3612,8 +3624,8 @@ function inicializar() {
   $('#btn-salvar-perfil').addEventListener('click', salvarPerfil);
 
   /* -------- foto de perfil: escolher, cortar, aplicar --------
-     Tudo com ?.: se algum elemento nÃ£o existir, um clique a menos
-     nunca pode derrubar a inicializaÃ§Ã£o inteira do app. */
+     Tudo com ?.: se algum elemento não existir, um clique a menos
+     nunca pode derrubar a inicialização inteira do app. */
   $('#btn-escolher-foto')?.addEventListener('click', escolherFotoDoComputador);
   $('#in-foto-perfil')?.addEventListener('change', aoEscolherFoto);
   $('#btn-remover-foto')?.addEventListener('click', removerFotoDoPerfil);
@@ -3624,7 +3636,7 @@ function inicializar() {
   $('#range-zoom')?.addEventListener('input', (ev) => {
     if (!corte.natW) return;
     const zoom = Number(ev.target.value) / 100;
-    // guarda o ponto que estÃ¡ no meio do redondo para o zoom nÃ£o dar pulo
+    // guarda o ponto que está no meio do redondo para o zoom não dar pulo
     const cx = (-corte.tx + LADO_FOTO / 2) / corte.escala;
     const cy = (-corte.ty + LADO_FOTO / 2) / corte.escala;
     corte.escala = corte.base * zoom;
@@ -3732,6 +3744,8 @@ function inicializar() {
 }
 
 document.addEventListener('DOMContentLoaded', inicializar);
+
+
 /* ------------------------------------------------------------------ */
 /* Amigos / lista de amizades                                          */
 /* ------------------------------------------------------------------ */
@@ -3771,20 +3785,32 @@ function desenharListaAmigos() {
 
   box.hidden = false;
   box.innerHTML = amigos.map(a => `
-    <li>
-      <button class="item-amigo" data-id="${escapeHtml(a.id)}" type="button" title="${escapeHtml(a.nome)}">
+    <li class="item-amigo" data-id="${escapeHtml(a.id)}">
+      <button class="amigo-abrir" data-id="${escapeHtml(a.id)}" type="button"
+              title="Conversar com ${escapeHtml(a.nome)}">
         ${avatarHtml({ id: a.id, nome: a.nome, avatar: a.avatar, cor: a.cor }, 'avatar')}
         <span class="item-nome">${escapeHtml(a.nome)}</span>
+      </button>
+      <button class="btn-pedido remover" data-id="${escapeHtml(a.id)}" type="button"
+              title="Remover ${escapeHtml(a.nome)} dos amigos">
+        <svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M16 9v11H8V9h8m0-5H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm-1 4h-2v2h-2v-2H9V9h2V7h2v2h2v2Z"/></svg>
       </button>
     </li>
   `).join('');
 
-  box.querySelectorAll('.item-amigo').forEach(b => {
+  box.querySelectorAll('.amigo-abrir').forEach(b => {
     b.addEventListener('click', () => {
       // abre conversa privada com esse amigo
       const id = b.dataset.id;
       abrirConversa(id);
       if (estado.canal === 'arquivos') trocarCanal('geral');
+    });
+  });
+
+  box.querySelectorAll('.btn-pedido.remover').forEach(b => {
+    b.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      await removerAmizade(b.dataset.id);
     });
   });
 }
@@ -3848,7 +3874,7 @@ async function pedirAmizade(amigoId) {
     const data = await r.json();
     if (!r.ok) throw new Error(data.erro || 'falhou');
     aviso('Pedido de amizade enviado!', 'ok');
-    // o servidor nÃ£o envia push pro outro lado em tempo real ainda
+    // o servidor não envia push pro outro lado em tempo real ainda
     // mas localmente podemos mostrar que enviamos
   } catch (e) {
     aviso('Erro: ' + e.message, 'erro');
@@ -3898,6 +3924,30 @@ async function recusarPedidoAmizade(amigoId) {
   }
 }
 
+/* Remove a amizade (o botão de lixeira ao lado do nome). */
+async function removerAmizade(amigoId) {
+  if (!estado.usuario || !estado.token) return;
+  const alvo = (estado.amigos || []).find(a => a.id === amigoId);
+  const nome = alvo ? alvo.nome : 'esse amigo';
+  if (!confirm('Remover ' + nome + ' dos seus amigos?')) return;
+  try {
+    const r = await fetch(origemHttp() + '/api/amigos/remover', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + estado.token
+      },
+      body: JSON.stringify({ amigoId })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.erro || 'falhou');
+    aviso(nome + ' foi removido da sua lista de amigos.', 'ok');
+    await carregarAmizades();
+  } catch (e) {
+    aviso('Erro: ' + e.message, 'erro');
+  }
+}
+
 /* Atualiza os badges (contadores) na aba "Amigos". */
 function atualizarBadgesAmigos() {
   const totalPedidos = (estado.pedidosAmizade || []).length;
@@ -3931,11 +3981,11 @@ async function buscarAmigo() {
   }
 
   if (!estado.token) {
-    box.innerHTML = '<li class="escolha-vazio">VocÃª precisa estar logado para adicionar amigos.</li>';
+    box.innerHTML = '<li class="escolha-vazio">Você precisa estar logado para adicionar amigos.</li>';
     return;
   }
 
-  box.innerHTML = '<li class="escolha-vazio">Buscandoâ€¦</li>';
+  box.innerHTML = '<li class="escolha-vazio">Buscando…</li>';
 
   try {
     const r = await fetch(origemHttp() + '/api/pessoas?q=' + encodeURIComponent(q), {
@@ -3949,7 +3999,7 @@ async function buscarAmigo() {
       return;
     }
 
-    // filtra quem jÃ¡ Ã© amigo ou jÃ¡ tem pedido pendente
+    // filtra quem já é amigo ou já tem pedido pendente
     const amigosIds = new Set((estado.amigos || []).map(a => a.id));
     const pedidosIds = new Set((estado.pedidosAmizade || []).map(p => p.id));
     const meuId = estado.usuario?.id;
@@ -3957,22 +4007,21 @@ async function buscarAmigo() {
     const filtrados = data.pessoas.filter(p => p.id !== meuId && !amigosIds.has(p.id) && !pedidosIds.has(p.id));
 
     if (!filtrados.length) {
-      box.innerHTML = '<li class="escolha-vazio">Essa pessoa jÃ¡ Ã© seu amigo ou tem pedido pendente.</li>';
+      box.innerHTML = '<li class="escolha-vazio">Essa pessoa já é seu amigo ou tem pedido pendente.</li>';
       return;
     }
 
     box.innerHTML = filtrados.map(p => `
-      <li>
-        <button class="resultado-amigo" data-id="${escapeHtml(p.id)}" type="button">
-          ${avatarHtml({ id: p.id, nome: p.nome, avatar: p.avatar, cor: p.cor }, 'avatar')}
-          <span class="resultado-nome">${escapeHtml(p.nome)}</span>
-          <span class="resultado-acao">
-            <button class="btn-pedido" data-id="${escapeHtml(p.id)}" type="button" title="Adicionar">
-              <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-5-9h4V7H7v4H3V7H7V3h4v4h4v2H7v4H3v2h4v4h4v2h2v-4h4v-4h-4v-4h-2V3z"/></svg>
-            </button>
-          </span>
-        </li>
-      `).join('');
+      <li class="resultado-amigo" data-id="${escapeHtml(p.id)}">
+        ${avatarHtml({ id: p.id, nome: p.nome, avatar: p.avatar, cor: p.cor }, 'avatar')}
+        <span class="resultado-nome">${escapeHtml(p.nome)}</span>
+        <span class="resultado-acao">
+          <button class="btn-pedido" data-id="${escapeHtml(p.id)}" type="button" title="Adicionar">
+            <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-5-9h4V7H7v4H3V7H7V3h4v4h4v2H7v4H3v2h4v4h4v2h2v-4h4v-4h-4v-4h-2V3z"/></svg>
+          </button>
+        </span>
+      </li>
+    `).join('');
 
     box.querySelectorAll('.resultado-amigo .btn-pedido').forEach(b => {
       b.addEventListener('click', async (ev) => {
@@ -3989,11 +4038,11 @@ async function buscarAmigo() {
 }
 
 /* ------------------------------------------------------------------ */
-/* InicializaÃ§Ã£o dos amigos                                            */
+/* Inicialização dos amigos                                            */
 /* ------------------------------------------------------------------ */
 
 function inicializarAmigos() {
-  // botÃ£o "+" na seÃ§Ã£o Amigos
+  // botão "+" na seção Amigos
   const btnNovoAmigo = $('#btn-novo-amigo');
   if (btnNovoAmigo) btnNovoAmigo.addEventListener('click', abrirBuscaAmigo);
 
@@ -4007,7 +4056,7 @@ function inicializarAmigos() {
     });
   }
 
-  // fechar modal ao clicar fora (jÃ¡ coberto pelo handler genÃ©rico .overlay)
+  // fechar modal ao clicar fora (já coberto pelo handler genérico .overlay)
   // limpar ao fechar
   const modal = $('#modal-novo-amigo');
   if (modal) {

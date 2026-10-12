@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -11,7 +11,7 @@
 
   <!-- ============================ ENTRADA ============================ -->
   <section id="tela-entrada" class="tela">
-    <!-- Titlebar customizada (arrastÃ¡vel, com controles de janela) -->
+    <!-- Titlebar customizada (arrastável, com controles de janela) -->
     <header class="barra-topo arrastavel barra-entrada">
       <div class="topo-esq">
         <span class="logo-mini">
@@ -39,16 +39,16 @@
         </span>
         <div>
           <h1>Nexo</h1>
-          <p>Salas de transmissÃ£o com voz, tela e chat</p>
+          <p>Salas de transmissão com voz, tela e chat</p>
         </div>
       </div>
 
       <!-- ============================ CONTA ============================= -->
-      <!-- O servidor jÃ¡ sabia criar conta, entrar e recuperar senha desde o
-           comeÃ§o â€” faltava a tela. Ela vem ANTES do nome da sala porque a
-           conta Ã© quem vocÃª Ã©; o nome da sala Ã© sÃ³ como aparece lÃ¡ dentro.
-           Logado, o bloco encolhe para uma linha e nÃ£o atrapalha quem jÃ¡
-           sÃ³ quer colar o convite. -->
+      <!-- O servidor já sabia criar conta, entrar e recuperar senha desde o
+           começo — faltava a tela. Ela vem ANTES do nome da sala porque a
+           conta é quem você é; o nome da sala é só como aparece lá dentro.
+           Logado, o bloco encolhe para uma linha e não atrapalha quem já
+           só quer colar o convite. -->
       <div class="bloco-conta" id="bloco-conta">
         <div id="conta-deslogada">
           <div class="abas-conta" role="tablist" aria-label="Conta">
@@ -75,11 +75,11 @@
 
           <form id="form-criar" class="form-conta" novalidate hidden>
             <div class="campo">
-              <label for="in-usuario">Nome de usuÃ¡rio</label>
+              <label for="in-usuario">Nome de usuário</label>
               <input id="in-usuario" type="text" maxlength="24" placeholder="ex.: leal10"
                      autocomplete="username" spellcheck="false" />
-              <small>De 3 a 24 caracteres: letras, nÃºmeros, ponto, hÃ­fen ou _. Sem espaÃ§o, Ã© ele que
-                identifica vocÃª nas conversas e na busca de amigos.</small>
+              <small>De 3 a 24 caracteres: letras, números, ponto, hífen ou _. Sem espaço, é ele que
+                identifica você nas conversas e na busca de amigos.</small>
             </div>
             <div class="campo">
               <label for="in-email-novo">E-mail</label>
@@ -88,7 +88,7 @@
             </div>
             <div class="campo">
               <label for="in-senha-nova">Senha</label>
-              <input id="in-senha-nova" type="password" maxlength="128" placeholder="No mÃ­nimo 8 caracteres"
+              <input id="in-senha-nova" type="password" maxlength="128" placeholder="No mínimo 8 caracteres"
                      autocomplete="new-password" />
             </div>
             <button type="submit" class="btn gradiente grande">Criar conta</button>
@@ -98,23 +98,23 @@
           <p id="status-conta" class="status-entrada" hidden></p>
         </div>
 
-        <!-- encolhe quando jÃ¡ tem sessÃ£o: nÃ£o repete o formulÃ¡rio em quem
-             jÃ¡ entrou e nÃ£o esconde o convite que Ã© o assunto da tela -->
+        <!-- encolhe quando já tem sessão: não repete o formulário em quem
+             já entrou e não esconde o convite que é o assunto da tela -->
         <div id="conta-logada" class="conta-logada" hidden>
           <div class="conta-logada-linha">
             <span id="conta-mini-avatar" class="mini-avatar" aria-hidden="true"></span>
             <span class="conta-mini-txt">
-              <strong id="conta-mini-nome">â€”</strong>
+              <strong id="conta-mini-nome">—</strong>
               <small id="conta-mini-sub">Conectado</small>
             </span>
             <span class="conta-mini-acoes">
-              <button id="btn-ver-suporte" class="link-btn" type="button">CÃ³digo de suporte</button>
+              <button id="btn-ver-suporte" class="link-btn" type="button">Código de suporte</button>
               <button id="btn-sair-conta" class="link-btn" type="button">Sair</button>
             </span>
           </div>
-          <!-- O cÃ³digo de suporte Ã© a Ãºnica saÃ­da quando o e-mail tambÃ©m se
-               perde, entÃ£o ele precisa ficar na tela tempo suficiente para
-               ser copiado â€” nÃ£o some num aviso de 3 segundos. -->
+          <!-- O código de suporte é a única saída quando o e-mail também se
+               perde, então ele precisa ficar na tela tempo suficiente para
+               ser copiado — não some num aviso de 3 segundos. -->
           <p id="conta-suporte-txt" class="codigo-suporte" hidden></p>
         </div>
       </div>
@@ -127,13 +127,13 @@
       <div class="campo">
         <label for="in-servidor">Servidor</label>
         <input id="in-servidor" type="text" maxlength="200" value="wss://nexo-production-0b47.up.railway.app" placeholder="wss://seu-servidor.com" autocomplete="off" spellcheck="false" />
-        <small>JÃ¡ vem pronto para a sala online. Para testar na sua rede local troque por <code>ws://localhost:3000</code>.</small>
+        <small>Já vem pronto para a sala online. Para testar na sua rede local troque por <code>ws://localhost:3000</code>.</small>
       </div>
 
       <div class="campo campo-checkbox">
         <label class="checkbox-label">
           <input id="in-lembrar" type="checkbox" />
-          <span>Lembrar de mim (entrar direto na prÃ³xima vez)</span>
+          <span>Lembrar de mim (entrar direto na próxima vez)</span>
         </label>
       </div>
 
@@ -150,16 +150,16 @@
       <p id="status-entrada" class="status-entrada" hidden></p>
 
       <p class="rodape-entrada">
-        Quem transmite precisa do app Nexo. Quem sÃ³ assiste pode abrir o link do
+        Quem transmite precisa do app Nexo. Quem só assiste pode abrir o link do
         servidor direto no navegador.
       </p>
     </div>
   </section>
 
   <!-- ===================== RECUPERAR SENHA ===================== -->
-  <!-- Dois caminhos para a mesma coisa, como ficou combinado: o cÃ³digo que
-       chega no e-mail, e o cÃ³digo de suporte que o dono da conta lÃª no
-       cadastro (serve quando o e-mail tambÃ©m se perdeu). -->
+  <!-- Dois caminhos para a mesma coisa, como ficou combinado: o código que
+       chega no e-mail, e o código de suporte que o dono da conta lê no
+       cadastro (serve quando o e-mail também se perdeu). -->
   <div id="modal-recuperar" class="overlay" hidden>
     <div class="janela-modal pequeno">
       <div class="modal-cabecalho">
@@ -171,7 +171,7 @@
 
       <div class="modal-corpo">
         <p class="config-ajuda">
-        Digite o e-mail da conta. O Nexo manda um cÃ³digo para esse e-mail â€” ele
+        Digite o e-mail da conta. O Nexo manda um código para esse e-mail — ele
         vale 20 minutos.
       </p>
 
@@ -182,23 +182,23 @@
       </div>
 
       <div class="campo">
-        <label for="in-rec-codigo">CÃ³digo</label>
-        <input id="in-rec-codigo" type="text" maxlength="64" placeholder="Cole aqui o cÃ³digo recebido"
+        <label for="in-rec-codigo">Código</label>
+        <input id="in-rec-codigo" type="text" maxlength="64" placeholder="Cole aqui o código recebido"
                autocomplete="one-time-code" spellcheck="false" />
         <small id="ajuda-rec-codigo">
-          NÃ£o achou a mensagem? Olhe a caixa de spam. Se vocÃª guardou o cÃ³digo de
-          suporte, troque o tipo de cÃ³digo aqui embaixo.
+          Não achou a mensagem? Olhe a caixa de spam. Se você guardou o código de
+          suporte, troque o tipo de código aqui embaixo.
         </small>
       </div>
 
       <label class="linha-check">
         <input type="checkbox" id="check-rec-suporte" />
-        <span>Este Ã© o meu <strong>cÃ³digo de suporte</strong> (nÃ£o recebi e-mail)</span>
+        <span>Este é o meu <strong>código de suporte</strong> (não recebi e-mail)</span>
       </label>
 
       <div class="campo">
         <label for="in-rec-senha">Nova senha</label>
-        <input id="in-rec-senha" type="password" maxlength="128" placeholder="No mÃ­nimo 8 caracteres"
+        <input id="in-rec-senha" type="password" maxlength="128" placeholder="No mínimo 8 caracteres"
                autocomplete="new-password" />
       </div>
 
@@ -207,7 +207,7 @@
 
       <div class="linha-conta">
         <button id="btn-trocar-senha" class="btn gradiente" type="button">Trocar minha senha</button>
-        <button id="btn-mandar-codigo" class="btn" type="button">Mandar cÃ³digo para o e-mail</button>
+        <button id="btn-mandar-codigo" class="btn" type="button">Mandar código para o e-mail</button>
       </div>
     </div>
   </div>
@@ -218,7 +218,7 @@
 
     <!-- --------------------- coluna de servidores -------------------- -->
     <nav class="rail-servidores" aria-label="Servidores">
-      <button class="rail-item ativo" type="button" title="Nexo â€” sala atual">
+      <button class="rail-item ativo" type="button" title="Nexo — sala atual">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H13l-4 3.2V16H6.5A2.5 2.5 0 0 1 4 13.5v-8Z"/></svg>
       </button>
       <div class="rail-sep"></div>
@@ -232,7 +232,7 @@
 
     <header class="barra-topo arrastavel">
       <div class="topo-esq">
-        <button id="chip-codigo" class="chip-codigo" title="Clique para copiar o convite (codigo + endereÃ§o). Quem recebe so cola para entrar.">
+        <button id="chip-codigo" class="chip-codigo" title="Clique para copiar o convite (codigo + endereço). Quem recebe so cola para entrar.">
           <span class="rotulo">Sala</span>
           <strong id="codigo-sala">------</strong>
           <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true">
@@ -242,18 +242,18 @@
       </div>
 
       <div class="topo-centro">
-        <span id="estado-conn" class="estado-conn"><i class="ponto"></i> conectandoâ€¦</span>
+        <span id="estado-conn" class="estado-conn"><i class="ponto"></i> conectando…</span>
       </div>
 
       <div class="topo-dir arrastavel-nao">
-        <button id="btn-sino" class="icone-btn" title="NotificaÃ§Ãµes" aria-label="NotificaÃ§Ãµes">
+        <button id="btn-sino" class="icone-btn" title="Notificações" aria-label="Notificações">
           <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M12 22a2.2 2.2 0 0 0 2.2-2.2H9.8A2.2 2.2 0 0 0 12 22Zm7-6v-5a7 7 0 0 0-5-6.7V3a2 2 0 0 0-4 0v1.3A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>
           <span id="sino-badge" class="sino-badge" hidden></span>
         </button>
 
         <div id="painel-sino" class="painel-sino" hidden>
           <div class="painel-sino-cab">
-            <strong>NotificaÃ§Ãµes</strong>
+            <strong>Notificações</strong>
             <button id="sino-limpar" class="link-btn" type="button">Marcar como lidas</button>
           </div>
           <div id="sino-lista" class="sino-lista">
@@ -267,7 +267,7 @@
         <button id="btn-perfil" class="icone-btn" title="Seu perfil">
           <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-3.3 0-10 1.7-10 5v2a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2c0-3.3-6.7-5-10-5Z"/></svg>
         </button>
-        <button id="btn-config" class="icone-btn" title="ConfiguraÃ§Ãµes">
+        <button id="btn-config" class="icone-btn" title="Configurações">
           <svg viewBox="0 0 24 24" width="19" height="19"><path fill="currentColor" d="M19.4 13a7.8 7.8 0 0 0 0-2l2.1-1.6a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.3 7.3 0 0 0-1.7-1l-.4-2.6a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.5l-.4 2.6a7.3 7.3 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.6 11a7.8 7.8 0 0 0 0 2l-2.1 1.6a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1a7.3 7.3 0 0 0 1.7 1l.4 2.6c0 .3.2.5.5.5h4c.3 0 .5-.2.5-.5l.4-2.6a7.3 7.3 0 0 0 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13ZM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5Z"/></svg>
         </button>
         <span class="controles-janela">
@@ -280,10 +280,10 @@
 
     <!-- ------------------- painel esquerdo (estilo Discord) ------------------- -->
     <aside class="painel-esq">
-      <!-- cabeÃ§alho do servidor -->
+      <!-- cabeçalho do servidor -->
       <div class="cab-servidor">
         <strong class="nome-srv">Nexo</strong>
-        <button class="cod-srv" id="btn-copiar-cod" type="button" title="Copiar cÃ³digo da sala">
+        <button class="cod-srv" id="btn-copiar-cod" type="button" title="Copiar código da sala">
           <span id="codigo-sala-painel">------</span>
           <svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/></svg>
         </button>
@@ -307,7 +307,7 @@
         <section class="cat-canais">
           <button class="cat-titulo" type="button" aria-expanded="true">
             <svg class="seta-cat" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="m7 10 5 5 5-5z"/></svg>
-            TransmissÃ£o
+            Transmissão
           </button>
           <div class="canal voz ativo">
             <svg class="ic-canal svg" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="M11 5 6.5 9H3v6h3.5L11 19V5Zm4.5 3.5a5 5 0 0 1 0 7l1.4 1.4a7 7 0 0 0 0-9.8L15.5 8.5Zm2.8-2.8a9 9 0 0 1 0 12.6l1.4 1.4a11 11 0 0 0 0-15.4l-1.4 1.4Z"/></svg>
@@ -319,7 +319,7 @@
       </div>
 
       <div id="aviso-limite" class="aviso" hidden>
-        Muita gente conectada. AtÃ© 8 pessoas a imagem fica fluida; acima disso
+        Muita gente conectada. Até 8 pessoas a imagem fica fluida; acima disso
         vale um servidor SFU (mediasoup/janus).
       </div>
 
@@ -328,7 +328,7 @@
         <div class="cab-dms">
           <span class="rot-cat-dms">Conversas</span>
           <button class="btn-nova-dm" id="btn-nova-dm" type="button"
-                  title="Abrir uma conversa privada com alguÃ©m da sala">+</button>
+                  title="Abrir uma conversa privada com alguém da sala">+</button>
         </div>
         <ul id="lista-dms" class="lista-dms">
           <li class="dm-vazia">Nenhuma conversa privada ainda.</li>
@@ -352,18 +352,18 @@
         </ul>
       </section>
 
-      <!-- painel do usuÃ¡rio (rodapÃ©) -->
+      <!-- painel do usuário (rodapé) -->
       <div class="painel-usuario">
         <div class="avatar-user" id="avatar-user"><i class="ponto-status"></i></div>
         <div class="info-user">
-          <strong id="nome-user">VocÃª</strong>
+          <strong id="nome-user">Você</strong>
           <small id="status-user">Conectado</small>
         </div>
         <div class="acoes-user">
           <button id="btn-micro" class="btn-ico-user" type="button" title="Ligar/desligar microfone">
             <span class="ic" data-on="mic" data-off="mic-off"></span>
           </button>
-          <button id="btn-camera" class="btn-ico-user" type="button" title="Ligar/desligar cÃ¢mera">
+          <button id="btn-camera" class="btn-ico-user" type="button" title="Ligar/desligar câmera">
             <span class="ic" data-on="cam" data-off="cam-off"></span>
           </button>
           <button id="btn-tela" class="btn-ico-user" type="button" title="Compartilhar tela">
@@ -382,10 +382,10 @@
     <!-- ---------------------------- palco ---------------------------- -->
     <main class="palco">
       <div class="palco-topo">
-        <span id="titulo-transmissao">Aguardando transmissÃ£o</span>
+        <span id="titulo-transmissao">Aguardando transmissão</span>
         <div class="acoes-palco">
-          <button id="btn-mini" class="pill pill-btn" type="button" title="Abre um quadradinho flutuante com a transmissÃ£o, para vocÃª continuar vendo enquanto usa o app">Mini-janela</button>
-          <span id="info-qualidade" class="pill">â€”</span>
+          <button id="btn-mini" class="pill pill-btn" type="button" title="Abre um quadradinho flutuante com a transmissão, para você continuar vendo enquanto usa o app">Mini-janela</button>
+          <span id="info-qualidade" class="pill">—</span>
         </div>
       </div>
 
@@ -396,8 +396,8 @@
           <span class="icone-placeholder">
             <svg viewBox="0 0 24 24" width="52" height="52"><path fill="currentColor" d="M21 3H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Zm0 16H3V5h18v14ZM9 8v2H7v2h2v2h2v-2h2v-2h-2V8H9Z"/></svg>
           </span>
-          <p id="placeholder-texto">NinguÃ©m estÃ¡ transmitindo agora.</p>
-          <p class="placeholder-dica">Use os botÃµes de <b>Transmitir</b> ou <b>CÃ¢mera</b> para comeÃ§ar, e mande o cÃ³digo da sala para quem quiser entrar.</p>
+          <p id="placeholder-texto">Ninguém está transmitindo agora.</p>
+          <p class="placeholder-dica">Use os botões de <b>Transmitir</b> ou <b>Câmera</b> para começar, e mande o código da sala para quem quiser entrar.</p>
         </div>
 
         <div id="faixa-aovivo" class="faixa-aovivo" hidden><i></i> AO VIVO</div>
@@ -407,7 +407,7 @@
           <button class="ctrl" id="ctrl-micro" title="Microfone">
             <span class="ic" data-on="mic" data-off="mic-off"></span>
           </button>
-          <button class="ctrl" id="ctrl-camera" title="CÃ¢mera">
+          <button class="ctrl" id="ctrl-camera" title="Câmera">
             <span class="ic" data-on="cam" data-off="cam-off"></span>
           </button>
           <button class="ctrl ctrl-principal" id="ctrl-tela" title="Transmitir tela">
@@ -422,8 +422,8 @@
       </div>
 
       <div class="barra-info">
-        <span id="info-conexao">â€”</span>
-        <span id="info-dispositivos">â€”</span>
+        <span id="info-conexao">—</span>
+        <span id="info-dispositivos">—</span>
       </div>
     </main>
 
@@ -441,17 +441,17 @@
       </div>
 
       <div id="lista-chat" class="lista-chat">
-        <div class="chat-vazio">Ainda nÃ£o hÃ¡ mensagens. Diga oi!</div>
+        <div class="chat-vazio">Ainda não há mensagens. Diga oi!</div>
       </div>
 
-      <!-- canal #arquivos: navegador do que jÃ¡ foi compartilhado na sala -->
+      <!-- canal #arquivos: navegador do que já foi compartilhado na sala -->
       <div id="painel-arquivos" class="painel-arquivos" hidden>
         <div class="arq-cabecalho">
           <div class="arq-filtros" id="arq-filtros">
             <button class="arq-filtro ativo" data-tipo="tudo" type="button">Tudo</button>
             <button class="arq-filtro" data-tipo="imagem" type="button">Imagens</button>
-            <button class="arq-filtro" data-tipo="video" type="button">VÃ­deos</button>
-            <button class="arq-filtro" data-tipo="audio" type="button">Ãudios</button>
+            <button class="arq-filtro" data-tipo="video" type="button">Vídeos</button>
+            <button class="arq-filtro" data-tipo="audio" type="button">Áudios</button>
             <button class="arq-filtro" data-tipo="arquivo" type="button">Docs</button>
           </div>
           <button class="pill pill-btn arq-enviar" id="btn-enviar-arq" type="button"
@@ -465,7 +465,7 @@
         <div class="soltar-anel">
           <svg viewBox="0 0 24 24" width="34" height="34"><path fill="currentColor" d="M19 13v6H5v-6H3v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6ZM11 6.83 8.41 9.41 7 8l5-5 5 5-1.41 1.41L13 6.83V16h-2Z"/></svg>
           <strong>Solte o arquivo aqui</strong>
-          <span>imagem, vÃ­deo, documento ou link</span>
+          <span>imagem, vídeo, documento ou link</span>
         </div>
       </div>
 
@@ -478,9 +478,9 @@
               <span class="anexo-tam" id="anexo-tam"></span>
             </div>
             <div class="anexo-barra"><i id="anexo-progresso"></i></div>
-            <span class="anexo-status" id="anexo-status">Preparandoâ€¦</span>
+            <span class="anexo-status" id="anexo-status">Preparando…</span>
           </div>
-          <button type="button" class="icone-btn" id="btn-tirar-anexo" title="Tirar o anexo">Ã—</button>
+          <button type="button" class="icone-btn" id="btn-tirar-anexo" title="Tirar o anexo">×</button>
         </div>
 
         <input id="in-anexo" type="file" hidden
@@ -488,7 +488,7 @@
 
         <div class="linha-digitar">
           <button type="button" class="icone-btn anexo-botao" id="btn-anexar"
-                  title="Anexar arquivo (imagem, vÃ­deo, documento) â€” ou arraste para o chat">
+                  title="Anexar arquivo (imagem, vídeo, documento) — ou arraste para o chat">
             <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M16.5 6v11.5a4.5 4.5 0 0 1-9 0V5a3 3 0 0 1 6 0v10.5a1.5 1.5 0 0 1-3 0V6H9v9.5a3 3 0 0 0 6 0V5a4.5 4.5 0 0 0-9 0v12.5a6 6 0 0 0 12 0V6Z"/></svg>
           </button>
           <input id="in-chat" type="text" maxlength="500" placeholder="Mensagem na Sala" autocomplete="off" />
@@ -502,7 +502,7 @@
       <div class="mini-topo">
         <span id="mini-titulo">Assistindo</span>
         <div class="mini-acoes">
-          <button id="mini-fechar" class="mini-btn" type="button" title="Fechar a mini-janela (a transmissÃ£o continua)">Ã—</button>
+          <button id="mini-fechar" class="mini-btn" type="button" title="Fechar a mini-janela (a transmissão continua)">×</button>
         </div>
       </div>
       <div class="mini-corpo" id="mini-corpo"></div>
@@ -521,7 +521,7 @@
 
       <div class="modal-corpo">
         <div class="avatar-grande" id="pessoa-avatar">?</div>
-        <h3 class="pessoa-nome" id="pessoa-nome">â€”</h3>
+        <h3 class="pessoa-nome" id="pessoa-nome">—</h3>
         <div class="selos-perfil" id="pessoa-selos"></div>
 
         <div class="acoes-pessoa">
@@ -529,8 +529,8 @@
         </div>
 
         <p class="nota-pessoa">
-          Quem estÃ¡ na sala, fica na sala. O botÃ£o acima abre um papo sÃ³ seu com
-          essa pessoa â€” ninguÃ©m mais lÃª.
+          Quem está na sala, fica na sala. O botão acima abre um papo só seu com
+          essa pessoa — ninguém mais lê.
         </p>
       </div>
     </div>
@@ -548,8 +548,8 @@
 
       <div class="modal-corpo">
         <p class="nota-pessoa">
-          Escolha alguÃ©m que esteja na sala. A conversa fica sÃ³ entre vocÃªs dois â€”
-          ninguÃ©m mais lÃª.
+          Escolha alguém que esteja na sala. A conversa fica só entre vocês dois —
+          ninguém mais lê.
         </p>
         <ul id="lista-escolher-pessoa" class="lista-escolher"></ul>
       </div>
@@ -560,7 +560,7 @@
   <div id="overlay-fontes" class="overlay" hidden>
     <div class="janela-overlay">
       <div class="overlay-cabecalho">
-        <strong>O que vocÃª quer compartilhar?</strong>
+        <strong>O que você quer compartilhar?</strong>
         <button id="btn-fechar-fontes" class="icone-btn" title="Cancelar">
           <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
         </button>
@@ -569,9 +569,6 @@
       <div id="grade-fontes" class="grade-fontes"></div>
     </div>
   </div>
-
-  </div>
-</div>
 
   <!-- ==================== ADICIONAR AMIGO ==================== -->
   <div id="modal-novo-amigo" class="overlay" hidden>
@@ -600,7 +597,7 @@
     </div>
   </div>
 
-<!-- ========================= CONFIGURAÃ‡Ã•ES ======================== -->
+  <!-- ========================= CONFIGURAÇÕES ======================== -->
   <div id="modal-config" class="overlay" hidden>
     <div class="janela-modal config-janela">
       <div class="modal-corpo">
@@ -610,29 +607,29 @@
             <input id="busca-config" type="text" placeholder="Buscar" autocomplete="off" spellcheck="false" />
           </div>
 
-          <p class="config-grupo" data-grupo>ConfiguraÃ§Ãµes do usuÃ¡rio</p>
+          <p class="config-grupo" data-grupo>Configurações do usuário</p>
           <button class="aba-modal" data-aba="conta" data-rotulo="Conta perfil seu">Conta</button>
           <button class="aba-modal" data-aba="dados" data-rotulo="Dados privacidade limpar apagar">Dados e privacidade</button>
 
-          <p class="config-grupo" data-grupo>ConfiguraÃ§Ãµes da aplicaÃ§Ã£o</p>
-          <button class="aba-modal ativa" data-aba="voz-video" data-rotulo="Voz e vÃ­deo Ã¡udio microfone cÃ¢mera som fone">Voz e vÃ­deo</button>
-          <button class="aba-modal" data-aba="notificacoes" data-rotulo="NotificaÃ§Ãµes som sino aviso">NotificaÃ§Ãµes</button>
-          <button class="aba-modal" data-aba="aparencia" data-rotulo="AparÃªncia tema cor visual">AparÃªncia</button>
-          <button class="aba-modal" data-aba="acessibilidade" data-rotulo="Acessibilidade animaÃ§Ã£o contraste texto">Acessibilidade</button>
-          <button class="aba-modal" data-aba="sistema" data-rotulo="Sistema servidor bandeja atualizaÃ§Ã£o janela">Sistema</button>
-          <button class="aba-modal" data-aba="idioma" data-rotulo="Idioma horÃ¡rio hora relÃ³gio portuguÃªs">Idioma e horÃ¡rio</button>
+          <p class="config-grupo" data-grupo>Configurações da aplicação</p>
+          <button class="aba-modal ativa" data-aba="voz-video" data-rotulo="Voz e vídeo áudio microfone câmera som fone">Voz e vídeo</button>
+          <button class="aba-modal" data-aba="notificacoes" data-rotulo="Notificações som sino aviso">Notificações</button>
+          <button class="aba-modal" data-aba="aparencia" data-rotulo="Aparência tema cor visual">Aparência</button>
+          <button class="aba-modal" data-aba="acessibilidade" data-rotulo="Acessibilidade animação contraste texto">Acessibilidade</button>
+          <button class="aba-modal" data-aba="sistema" data-rotulo="Sistema servidor bandeja atualização janela">Sistema</button>
+          <button class="aba-modal" data-aba="idioma" data-rotulo="Idioma horário hora relógio português">Idioma e horário</button>
 
           <p class="config-grupo" data-grupo>Sobre</p>
           <button class="aba-modal" data-aba="criador" data-rotulo="Leal program criador sobre autor">Leal program</button>
-          <button class="aba-modal" data-aba="loja" data-rotulo="Loja de temas e decoraÃ§Ãµes gratuitas">Loja</button>
+          <button class="aba-modal" data-aba="loja" data-rotulo="Loja de temas e decorações gratuitas">Loja</button>
 
           <p class="config-vazio" id="config-vazio" hidden>Nada com esse nome.</p>
         </nav>
 
         <div class="config-paginas">
           <div class="config-topo">
-            <h2 id="config-titulo">Voz e vÃ­deo</h2>
-            <button class="icone-btn fecha-modal" title="Fechar configuraÃ§Ãµes (Esc)">
+            <h2 id="config-titulo">Voz e vídeo</h2>
+            <button class="icone-btn fecha-modal" title="Fechar configurações (Esc)">
               <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m18.3 5.7-12.6 12.6 1.4 1.4 12.6-12.6-1.4-1.4Z"/></svg>
             </button>
           </div>
@@ -641,28 +638,28 @@
         <div class="painel-aba" id="aba-voz-video">
           <div class="campo">
             <label for="sel-micro">Microfone</label>
-            <select id="sel-micro"><option value="">PadrÃ£o do sistema</option></select>
+            <select id="sel-micro"><option value="">Padrão do sistema</option></select>
             <div class="medidor"><i id="barra-nivel"></i></div>
             <small>Fale alguma coisa para ver a barra mexer.</small>
           </div>
 
           <div class="campo">
-            <label for="sel-fone">Fone / saÃ­da de Ã¡udio</label>
-            <select id="sel-fone"><option value="">PadrÃ£o do sistema</option></select>
+            <label for="sel-fone">Fone / saída de áudio</label>
+            <select id="sel-fone"><option value="">Padrão do sistema</option></select>
           </div>
 
           <label class="linha-check">
             <input type="checkbox" id="check-eco" />
-            <span>SupressÃ£o de eco e ruÃ­do (deixe ligado na maioria dos casos)</span>
+            <span>Supressão de eco e ruído (deixe ligado na maioria dos casos)</span>
           </label>
 
           <label class="linha-check">
             <input type="checkbox" id="check-monitor" />
-            <span>Quero ouvir o meu prÃ³prio microfone aqui no meu fone</span>
+            <span>Quero ouvir o meu próprio microfone aqui no meu fone</span>
           </label>
           <small class="ajuda">
-            Desligado (padrÃ£o): o microfone vai sÃ³ para quem estÃ¡ assistindo e vocÃª nÃ£o
-            ouve a si mesmo. Ligue sÃ³ se quiser conferir se estÃ¡ saindo som.
+            Desligado (padrão): o microfone vai só para quem está assistindo e você não
+            ouve a si mesmo. Ligue só se quiser conferir se está saindo som.
             Com caixa de som, ligado pode causar chiado.
           </small>
 
@@ -671,79 +668,79 @@
             <input type="range" id="range-volume" min="0" max="100" value="100" />
           </div>
 
-          <p class="config-secao">CÃ¢mera e transmissÃ£o de tela</p>
+          <p class="config-secao">Câmera e transmissão de tela</p>
 
           <div class="campo">
-            <label for="sel-camera">CÃ¢mera</label>
-            <select id="sel-camera"><option value="">PadrÃ£o do sistema</option></select>
+            <label for="sel-camera">Câmera</label>
+            <select id="sel-camera"><option value="">Padrão do sistema</option></select>
           </div>
 
           <div class="campo">
             <label for="sel-fps">Quadros por segundo da tela</label>
             <select id="sel-fps">
-              <option value="30">30 â€” econÃ´mico</option>
-              <option value="60" selected>60 â€” fluido</option>
-              <option value="120">120 â€” muito fluido</option>
-              <option value="144">144 â€” mÃ¡ximo da tela</option>
+              <option value="30">30 — econômico</option>
+              <option value="60" selected>60 — fluido</option>
+              <option value="120">120 — muito fluido</option>
+              <option value="144">144 — máximo da tela</option>
             </select>
-            <small>O valor real aparece no rodapÃ© do palco. Depende da taxa da sua tela, da CPU e da rede.</small>
+            <small>O valor real aparece no rodapé do palco. Depende da taxa da sua tela, da CPU e da rede.</small>
           </div>
 
           <div class="campo">
-            <label for="sel-resolucao">ResoluÃ§Ã£o transmitida</label>
+            <label for="sel-resolucao">Resolução transmitida</label>
             <select id="sel-resolucao">
-              <option value="0" selected>Nativa do monitor â€” sem cortar nada</option>
-              <option value="2560">1440p â€” pesado</option>
-              <option value="1920">1080p â€” nÃ­tido</option>
-              <option value="1280">720p â€” leve</option>
+              <option value="0" selected>Nativa do monitor — sem cortar nada</option>
+              <option value="2560">1440p — pesado</option>
+              <option value="1920">1080p — nítido</option>
+              <option value="1280">720p — leve</option>
             </select>
             <small>Nativa manda o monitor inteiro, no tamanho real, sem rebaixar.</small>
           </div>
 
           <label class="linha-check">
             <input type="checkbox" id="check-audio-sistema" />
-            <span>TambÃ©m transmitir o Ã¡udio do sistema (o que toca no seu computador)</span>
+            <span>Também transmitir o áudio do sistema (o que toca no seu computador)</span>
           </label>
         </div>
 
         <div class="painel-aba" id="aba-conta" hidden>
           <div class="cartao-conta">
-            <div class="conta-avatar" id="conta-avatar">â€”</div>
+            <div class="conta-avatar" id="conta-avatar">—</div>
             <div class="conta-txt">
-              <strong id="conta-nome">â€”</strong>
+              <strong id="conta-nome">—</strong>
               <span id="conta-sub">Como os outros te veem na sala</span>
             </div>
             <button class="btn pequeno" id="btn-editar-perfil" type="button">Editar perfil</button>
           </div>
 
-          <p class="config-secao">Como vocÃª aparece</p>
+          <p class="config-secao">Como você aparece</p>
           <dl class="ficha">
-            <dt>Nome na sala</dt><dd id="conta-nome-ficha">â€”</dd>
-            <dt>Servidor usado</dt><dd id="conta-servidor">â€”</dd>
-            <dt>VersÃ£o do app</dt><dd id="conta-versao">â€”</dd>
-            <dt>Onde ficam guardados</dt><dd>SÃ³ neste computador. O Nexo nÃ£o manda seus dados para servidor nenhum.</dd>
+            <dt>Nome na sala</dt><dd id="conta-nome-ficha">—</dd>
+            <dt>Servidor usado</dt><dd id="conta-servidor">—</dd>
+            <dt>Versão do app</dt><dd id="conta-versao">—</dd>
+            <dt>Onde ficam guardados</dt><dd>Só neste computador. O Nexo não manda seus dados para servidor nenhum.</dd>
           </dl>
         </div>
 
         <div class="painel-aba" id="aba-notificacoes" hidden>
           <p class="config-ajuda">
-            O sininho no topo avisa sobre mensagens e sobre atualizaÃ§Ã£o do app.
-            Estas opÃ§Ãµes decidem quando ele chama atenÃ§Ã£o.
+            O sininho no topo avisa sobre mensagens e sobre atualização do app.
+            Estas opções decidem quando ele chama atenção.
           </p>
 
           <label class="linha-check">
             <input type="checkbox" id="check-nota-som" />
-            <span>Tocar um som quando chegar mensagem que vocÃª nÃ£o estÃ¡ vendo</span>
+            <span>Tocar um som quando chegar mensagem que você não está vendo</span>
           </label>
 
           <label class="linha-check">
             <input type="checkbox" id="check-nota-badge" checked />
-            <span>Mostrar o contador de nÃ£o lidas no sininho</span>
+            <span>Mostrar o contador de não lidas no sininho</span>
           </label>
 
           <label class="linha-check">
             <input type="checkbox" id="check-nota-privado" checked />
-            <span>Destacar mensagens privadas (sÃ³ vocÃªs dois leem)</span>
+            <span>Destacar mensagens privadas (só vocês dois leem)</span>
           </label>
 
           <div class="linha-acoes">
@@ -755,22 +752,22 @@
           <div class="campo">
             <label for="in-servidor-config">Servidor</label>
             <input id="in-servidor-config" type="text" maxlength="200" spellcheck="false" />
-            <small>Vale para a prÃ³xima sala que vocÃª entrar.</small>
+            <small>Vale para a próxima sala que você entrar.</small>
           </div>
 
           <label class="linha-check">
             <input type="checkbox" id="check-fechar-bandeja" checked />
-            <span>Ao fechar, deixar o Nexo em segundo plano em vez de encerrar (volta pelo Ã­cone da bandeja)</span>
+            <span>Ao fechar, deixar o Nexo em segundo plano em vez de encerrar (volta pelo ícone da bandeja)</span>
           </label>
 
           <label class="linha-check">
             <input type="checkbox" id="check-verificar-atualizacao" checked />
-            <span>Procurar atualizaÃ§Ã£o a cada minuto e avisar no sininho do que mudou</span>
+            <span>Procurar atualização a cada minuto e avisar no sininho do que mudou</span>
           </label>
 
-          <p class="config-secao">ManutenÃ§Ã£o</p>
+          <p class="config-secao">Manutenção</p>
           <div class="linha-acoes">
-            <button id="btn-testar-cam" class="btn" type="button">Testar cÃ¢mera</button>
+            <button id="btn-testar-cam" class="btn" type="button">Testar câmera</button>
             <button id="btn-tutorial" class="btn" type="button">Ver tutorial de novo</button>
           </div>
           <div class="teste-cam" id="teste-cam" hidden>
@@ -780,16 +777,16 @@
         </div>
 
         <div class="painel-aba" id="aba-acessibilidade" hidden>
-          <p class="config-ajuda">MudanÃ§as valem na hora, em todo o app.</p>
+          <p class="config-ajuda">Mudanças valem na hora, em todo o app.</p>
 
           <label class="linha-check">
             <input type="checkbox" id="check-reduzir-animacao" />
-            <span>Reduzir animaÃ§Ãµes (o app quase nÃ£o desliza nem pulsa)</span>
+            <span>Reduzir animações (o app quase não desliza nem pulsa)</span>
           </label>
 
           <label class="linha-check">
             <input type="checkbox" id="check-alto-contraste" />
-            <span>Alto contraste â€” texto mais marcado e bordas mais visÃ­veis</span>
+            <span>Alto contraste — texto mais marcado e bordas mais visíveis</span>
           </label>
 
           <label class="linha-check">
@@ -800,23 +797,23 @@
 
         <div class="painel-aba" id="aba-dados" hidden>
           <p class="config-ajuda">
-            Tudo fica guardado <strong>nesta mÃ¡quina</strong>, no armazenamento do prÃ³prio app.
-            NÃ£o existe conta na nuvem e nada Ã© enviado para fora.
+            Tudo fica guardado <strong>nesta máquina</strong>, no armazenamento do próprio app.
+            Não existe conta na nuvem e nada é enviado para fora.
           </p>
 
           <p class="config-secao">Limpar agora</p>
           <div class="config-linha">
             <div>
               <strong>Conversas da sala</strong>
-              <small>Apaga o histÃ³rico do chat que estÃ¡ na tela. Sai da sala e entra de novo que volta vazio.</small>
+              <small>Apaga o histórico do chat que está na tela. Sai da sala e entra de novo que volta vazio.</small>
             </div>
             <button class="btn pequeno" id="btn-limpar-historico" type="button">Limpar</button>
           </div>
 
           <div class="config-linha">
             <div>
-              <strong>Tudo que estÃ¡ guardado</strong>
-              <small>Perfil, tema, preferÃªncias e histÃ³rico. O app volta ao estado de primeira vez.</small>
+              <strong>Tudo que está guardado</strong>
+              <small>Perfil, tema, preferências e histórico. O app volta ao estado de primeira vez.</small>
             </div>
             <button class="btn pequeno perigo" id="btn-apagar-tudo" type="button">Apagar tudo</button>
           </div>
@@ -826,22 +823,22 @@
           <div class="campo">
             <label for="sel-idioma">Idioma</label>
             <select id="sel-idioma">
-              <option value="pt-BR">PortuguÃªs (Brasil)</option>
+              <option value="pt-BR">Português (Brasil)</option>
             </select>
-            <small>O Nexo foi feito em portuguÃªs. Outras lÃ­nguas entram depois.</small>
+            <small>O Nexo foi feito em português. Outras línguas entram depois.</small>
           </div>
 
-          <p class="config-secao">HorÃ¡rio</p>
+          <p class="config-secao">Horário</p>
           <div class="config-linha">
             <div>
               <strong>Formato das horas</strong>
-              <small>24 horas, como no Brasil â€” 21:05 e nÃ£o 9:05 PM.</small>
+              <small>24 horas, como no Brasil — 21:05 e não 9:05 PM.</small>
             </div>
             <span class="selo-fixado">24 h</span>
           </div>
 
           <dl class="ficha">
-            <dt>Fuso detectado</dt><dd id="fuso-hora">â€”</dd>
+            <dt>Fuso detectado</dt><dd id="fuso-hora">—</dd>
           </dl>
         </div>
 
@@ -869,28 +866,28 @@
 
           <dl class="ficha">
             <dt>Criado em</dt>
-            <dd id="criado-em">â€”</dd>
-            <dt>VersÃ£o</dt>
-            <dd id="versao-app">â€”</dd>
+            <dd id="criado-em">—</dd>
+            <dt>Versão</dt>
+            <dd id="versao-app">—</dd>
             <dt>Feito com</dt>
-            <dd>WebRTC, WebSocket e Electron â€” sem servidor pago, sem assinatura.</dd>
+            <dd>WebRTC, WebSocket e Electron — sem servidor pago, sem assinatura.</dd>
           </dl>
 
           <div class="sobre-criador">
             <p>
               O Nexo nasceu de uma ideia simples e teimosa: <strong>dar para ver a tela
-              do amigo e falar com todo mundo ao mesmo tempo, de graÃ§a, sem travar.</strong>
-              Leal program construiu cada parte â€” a sala, a voz em malha, a transmissÃ£o
-              em qualidade nativa do monitor, o chat com arquivos e os 10 temas â€”
-              escrevendo o cÃ³digo linha por linha, testando tudo de ponta a ponta antes
+              do amigo e falar com todo mundo ao mesmo tempo, de graça, sem travar.</strong>
+              Leal program construiu cada parte — a sala, a voz em malha, a transmissão
+              em qualidade nativa do monitor, o chat com arquivos e os 10 temas —
+              escrevendo o código linha por linha, testando tudo de ponta a ponta antes
               de deixar sair do forno.
             </p>
             <p>
-              NÃ£o tem equipe por trÃ¡s, nÃ£o tem plano pago escondido e nÃ£o tem anÃºncio.
-              Tem sÃ³ um programador que gosta de fazer as coisas funcionarem de verdade,
-              e prefere um app que testou mil vezes a um que sÃ³ parece bonito.
+              Não tem equipe por trás, não tem plano pago escondido e não tem anúncio.
+              Tem só um programador que gosta de fazer as coisas funcionarem de verdade,
+              e prefere um app que testou mil vezes a um que só parece bonito.
             </p>
-            <p class="assinatura">â€” Leal program</p>
+            <p class="assinatura">— Leal program</p>
           </div>
         </div>
           </div>
@@ -923,8 +920,8 @@
             <button id="btn-escolher-foto" class="btn pequeno" type="button">Escolher foto do computador</button>
             <button id="btn-remover-foto" class="btn pequeno" type="button" hidden>Usar emoji</button>
           </div>
-          <small class="dica-campo">A foto Ã© cortada no redondinho e vai sem distorcer â€”
-            ela mantÃ©m as proporÃ§Ãµes originais.</small>
+          <small class="dica-campo">A foto é cortada no redondinho e vai sem distorcer —
+            ela mantém as proporções originais.</small>
           <input id="in-foto-perfil" type="file" accept="image/*" hidden />
         </div>
 
@@ -955,7 +952,7 @@
 
       <div class="modal-corpo coluna">
         <p class="dica-campo centralizado">Arraste a foto para posicionar e use o zoom.
-          A parte dentro do cÃ­rculo Ã© a que vai aparecer.</p>
+          A parte dentro do círculo é a que vai aparecer.</p>
 
         <div class="corte-area" id="corte-area">
           <img id="corte-img" alt="" draggable="false" />
