@@ -1,0 +1,70 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>App painel</title><style>
+/* ESTILO E - Direct Service (app de desktop, tema escuro verde). Janela de referência: 1405x836. */
+:root{--bg:#0b0e0e;--side:#080a0a;--card:#0f1313;--line:#1c2222;--text:#edf2f0;--mute:#5d6663;--soft:#8b9591;--green:#4ea882;--green-t:#7ec4a3;--active:#111f1a;--red:#d1706a}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg)}
+body{font-family:'Segoe UI','Inter','Carlito','Liberation Sans',sans-serif;color:var(--text);font-size:13px;overflow:hidden}
+.app{display:grid;grid-template-columns:216px 1fr;grid-template-rows:1fr 24px;height:100vh}
+aside{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.brand{display:flex;align-items:center;gap:12px;padding:0 16px;height:72px;border-bottom:1px solid var(--line)}
+.logo{width:34px;height:34px;border-radius:7px;background:linear-gradient(135deg,#5fb894,#2f7a5a);display:grid;place-items:center;font-size:11px;font-weight:700;color:#06100c;line-height:1}
+.brand b{display:block;font-size:14px;letter-spacing:.06em}.brand i{display:block;font-style:normal;font-size:9px;letter-spacing:.3em;color:var(--green);margin-top:3px}
+.sec{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);padding:20px 4px 8px;margin-left:0}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 16px;color:#b9c3bf;font-size:13px;text-decoration:none;border-left:2px solid transparent}
+.nav a span{margin-left:auto;font-size:11px;color:var(--mute)}
+.nav a.on{background:var(--active);color:var(--green-t);border-left-color:var(--green)}
+.pix{margin-top:auto;border-top:1px solid var(--line);padding:16px;font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase}
+main{overflow:auto;background:var(--bg)}
+.kpis{display:flex;gap:34px;padding:16px 31px;border-bottom:1px solid var(--line);height:72px;align-items:center}
+.kpi{text-align:center}.kpi b{display:block;font-size:19px;font-weight:300;color:var(--green-t)}.kpi i{display:block;font-style:normal;font-size:9px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;margin-top:2px}
+.wrap{padding:30px 31px 20px;max-width:1160px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:22px;border-bottom:1px solid var(--line)}
+h1{font-size:26px;font-weight:300;letter-spacing:.005em}
+.sub{color:var(--mute);font-size:12px;margin-top:6px}
+.btns{display:flex;gap:8px;margin-top:10px}
+.btn{height:27px;padding:0 15px;font:600 10.5px 'Segoe UI','Carlito',sans-serif;letter-spacing:.12em;text-transform:uppercase;border:1px solid #2c3030;background:transparent;color:var(--text);border-radius:3px;cursor:pointer}
+.btn.p{background:var(--green);border-color:var(--green);color:#06100c}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);background:var(--card);border-radius:4px;margin-top:21px}
+.stat{padding:20px 18px 16px}.stat+.stat{border-left:1px solid var(--line)}
+.stat b{display:block;font-size:30px;font-weight:300;line-height:1.1}.stat.g b{color:var(--green-t)}
+.stat i{display:block;font-style:normal;font-size:10px;letter-spacing:.2em;color:var(--mute);text-transform:uppercase;margin-top:6px}
+.stat small{display:block;font-size:11px;color:#4a5350;margin-top:5px}
+.lote{display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(78,168,130,.28);background:var(--card);border-radius:4px;padding:20px 18px;margin-top:22px}
+.lote h2{font-size:18px;font-weight:400}.lote p{font-size:11px;color:var(--mute);margin-top:7px}
+.box{border:1px solid var(--line);border-bottom:2px solid var(--green);background:var(--card);border-radius:4px;padding:18px 18px 14px;margin-top:18px}
+.box h3{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--green);font-weight:600;margin-bottom:14px}
+.row{display:flex;align-items:baseline;gap:18px;padding:7px 0}.row b{width:56px;font-size:15px;font-weight:400}.row span{font-size:11.5px;color:var(--mute)}.row.r b{color:var(--red)}
+.note{font-size:11.5px;color:var(--mute);margin-top:10px;line-height:1.6}.note strong{color:#9aa5a1}
+.foot{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:var(--side);border-top:1px solid var(--line);padding:0 16px;font-size:10px;color:var(--mute)}
+</style></head><body><div class="app">
+<aside>
+ <div class="brand"><div class="logo">D<br>S</div><div><b>DIRECT</b><i>SERVICE</i></div></div>
+ <div class="nav">
+  <div class="sec">Prospecção</div>
+  <a class="on" href="#">◎ Clientes do dia <span>1292</span></a><a href="#">◈ Clientes <span>9673</span></a><a href="#">◑ Conversando <span>15</span></a><a href="#">◉ Com WhatsApp <span>335</span></a>
+  <div class="sec">Resultado</div>
+  <a href="#">◈ Fechamentos <span>0</span></a><a href="#">◆ Faturamento</a>
+  <div class="sec">Organização</div>
+  <a href="#">◷ Agenda <span>0</span></a><a href="#">◇ Modelos de sites</a><a href="#">⚙ Ajustes</a>
+ </div>
+ <div class="pix">Sua chave Pix<br><span style="color:var(--soft);letter-spacing:.05em">sua-chave-aqui</span></div>
+</aside>
+<main>
+ <div class="kpis"><div class="kpi"><b>1292</b><i>Dá para ligar</i></div><div class="kpi"><b>8579</b><i>Sem site</i></div><div class="kpi"><b>335</b><i>WhatsApp</i></div><div class="kpi"><b>0</b><i>Fechados</i></div></div>
+ <div class="wrap">
+  <div class="head"><div><h1>Clientes do dia</h1><div class="sub">Só quem dá para ligar e tem o problema que você resolve, do mais perto para o mais longe.</div></div>
+   <div class="btns"><button class="btn p">Aumentar a base</button><button class="btn">Parar</button><button class="btn">Conferir sites</button></div></div>
+  <div class="stats">
+   <div class="stat g"><b>1292</b><i>Para chamar hoje</i><small>lote do dia</small></div>
+   <div class="stat"><b>46</b><i>A até 1,5 km de casa</i><small>de Jardim das Fontes</small></div>
+   <div class="stat"><b>9673</b><i>Na base</i><small>2099 com telefone</small></div>
+  </div>
+  <div class="lote"><div><h2>O lote de hoje</h2><p>25 pessoas do mais perto para o mais longe, que você ainda não contatou. A lista anda sozinha conforme você for marcando.</p></div><div class="btns" style="margin:0"><button class="btn p">Ver o lote</button><button class="btn">Copiar telefones</button></div></div>
+  <div class="box"><h3>Quanto dá para trabalhar de verdade</h3>
+   <div class="row"><b>9673</b><span>na base</span></div><div class="row"><b>8579</b><span>sem site — é o que você vende</span></div><div class="row"><b>2099</b><span>têm telefone ou WhatsApp</span></div><div class="row"><b>1314</b><span>sem site e com telefone</span></div>
+   <div class="row r"><b>7574</b><span>não têm telefone — aparecem na base, mas não dá para ligar</span></div>
+   <div class="note">A lista está mostrando <strong>só os 1292</strong> que dão para ligar e têm o problema que você resolve.</div></div>
+ </div>
+</main>
+<div class="foot"><span>● 9658 registro(s) atualizados para as novas etapas.</span><span>Dados salvos no seu computador</span></div>
+</div></body></html>

@@ -1,0 +1,64 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+:root{--cream:#ecdccb;--brown:#3a2418;--g1:#f6dfc0;--g2:#d1a070;--g3:#8f5b3a}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#120b08}
+.a{position:relative;width:1080px;height:1920px;color:#f3e6d6;font-family:'Carlito','Liberation Sans',sans-serif;
+ background:radial-gradient(1000px 800px at 85% 45%,#3a2418 0%,transparent 70%),radial-gradient(800px 600px at 0% 100%,#2a1810 0%,transparent 70%),linear-gradient(180deg,#1b110c,#0e0806)}
+.gold{background:linear-gradient(180deg,var(--g1) 10%,var(--g2) 55%,var(--g3) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.photo{position:absolute;left:240px;top:520px;width:840px;height:1033px;overflow:hidden;
+ -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 14%,#000 72%,transparent 100%)}
+.photo img{width:840px;height:1033px;display:block;filter:brightness(1.18) contrast(1.04)}
+.photo:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#120b08 0%,rgba(18,11,8,.45) 22%,transparent 46%,transparent 90%,rgba(18,11,8,.5) 100%)}
+.eyebrow{position:absolute;top:196px;left:0;right:0;text-align:center;font-size:34px;letter-spacing:.42em;color:#ecd2b0;padding-left:.42em}
+.eyebrow i{font-style:normal;color:var(--g2);margin-left:.5em}
+.liso{position:absolute;top:235px;left:0;right:0;text-align:center;font-family:'GFS Baskerville','Caladea',serif;font-size:300px;line-height:1;letter-spacing:.02em}
+.perf{position:absolute;top:440px;left:0;right:0;text-align:center;font-family:'Caladea',serif;font-style:italic;font-size:230px;line-height:1;transform:rotate(-5deg);text-shadow:0 6px 30px rgba(0,0,0,.5)}
+.tag{position:absolute;top:668px;left:62px;width:600px;font-size:32px;line-height:1.3;letter-spacing:.04em;color:#f0e2d0}
+.card{position:absolute;left:56px;width:560px;height:220px;border-radius:34px;background:linear-gradient(180deg,#f0e1d0,#e2cdb6);display:flex;align-items:center;padding:0 34px 0 28px;color:var(--brown);box-shadow:0 14px 40px rgba(0,0,0,.45)}
+.ico{flex:none;width:150px;height:150px;border-radius:50%;background:#2a1a12;border:3px solid #c79a6a;display:flex;align-items:center;justify-content:center}
+.txt{margin-left:26px;flex:1}
+.lab{font-weight:700;font-size:40px;letter-spacing:.03em;line-height:1}
+.sub{font-size:28px;margin-top:6px;opacity:.8;border-bottom:1.5px dotted rgba(58,36,24,.5);padding-bottom:6px}
+.price{display:flex;align-items:baseline;justify-content:flex-end;margin-top:6px}
+.price small{font-size:34px;font-weight:700;margin-right:8px}
+.price b{font-family:'Caladea',serif;font-size:108px;line-height:1;font-weight:700;letter-spacing:-.01em}
+.valid{position:absolute;left:56px;top:1262px;width:640px;height:150px;border-radius:75px;border:2px solid rgba(209,160,112,.7);background:rgba(20,12,8,.55);display:flex;align-items:center;padding-left:14px;gap:26px}
+.cal{flex:none;width:122px;height:122px;border-radius:50%;background:var(--cream);display:flex;align-items:center;justify-content:center}
+.valid p{font-size:30px;line-height:1.15;color:#f0e2d0}
+.valid p em{display:block;font-family:'Caladea',serif;font-style:italic;font-size:50px;line-height:1.05;color:#f1cfa4}
+.cuidar{position:absolute;left:56px;top:1440px;font-family:'Caladea',serif;font-style:italic;font-size:42px;color:#ecd9c4}
+.brand{position:absolute;left:56px;top:1498px}
+.brand small{display:block;font-size:30px;letter-spacing:.5em;color:#d8b58d}
+.brand div{font-family:'GFS Baskerville','Caladea',serif;font-size:112px;line-height:1.05}
+.zap{position:absolute;left:56px;right:56px;top:1676px;height:86px;display:flex;align-items:center;gap:22px}
+.zi{flex:none;width:86px;height:86px;border-radius:50%;background:#25c05b;display:flex;align-items:center;justify-content:center}
+.zap span{font-size:28px;letter-spacing:.14em;color:#d8b58d;display:block}
+.zap b{font-size:62px;letter-spacing:.02em;color:#fff;line-height:1}
+.line{position:absolute;left:56px;right:56px;top:1662px;height:1px;background:linear-gradient(90deg,rgba(209,160,112,.8),transparent)}
+</style></head><body><div class="a">
+<div class="photo"><img src="cabelo_exemplo.png"></div>
+<div class="eyebrow">PROMOÇÃO<i>✦</i></div>
+<div class="liso gold">LISO</div>
+<div class="perf gold">Perfeito</div>
+<div class="tag">Cabelos lisos, alinhados<br>e cheios de brilho!</div>
+
+<div class="card" style="top:765px">
+ <div class="ico"><svg width="96" height="110" viewBox="0 0 96 110" fill="none" stroke="#e3b887" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M48 8C26 8 16 26 16 50c0 22-6 40-8 52M48 8c22 0 32 18 32 42 0 22 6 40 8 52"/><path d="M32 22c4 14 2 40-2 60M48 14c2 20 2 50 0 80M64 22c-4 14-2 40 2 60" stroke-width="2.5" opacity=".7"/></svg></div>
+ <div class="txt"><div class="lab">PROGRESSIVA</div><div class="sub">liso absoluto</div><div class="price"><small>R$</small><b>100</b></div></div>
+</div>
+<div class="card" style="top:1005px">
+ <div class="ico"><svg width="100" height="110" viewBox="0 0 100 110" fill="none" stroke="#e3b887" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M50 8C28 8 18 26 18 48c0 24-6 42-8 54M50 8c22 0 32 18 32 40 0 24 6 42 8 54"/><path d="M72 20l3 8 8 3-8 3-3 8-3-8-8-3 8-3zM30 58l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#e3b887" stroke="none"/></svg></div>
+ <div class="txt"><div class="lab">BOTOX</div><div class="sub">brilho + selagem</div><div class="price"><small>R$</small><b>75</b></div></div>
+</div>
+
+<div class="valid">
+ <div class="cal"><svg width="76" height="76" viewBox="0 0 76 76" fill="none" stroke="#3a2418" stroke-width="4" stroke-linecap="round"><rect x="8" y="14" width="60" height="54" rx="8"/><path d="M8 30h60M24 6v14M52 6v14"/><g fill="#3a2418" stroke="none"><circle cx="24" cy="42" r="3.5"/><circle cx="38" cy="42" r="3.5"/><circle cx="52" cy="42" r="3.5"/><circle cx="24" cy="56" r="3.5"/><circle cx="38" cy="56" r="3.5"/></g></svg></div>
+ <p>Promoção válida<em>só esse mês!</em>vagas limitadas</p>
+</div>
+
+<div class="cuidar">Cuidar dos seus cabelos é investir em você ♡</div>
+<div class="brand"><small>COM</small><div class="gold">Cássia</div></div>
+<div class="line"></div>
+<div class="zap"><div class="zi"><svg width="48" height="48" viewBox="0 0 48 48" fill="#fff"><path d="M13 6c-2 0-4 1-5 3-2 4-1 10 4 17 6 9 13 14 19 15 3 0 6-2 7-4 1-2 0-3-1-4l-6-3c-2-1-3 0-4 1l-2 2c-4-2-8-6-10-10l2-2c1-1 1-3 0-4L16 7c-1-1-2-1-3-1z"/></svg></div>
+ <div><span>AGENDE SEU HORÁRIO</span><b>(11) 97592-9957</b></div></div>
+</div></body></html>

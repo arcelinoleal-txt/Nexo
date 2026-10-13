@@ -1,0 +1,33 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Boreal slide</title><style>
+/* ESTILO B - Boreal Marketing (carrossel 1080x1350). Troque só os textos marcados com TROCAR. */
+:root{--bg1:#291132;--bg2:#140a20;--mint:#68efc4;--green:#54f03e;--lilas:#e3c2ec;--line:#96318a;--btn:#55346d;--muted:#bb9ec5;--insta:#9bffc4}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1350px;overflow:hidden;background:#140a20}
+.s{position:relative;width:1080px;height:1350px;color:#fff;
+ font-family:'Outfit','Sen','Segoe UI Light','Segoe UI','Carlito','Liberation Sans',sans-serif;font-weight:300;
+ background:radial-gradient(900px 700px at 15% 100%,#25163a 0%,transparent 70%),linear-gradient(180deg,var(--bg1) 0%,#22102d 45%,#140a20 100%)}
+/* foto de fundo: desfocada, escura, só no topo (0 a ~380px), sumindo no roxo */
+.foto{position:absolute;left:0;top:0;width:1080px;height:400px;background:url(foto-fundo.jpg) center/cover,linear-gradient(180deg,#8a7a7a 0%,#4a3a52 60%,#281030 100%);
+ filter:blur(2px) brightness(.55) saturate(.8);-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 35%,transparent 100%)}
+.top{position:absolute;top:56px;left:72px;right:72px;display:flex;justify-content:space-between;align-items:center;font-size:22px;letter-spacing:.22em;text-transform:uppercase}
+.top .tags{color:#d3b6e6;font-size:20px;letter-spacing:.26em}
+.eyebrow{position:absolute;top:436px;left:0;right:0;text-align:center;font-size:23px;letter-spacing:.34em;text-transform:uppercase;color:var(--mint);padding-left:.34em}
+h1{position:absolute;top:490px;left:60px;right:60px;text-align:center;font-weight:300;font-size:70px;line-height:82px;text-transform:uppercase;letter-spacing:.01em}
+h1 em{font-style:normal;color:var(--green)}
+.div{position:absolute;top:765px;left:460px;width:160px;height:2px;background:var(--line)}
+.body{position:absolute;top:797px;left:150px;right:150px;text-align:center;font-size:26px;line-height:42px;color:var(--lilas);font-weight:300}
+.btn{position:absolute;top:915px;left:50%;transform:translateX(-50%);height:72px;padding:0 34px;border:2px solid var(--btn);border-radius:36px;display:flex;align-items:center;font-size:22px;letter-spacing:.2em;text-transform:uppercase;color:#d9c3e8;white-space:nowrap}
+.insta{position:absolute;top:1190px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:20px;font-size:34px;letter-spacing:.1em;color:#d9c3e8}
+.insta svg{width:30px;height:30px;stroke:var(--insta);fill:none;stroke-width:2.4}
+.count{position:absolute;top:1264px;left:0;right:0;text-align:center;font-size:21px;letter-spacing:.1em;color:var(--muted)}
+</style></head><body><div class="s">
+<div class="foto"></div>
+<div class="top"><div>Boreal Marketing</div><div class="tags">SEO · Sites · Marketing</div></div>
+<div class="eyebrow">Dica da semana · SEO local</div> <!-- TROCAR -->
+<h1>Seu cliente digitou<br><em>"perto de mim"</em> e não<br>achou você</h1> <!-- TROCAR (cor de destaque só numa frase) -->
+<div class="div"></div>
+<div class="body">Quem procura no mapa decide em segundos — e quase sempre clicando nos primeiros resultados.</div> <!-- TROCAR -->
+<div class="btn">Arrasta pro lado</div>
+<div class="insta"><svg viewBox="0 0 24 24"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.4"/><circle cx="17.6" cy="6.4" r="1" fill="#9bffc4" stroke="none"/></svg>@borealmarketing.br</div>
+<div class="count">01 / 05 · Google Meu Negócio</div> <!-- TROCAR -->
+</div></body></html>

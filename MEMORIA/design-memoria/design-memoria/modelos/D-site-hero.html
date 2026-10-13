@@ -1,0 +1,45 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Site hero</title><style>
+/* ESTILO D - Lion Force site (preto + vermelho, título condensado gigante). Referência: viewport 1585x778. */
+:root{--bg:#0a0a0b;--red:#e3212a;--white:#fff;--mute:#9a9a9f;--line:#1d1d20}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Inter','Poppins','Segoe UI','Carlito','Liberation Sans',sans-serif;line-height:1.5}
+.c{max-width:1200px;margin:0 auto;padding:0 24px}
+.info{font-size:12.5px;color:var(--mute);height:34px;border-bottom:1px solid var(--line)}
+.info .c{display:flex;justify-content:space-between;align-items:center;height:34px}
+header{height:112px;border-bottom:1px solid var(--line);background:#0a0a0b}
+header .c{display:flex;align-items:center;height:112px;gap:36px}
+.logo{display:flex;align-items:center;gap:14px;text-decoration:none;color:#fff}
+.logo i{width:56px;height:56px;border-radius:50%;background:#1a1a1c;border:1px solid #2a2a2e;display:block}
+.logo b{white-space:nowrap;font-family:'Bebas Neue','Anton','Oswald','Impact','Liberation Sans Narrow','Arial Narrow',sans-serif;font-size:25px;letter-spacing:.02em;display:block;line-height:1}
+.logo small{display:block;font-size:8px;letter-spacing:.38em;color:var(--red);font-weight:700;margin-top:3px}
+nav{display:flex;gap:36px;margin-left:56px}
+nav a{white-space:nowrap;font-size:13.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;text-decoration:none}
+.cta{white-space:nowrap;margin-left:auto;background:var(--red);color:#fff;font-weight:800;font-size:14px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;padding:0 28px;height:56px;border-radius:28px;display:inline-flex;align-items:center;gap:10px;transition:transform .15s,background .15s}
+.cta:hover{background:#c91a22;transform:translateY(-1px)}
+.cta:focus-visible,nav a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.hero{position:relative;min-height:640px;padding:84px 0 60px;overflow:hidden;
+ background:linear-gradient(90deg,#0a0a0b 0%,#0a0a0b 38%,rgba(10,10,11,.7) 70%,rgba(10,10,11,.85) 100%),url(foto-hero.jpg) center/cover,#141012}
+.crumb{font-size:13px;color:var(--mute)}.crumb b{color:#fff}
+.eyebrow{display:flex;align-items:center;gap:14px;margin-top:38px;font-size:12px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--red)}
+.eyebrow:before{content:"";width:26px;height:2px;background:var(--red)}
+h1{font-family:'Bebas Neue','Anton','Oswald','Impact','Liberation Sans Narrow','Arial Narrow',sans-serif;font-weight:700;font-size:clamp(64px,8.6vw,124px);line-height:.93;text-transform:uppercase;margin-top:16px;max-width:700px}
+h1 em{font-style:normal;color:var(--red)}
+.lead{max-width:520px;color:#c9c9ce;font-size:17px;margin-top:26px}
+.btns{display:flex;gap:14px;margin-top:30px}
+.btn2{border:1.5px solid #3a3a3f;color:#fff;font-weight:800;font-size:14px;letter-spacing:.05em;text-transform:uppercase;text-decoration:none;padding:0 28px;height:56px;border-radius:28px;display:inline-flex;align-items:center}
+.shot{position:absolute;right:max(24px,calc((100vw - 1200px)/2 + 24px));bottom:-40px;width:546px;height:300px;border-radius:18px;border:1px solid #4a3020;background:linear-gradient(135deg,#5a3a24,#2a1a14);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+@media(max-width:900px){nav{display:none}.shot{display:none}.info .c div:last-child{display:none}header .c{gap:12px}}
+</style></head><body>
+<div class="info"><div class="c"><div>Rua Fonte Nova, 34A — Jardim Das Fontes, São Paulo</div><div>(11) 94354-4884 · Seg a Sex · 06:00 — 22:00 · Sáb · 09:00 — 13:00</div></div></div>
+<header><div class="c"><a class="logo" href="#"><i></i><span><b>LION FORCE</b><small>ACADEMIA</small></span></a>
+ <nav><a href="#">A unidade</a><a href="#">Estrutura</a><a href="#">Nossa história</a><a href="#">Planos</a><a href="#">App</a><a href="#">Contato</a></nav>
+ <a class="cta" href="#">Quero treinar <span>↗</span></a></div></header>
+<section class="hero"><div class="c">
+ <div class="crumb">Início › <b>Unidade Jardim Das Fontes</b></div>
+ <div class="eyebrow">Força · Disciplina · Resultado</div>
+ <h1>Sua vida mais <em>forte</em> começa aqui.</h1>
+ <p class="lead">Musculação e cardio em 1.200m², com treino personalizado no app e acompanhamento de verdade.</p>
+ <div class="btns"><a class="cta" style="margin:0" href="#">Começar agora</a><a class="btn2" href="#">Ver planos</a></div>
+</div><div class="shot"></div></section>
+</body></html>
