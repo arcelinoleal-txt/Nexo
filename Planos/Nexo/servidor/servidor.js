@@ -324,13 +324,29 @@ const servidor = http.createServer(async (req, res) => {
       } catch { /* sem versao.json: devolve a padrao */ }
 
       const inst = instalarDaVersao(dados.versao);
+
+      /* O download tem que chegar ABSOLUTO no cliente. O app desktop só
+         baixa link http(s) de verdade — o handler 'atualizacao:baixar'
+         valida isso — e o aviso no sininho testa o mesmo antes de mostrar
+         o botão. Um caminho relativo como /atualizacao/... passava reto e
+         a notificação aparecia SEM o botão de instalar: só o texto mandando
+         instalar à mão. Em produção vale o NEXO_PUBLIC_URL; sem ele (app
+         local, servidor de rede), o Host do próprio pedido dá o endereço
+         que o cliente já está usando para falar comigo. */
+      const publica = String(process.env.NEXO_PUBLIC_URL || '').replace(/\/+$/, '');
+      const base = publica || (req.headers && req.headers.host ? 'http://' + req.headers.host : '');
+      const absoluto = (caminho) =>
+        (/^https?:\/\//i.test(caminho) || !base) ? caminho : base + caminho;
+      const download = (inst && inst.url) ||
+        (typeof dados.download === 'string' ? dados.download : null);
+
       return responder(res, 200, {
         versao: dados.versao,
         novidades: Array.isArray(dados.novidades) ? dados.novidades : [],
         atualizadoEm: dados.atualizadoEm || null,
         // o versao.json ainda pode forçar um endereço à mão, mas o caminho
         // normal é o servidor achar o instalador sozinho
-        download: (inst && inst.url) || (typeof dados.download === 'string' ? dados.download : null),
+        download: download ? absoluto(download) : null,
         sha256: inst ? inst.sha256 : null,
         tamanho: inst ? inst.tamanho : null
       });

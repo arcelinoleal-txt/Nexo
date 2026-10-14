@@ -97,9 +97,16 @@ function novoCliente() {
 /* GET bruto com timeout: preciso ver o status REAL de uma rota, inclusive
    quando ela devolve texto e nao JSON (e sem travar o teste se o servidor
    parar de responder). */
+/* Aceita tanto caminho (/api/versao) quanto endereço absoluto — o
+   /api/versao passou a devolver o download absoluto, e o teste de download
+   repassa o que o servidor anunciou. */
+function alvoDe(caminho) {
+  return /^https?:\/\//i.test(caminho) ? caminho : BASE + caminho;
+}
+
 function httpTexto(caminho, timeoutMs) {
   return new Promise((resolve) => {
-    const req = http.request(BASE + caminho, { method: 'GET' }, (res) => {
+    const req = http.request(alvoDe(caminho), { method: 'GET' }, (res) => {
       let d = '';
       res.on('data', c => d += c);
       res.on('end', () => resolve({ status: res.statusCode, corpo: d.slice(0, 80) }));
@@ -116,7 +123,7 @@ function httpTexto(caminho, timeoutMs) {
 function httpJson(caminho, corpo, token) {
   return new Promise((resolve) => {
     const dados = corpo ? JSON.stringify(corpo) : null;
-    const req = http.request(BASE + caminho, {
+    const req = http.request(alvoDe(caminho), {
       method: dados ? 'POST' : 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -139,7 +146,7 @@ function httpJson(caminho, corpo, token) {
    download, onde o Content-Length importa tanto quanto o status. */
 function httpComCabecalhos(caminho) {
   return new Promise((resolve) => {
-    const req = http.request(BASE + caminho, { method: 'GET' }, (res) => {
+    const req = http.request(alvoDe(caminho), { method: 'GET' }, (res) => {
       let d = '';
       res.on('data', c => { d += c; if (d.length > 64) req.destroy(); }); // só quero os primeiros bytes
       res.on('end', () => resolve({
@@ -187,7 +194,10 @@ function subirArquivo(nome, corpo, tipo) {
   processoServidor = spawn(process.execPath, [path.join(__dirname, 'servidor.js')], {
     env: Object.assign({}, process.env, {
       NEXO_PORTA: String(porta),
-      NEXO_DADOS_CONTAS: arquivoContas
+      NEXO_DADOS_CONTAS: arquivoContas,
+      // espelha o Railway: com NEXO_PUBLIC_URL o /api/versao anuncia o
+      // download absoluto no endereço público, igual à produção
+      NEXO_PUBLIC_URL: BASE
     }),
     stdio: 'ignore',
     windowsHide: true
@@ -585,6 +595,13 @@ function subirArquivo(nome, corpo, tipo) {
   const versaoAtual = await httpJson('/api/versao');
   conf(versaoAtual.status === 200 && versaoAtual.corpo.versao,
     '/api/versao responde com a versao: ' + (versaoAtual.corpo && versaoAtual.corpo.versao));
+
+  /* Regressão: o download relativo (/atualizacao/...) passava reto pelo
+     filtro do app e a notificação de atualização aparecia SEM o botão de
+     instalar — só o texto mandando instalar à mão. O link tem que chegar
+     http(s) de verdade. */
+  conf(/^https?:\/\//i.test(versaoAtual.corpo.download || ''),
+    'download do /api/versao vem absoluto (o desktop recusa relativo): ' + versaoAtual.corpo.download);
 
   if (versaoAtual.status === 200 && versaoAtual.corpo.download && versaoAtual.corpo.sha256) {
     const dl = await httpComCabecalhos(versaoAtual.corpo.download);

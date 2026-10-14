@@ -276,7 +276,15 @@ const Notificacoes = (() => {
     const vista = carregar('versaoVista', null);        // assinatura do conteúdo
     const numeroVisto = carregar('ultimaVersao', null); // só o "1.0.0"
     const novidades = Array.isArray(d.novidades) ? d.novidades : [];
-    const link = (typeof d.download === 'string' && /^https?:\/\//i.test(d.download)) ? d.download : null;
+    /* O servidor manda o download ABSOLUTO (senão o desktop recusa e o
+       aviso aparece sem o botão de instalar). Se algum dia vier relativo
+       (/atualizacao/...), completa com o próprio servidor — o mesmo que
+       acabou de responder a /api/versao. */
+    let link = null;
+    if (typeof d.download === 'string' && d.download) {
+      if (/^https?:\/\//i.test(d.download)) link = d.download;
+      else if (d.download.charAt(0) === '/') link = baseHttp() + d.download;
+    }
 
     const local = await versaoLocal();
     const temMaisNova = compararVersoes(d.versao, local) > 0;
