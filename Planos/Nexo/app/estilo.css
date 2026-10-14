@@ -1360,6 +1360,15 @@ select {
 .placeholder-dica { font-size: 13.5px; color: var(--texto-suave); max-width: 440px; line-height: 1.6; }
 .placeholder-dica b { color: var(--texto); }
 
+/* Com gente na fila de voz e ninguém transmitindo, o aviso sai do miolo:
+   sem isto o rosto de quem está na chamada caía em cima do texto — o nome
+   por cima da dica e o avatar por cima do ícone. O aviso sobe para o topo
+   e o ícone some (não cabe entre os avatares); o centro fica com quem está
+   na chamada, que é onde o olhar já está indo. O ícone volta quando a fila
+   esvazia, porque aí o miolo é só do aviso de novo. */
+.area-video:has(.fila-voz > *) .placeholder { justify-content: flex-start; }
+.area-video:has(.fila-voz > *) .icone-placeholder { display: none; }
+
 .faixa-aovivo {
   position: absolute;
   top: 14px; left: 14px;

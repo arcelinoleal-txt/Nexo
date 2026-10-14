@@ -1,14 +1,10 @@
 {
-  "versao": "1.12.0",
-  "atualizadoEm": "2026-10-12",
+  "versao": "1.12.1",
+  "atualizadoEm": "2026-10-14",
   "download": null,
   "novidades": [
-    "Amigos agora moram na coluna da esquerda, com as abas Em linha, Todos, Pendentes e Adicionar amigo",
-    "Selo vermelho no ícone de Amigos quando chega pedido novo, e contador dentro da aba",
-    "Aviso de atualização com botão de instalar: baixa, confere e troca a versão sem perder sua conta",
-    "Avatares de todo mundo sobre a chamada, com anel verde neon brilhando em quem está falando",
-    "Áudio e microfone saíram do rodapé e ganharam painel próprio de voz, com escolha de microfone e fone",
-    "As imagens agora podem ser vistas na hora antes de baixar",
-    "Visual renovado no padrão do Discord: cores, botões e fontes mais limpos em toda a interface"
+    "O avatar de quem está na chamada não cobre mais o aviso do palco",
+    "Com gente na fila de voz, o aviso \"Ninguém está transmitindo agora\" sobe para o topo e deixa os avatares no centro, sem texto em cima de rosto",
+    "O ícone do palco volta quando a fila de voz esvazia"
   ]
 }
