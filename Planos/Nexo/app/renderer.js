@@ -218,9 +218,15 @@ function lerConvite(texto) {
   const t = String(texto || '').trim().toUpperCase();
   const cheio = t.match(/^(?:nexo:)?(?:\/\/)?([A-Z0-9]{6})\s*@\s*(\[[0-9A-F:]+\]|[0-9A-Z._-]+)(?:\s*:\s*(\d{1,5}))?$/i);
   if (cheio) {
+    // Porta 443 é território de SSL: o Railway e qualquer servidor com
+    // trava HTTPS recusam o ws:// cru (o Windows e o navegador fecham a
+    // conexão e sobra "Não foi possível conectar ao servidor"). Convite
+    // que chega com :443 — como o da sala online — vira wss://.
+    const porta = cheio[3] || 3000;
+    const proto = String(porta) === '443' ? 'wss' : 'ws';
     return {
       codigo: cheio[1],
-      servidor: 'ws://' + cheio[2] + ':' + (cheio[3] || 3000)
+      servidor: proto + '://' + cheio[2] + ':' + porta
     };
   }
   const soCodigo = t.match(/^([A-Z0-9]{6})$/);

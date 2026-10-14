@@ -1,11 +1,9 @@
 {
-  "versao": "1.12.2",
+  "versao": "1.12.3",
   "atualizadoEm": "2026-10-14",
   "download": null,
   "novidades": [
-    "IMPORTANTE — desta vez instale à mão: baixe o Nexo-Setup-1.12.2.exe e dê dois cliques (é só uma vez — nas próximas o botão Atualizar agora volta a funcionar sozinho)",
-    "O Atualizar agora travava com o erro \"EACCES\": o instalador pede admin e o app tentava abrir do jeito errado — agora ele abre pelo caminho da shell, com a janela de permissão do Windows, e se algo falhar o aviso mostra o motivo real com botão de tentar de novo",
-    "As setinhas do microfone e do fone agora buscam os aparelhos do seu PC na hora de abrir a lista — antes a lista só enchia depois de entrar numa sala",
-    "Trocar de microfone não desliga mais seu mudo"
+    "Corrigido o convite da sala online: colar o convite COMPLETO (codigo@nexo-production-0b47.up.railway.app:443) dava \"Não foi possível conectar ao servidor\" porque o app tentava ws:// sem trava na porta 443 — agora ele reconhece a 443 e usa wss://, e a conexão passa",
+    "Continua valendo o jeito fácil: digitar só o código de 6 caracteres no campo de código, sem mexer no servidor"
   ]
 }

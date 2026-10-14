@@ -562,6 +562,34 @@ function subirArquivo(nome, corpo, tipo) {
   conf(Number(convite.corpo.porta) > 0 && Number(convite.corpo.porta) <= 65535,
     'convite traz a porta certa: ' + convite.corpo.porta);
 
+  /* Regressao do lerConvite (app/renderer.js): o convite da sala ONLINE
+     vem com :443 (Railway), e o parser antigo montava ws://...:443 — o
+     Railway recusa ws cru na 443 e a pessoa via "Nao foi possivel
+     conectar ao servidor". Porta 443 tem que virar wss://. O codigo do
+     renderer e navegador, entao extraimos a funcao do proprio arquivo
+     para testar o codigo REAL e nao uma copia que pode divergir. */
+  {
+    const fonteRenderer = fs.readFileSync(
+      path.join(__dirname, '..', 'app', 'renderer.js'), 'utf8');
+    const m = fonteRenderer.match(/function lerConvite\(texto\) \{[\s\S]*?\n\}/);
+    conf(!!m, 'lerConvite encontrado no renderer.js (teste usa o codigo real)');
+    if (m) {
+      const lerConvite = new Function(m[0] + '; return lerConvite;')();
+      /* lerConvite faz .toUpperCase() no texto inteiro (e bagunçado que
+         vem de colar mensagem), entao o host tambem sobe maiusculo —
+         DNS nao liga pra maiusculas, entso comparamos sem caixa. */
+      const online = lerConvite('AB12CD@nexo-production-0b47.up.railway.app:443');
+      conf(online && /^wss:\/\/nexo-production-0b47\.up\.railway\.app:443$/i.test(online.servidor || ''),
+        'convite com :443 vira wss:// (Railway recusa ws cru): ' + (online && online.servidor));
+      const local = lerConvite('AB12CD@192.168.0.15:3000');
+      conf(local && local.servidor === 'ws://192.168.0.15:3000',
+        'convite local na 3000 continua ws://: ' + (local && local.servidor));
+      const soCod = lerConvite('ab12cd');
+      conf(soCod && soCod.codigo === 'AB12CD' && soCod.servidor === null,
+        'codigo puro (sem @) segue sem servidor proprio: ' + JSON.stringify(soCod));
+    }
+  }
+
   /* ---------------------------------------------------------------- */
   /* 10c. /arquivos/ apontando pra DIRETORIO nao pode derrubar o server */
   /* ---------------------------------------------------------------- */
