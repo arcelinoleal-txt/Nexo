@@ -1,10 +1,11 @@
 {
-  "versao": "1.12.1",
+  "versao": "1.12.2",
   "atualizadoEm": "2026-10-14",
   "download": null,
   "novidades": [
-    "O avatar de quem está na chamada não cobre mais o aviso do palco",
-    "Com gente na fila de voz, o aviso \"Ninguém está transmitindo agora\" sobe para o topo e deixa os avatares no centro, sem texto em cima de rosto",
-    "O ícone do palco volta quando a fila de voz esvazia"
+    "IMPORTANTE — desta vez instale à mão: baixe o Nexo-Setup-1.12.2.exe e dê dois cliques (é só uma vez — nas próximas o botão Atualizar agora volta a funcionar sozinho)",
+    "O Atualizar agora travava com o erro \"EACCES\": o instalador pede admin e o app tentava abrir do jeito errado — agora ele abre pelo caminho da shell, com a janela de permissão do Windows, e se algo falhar o aviso mostra o motivo real com botão de tentar de novo",
+    "As setinhas do microfone e do fone agora buscam os aparelhos do seu PC na hora de abrir a lista — antes a lista só enchia depois de entrar numa sala",
+    "Trocar de microfone não desliga mais seu mudo"
   ]
 }

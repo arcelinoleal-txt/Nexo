@@ -94,10 +94,15 @@ const Notificacoes = (() => {
       const acao = i.acao
         ? `<button class="link-btn sino-acao" type="button" data-id="${i.id}">${escapeHtml(i.acao)}</button>`
         : '';
+      // segunda via: aparece quando o caminho principal falhou — o que
+      // acontece com a atualização quando o Windows recusa o instalador
+      const acao2 = i.acao2
+        ? `<button class="link-btn sino-acao" type="button" data-id="${i.id}" data-sec="1">${escapeHtml(i.acao2)}</button>`
+        : '';
       return `<button class="sino-item${i.lida ? '' : ' nao-lido'}" type="button" data-id="${i.id}">
         <h4>${escapeHtml(i.titulo)}</h4>
         ${corpo}${listaItens}
-        <span class="sino-hora">${horaDe(i.hora)}${acao ? ' · ' : ''}</span>${acao}
+        <span class="sino-hora">${horaDe(i.hora)}${(acao || acao2) ? ' · ' : ''}</span>${acao}${acao2}
       </button>`;
     }).join('');
 
@@ -108,7 +113,9 @@ const Notificacoes = (() => {
       b.addEventListener('click', (ev) => {
         ev.stopPropagation();
         const item = itens.find(x => x.id === Number(b.dataset.id));
-        if (item && typeof item.executar === 'function') item.executar();
+        if (!item) return;
+        const f = b.dataset.sec === '1' ? item.executar2 : item.executar;
+        if (typeof f === 'function') f();
       });
     });
 
@@ -247,6 +254,8 @@ const Notificacoes = (() => {
       item.atualizando = false;
       item.acao = 'Tentar de novo';
       item.executar = () => executarAtualizacao(item, info);
+      item.acao2 = 'Baixar no navegador';
+      item.executar2 = () => { try { window.open(info.download); } catch { /* ignora */ } };
       item.corpo = 'Não consegui baixar a atualização: ' +
         ((r && r.erro) || 'erro desconhecido') + '. O app continua funcionando normalmente.';
       desenhar();
@@ -254,11 +263,31 @@ const Notificacoes = (() => {
     }
 
     item.acao = 'Instalando…';
+    item.acao2 = null;
+    item.executar2 = null;
     item.corpo = 'Instalador conferido. O Nexo vai fechar e a instalação começa agora — ' +
       'é só confirmar a janela do Windows quando aparecer.';
     desenhar();
 
-    try { await desktop.instalarAtualizacao(r.arquivo); } catch { /* o app sai mesmo assim */ }
+    /* O resultado importa: abrir o instalador pode ser recusado (a pessoa
+       cancela a elevação do Windows, por exemplo). Antes o erro vinha
+       assíncrono sem tratamento e virava janela de erro do Electron com o
+       aviso travado em "Instalando…" para sempre. */
+    let inst;
+    try { inst = await desktop.instalarAtualizacao(r.arquivo); }
+    catch (e) { inst = { ok: false, erro: (e && e.message) || 'falha inesperada' }; }
+
+    if (inst && inst.ok === false) {
+      item.atualizando = false;
+      item.acao = 'Tentar de novo';
+      item.executar = () => executarAtualizacao(item, info);
+      item.acao2 = 'Baixar no navegador';
+      item.executar2 = () => { try { window.open(info.download); } catch { /* ignora */ } };
+      item.corpo = 'O instalador não abriu: ' + (inst.erro || 'erro desconhecido') +
+        '. Pode ser a janela de permissão do Windows — tente de novo, ou baixe pelo navegador ' +
+        'e dê dois cliques no arquivo. O Nexo continua funcionando normalmente.';
+      desenhar();
+    }
   }
 
   async function verificarAtualizacao() {

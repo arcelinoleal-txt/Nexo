@@ -6,7 +6,6 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const crypto = require('crypto');
-const { spawn } = require('child_process');
 
 // NEXO_USERDATA dá ao exemplar de teste a sua própria pasta de dados.
 // Sem isso ele brigaria pela trava de instância única com a cópia que já
@@ -335,12 +334,26 @@ ipcMain.handle('atualizacao:baixar', async (evento, url, sha256) => {
   }
 });
 
-ipcMain.handle('atualizacao:instalar', (_evento, arquivo) => {
+/* Abrir o instalador NÃO é trabalho de spawn(). O Nexo-Setup é perMachine:
+   o manifesto dele pede "requireAdministrator" e o CreateProcess de um
+   processo comum devolve ERROR_ELEVATION_REQUIRED — o libuv traduz como
+   "EACCES", o evento 'error' chegava sem ouvinte, o Electron abria a
+   janela de erro em cima da pessoa e a instalação nem começava (foi o
+   bug que travou a atualização da 1.12.1). O caminho certo é a shell:
+   ShellExecuteEx lê o manifesto e mostra o pedido de elevação do Windows,
+   igual aos dois cliques no Explorer. Se a pessoa recusar a janela do
+   Windows, a shell devolve o motivo — o aviso no sininho vira "Tentar de
+   novo" em vez de mentir que está instalando. */
+ipcMain.handle('atualizacao:instalar', async (_evento, arquivo) => {
   if (!arquivo || !fs.existsSync(arquivo)) return { ok: false, erro: 'Instalador não encontrado.' };
+  registrar('[atualizacao] abrindo o instalador pela shell: ' + arquivo);
   try {
-    registrar('[atualizacao] abrindo o instalador: ' + arquivo);
-    // desanexado: o instalador segue sozinho mesmo se o app morrer antes
-    spawn(arquivo, [], { detached: true, stdio: 'ignore', windowsHide: false }).unref();
+    const recusa = await shell.openPath(arquivo);
+    if (recusa) {
+      registrar('[atualizacao] shell recusou o instalador: ' + recusa);
+      return { ok: false, erro: recusa };
+    }
+    registrar('[atualizacao] instalador disparado; o Nexo sai para ele substituir os arquivos.');
     // sai daqui antes: o instalador precisa substituir os próprios arquivos
     rodandoEmFundo = true;
     setTimeout(() => app.quit(), 700);

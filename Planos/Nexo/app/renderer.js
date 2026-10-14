@@ -1013,9 +1013,25 @@ function alternarMicrofone() {
 }
 
 async function trocarMicrofone(deviceId) {
+  const semTrilha = !estado.streamMicro;
+  const estavaMudo = !estado.microLigado;
   estado.disp.micro = deviceId;
   salvar('disp', estado.disp);
+  // Sem trilha (microfone apagado): só guardo a escolha — quem decide
+  // ligar o microfone é a pessoa, não o menu de aparelhos.
+  if (semTrilha) return;
   await ligarMicrofone(false);
+  // ligarMicrofone religa a trilha toda ligada: devolvo o mudo na hora,
+  // para trocar de aparelho não desmascarar ninguém no meio da sala
+  if (estado.streamMicro && estavaMudo && estado.microLigado) {
+    estado.microLigado = false;
+    const trilha = trilhaDe(estado.streamMicro, 'audio');
+    if (trilha) trilha.enabled = false;
+    enviar({ tipo: 'estado', micro: true, mudo: true });
+    atualizarMonitorMicro();
+    desenharBotoesDeMidia();
+    desenharParticipantes();
+  }
 }
 
 async function ligarCamera() {
@@ -1256,6 +1272,10 @@ async function listarDispositivos() {
 
 const _devsAudio = { micro: [], fone: [] };
 let _temSaidaAudio = false;
+// verdade só enquanto a lista está sendo perguntada ao navegador: serve
+// para o menu dizer "procurando…" em vez de "nenhum aparelho" no meio da
+// abertura (o cache antes só enchia ao entrar numa sala)
+let _carregandoDispositivos = false;
 
 function rotuloDispositivo(tipo, d, i) {
   if (d.label) return d.label;
@@ -1273,9 +1293,10 @@ function montarMenuDispositivo(tipo) {
   const titulo = tipo === 'micro' ? 'Microfone' : 'Fone / saída de áudio';
 
   if (!devs.length) {
-    menu.innerHTML = '<p class="md-vazio">Ainda não apareceu nenhum aparelho. ' +
-      'Se você acabou de conectar o microfone ou o fone, feche e abra as ' +
-      'configurações de novo para o Windows repassar a lista.</p>';
+    menu.innerHTML = '<p class="md-vazio">' + (_carregandoDispositivos
+      ? 'Procurando os aparelhos do seu computador…'
+      : 'Nenhum aparelho encontrado por aqui. Confira se o microfone/fone está ' +
+        'conectado e abra a lista de novo.') + '</p>';
     return;
   }
 
@@ -1361,17 +1382,26 @@ function fecharMenusDispositivo(excepto) {
   });
 }
 
-function alternarMenuDispositivo(tipo) {
+async function alternarMenuDispositivo(tipo) {
   const menu = $(tipo === 'micro' ? 'menu-micro' : 'menu-fone');
   const grupo = menu && menu.closest('.grupo-disp');
   if (!menu || !grupo) return;
   const abrindo = menu.hidden;
   fecharMenusDispositivo(abrindo ? tipo : null);
-  if (abrindo) {
-    montarMenuDispositivo(tipo);
-    menu.hidden = false;
-    grupo.classList.add('aberto');
-  }
+  if (!abrindo) return;
+
+  // abre na hora (com o cache) e já manda perguntar ao navegador: o cache
+  // só era preenchido ao entrar numa sala, e quem estava na tela inicial
+  // via a lista vazia e não conseguia trocar microfone nem fone
+  _carregandoDispositivos = !(_devsAudio[tipo] || []).length;
+  montarMenuDispositivo(tipo);
+  menu.hidden = false;
+  grupo.classList.add('aberto');
+  await listarDispositivos();
+  _carregandoDispositivos = false;
+  // ainda aberta? redesenha com a lista fresca (o clique em "abrir" já
+  // passou; quem abriu outra lista no meio leva a atualização também)
+  if (!menu.hidden) montarMenuDispositivo(tipo);
 }
 
 function ligarMenusDispositivo() {
