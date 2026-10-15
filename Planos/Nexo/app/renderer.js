@@ -51,6 +51,7 @@ const estado = {
   streams: new Map(),
   els: new Map(),
   tilesVisiveis: '',
+  tileExpandido: null,   // sid do tile que está em destaque (galeria)
 
   // WebRTC
   pcs: new Map(),
@@ -537,7 +538,23 @@ function criarPC(peerId, iniciador) {
 
   pc.onconnectionstatechange = () => {
     const s = pc.connectionState;
-    if (s === 'failed' || s === 'closed') {
+    if (s === 'connected') {
+      // recuperou: zera o placar de tentativas da próxima queda
+      pc._quedas = 0;
+      if (pc._timerQueda) { clearTimeout(pc._timerQueda); pc._timerQueda = null; }
+    } else if (s === 'disconnected' && !pc._timerQueda) {
+      /* Um tropeço de rede costuma se resolver sozinho em segundos. Só
+         insisto (ICE restart) se a conexão NÃO voltar num tempo razoável
+         — intervenção demais atrapalharia a autocura do navegador. */
+      pc._timerQueda = setTimeout(() => {
+        pc._timerQueda = null;
+        if (estado.pcs.get(peerId) === pc && pc.connectionState !== 'connected') {
+          recuperarConexao(peerId, pc);
+        }
+      }, 6000);
+    } else if (s === 'failed') {
+      recuperarConexao(peerId, pc);
+    } else if (s === 'closed') {
       if (estado.pcs.get(peerId) === pc) estado.pcs.delete(peerId);
       try { pc.close(); } catch { /* ignora */ }
     }
@@ -587,6 +604,37 @@ async function renegociar(peerId) {
       setTimeout(() => renegociar(peerId), 80);
     }
   }
+}
+
+/* A conexão WebRTC caiu (rede instável, Wi-Fi cortou, PC dormiu). Antes a
+   única saída era a pessoa sair da sala e entrar de novo. Agora o app
+   insiste sozinho: pede um ICE restart — que refaz o caminho de rede sem
+   derrubar a sala — e renegocia. Só derruba a conexão depois de várias
+   tentativas, deixando a malha reabrir do zero como plano B. */
+function recuperarConexao(peerId, pc) {
+  if (estado.pcs.get(peerId) !== pc) return;      // já foi trocada por outra
+  if (pc.connectionState === 'closed') return;
+  pc._quedas = (pc._quedas || 0) + 1;
+
+  const TENTATIVAS = 3;
+  if (pc._quedas > TENTATIVAS) {
+    // desisti: derruba e deixa reconectarFaltantes reabrir do zero
+    if (estado.pcs.get(peerId) === pc) estado.pcs.delete(peerId);
+    try { pc.close(); } catch { /* ignora */ }
+    return;
+  }
+
+  try { if (pc.restartIce) pc.restartIce(); } catch { /* ignora */ }
+  renegociar(peerId);
+
+  // rede de segurança: se nada voltar, tenta de novo em 5s
+  if (pc._timerQueda) clearTimeout(pc._timerQueda);
+  pc._timerQueda = setTimeout(() => {
+    pc._timerQueda = null;
+    if (estado.pcs.get(peerId) === pc && pc.connectionState !== 'connected') {
+      recuperarConexao(peerId, pc);
+    }
+  }, 5000);
 }
 
 async function receberOferta(peerId, sdp) {
@@ -888,6 +936,7 @@ function atualizarTiles() {
     $('#placeholder').hidden = false;
     $('#faixa-aovivo').hidden = true;
     grade.hidden = true;
+    estado.tileExpandido = null;
     atualizarMiniJanela();
     return;
   }
@@ -895,42 +944,91 @@ function atualizarTiles() {
   grade.hidden = false;
   $('#placeholder').hidden = true;
 
-  // prévia local
+  /* Lista de todas as fontes de vídeo: as locais (prévia) e as remotas.
+     Cada entrada vira um tile clicável; o que estiver "expandido" vira o
+     principal e os outros viram miniaturas na barra de baixo. */
+  const fontes = [];
   for (const [rotulo, stream] of [['tela', estado.streamTela], ['câmera', estado.streamCamera]]) {
     if (!stream || !stream.getVideoTracks().some(t => t.readyState === 'live')) continue;
-    const tile = document.createElement('div');
-    // classe 'camera' (sem acento, pro CSS) ou 'tela' — controla espelhamento
-    tile.className = 'tile local ' + (rotulo === 'tela' ? 'tela' : 'camera');
-    const v = document.createElement('video');
-    v.autoplay = true; v.playsInline = true; v.muted = true;
-    v.srcObject = stream;
-    tile.appendChild(v);
-    const lab = document.createElement('span');
-    lab.className = 'rotulo-tile';
-    lab.innerHTML = '<span class="mini-ic ok">●</span> Você · ' + rotulo;
-    tile.appendChild(lab);
-    grade.appendChild(tile);
+    fontes.push({ sid: 'local:' + rotulo, stream, local: true, rotulo });
   }
-
   for (const sid of visiveis) {
     const el = estado.els.get(sid);
     if (!el) continue;
-    const info = rotuloReal(sid);
+    fontes.push({ sid, el, local: false });
+  }
+
+  // se não há um expandido válido, expande o primeiro (a tela vem primeiro)
+  if (!fontes.some(f => f.sid === estado.tileExpandido)) {
+    estado.tileExpandido = fontes.length ? fontes[0].sid : null;
+  }
+  const expandidoSid = estado.tileExpandido;
+
+  /* Duas áreas separadas: o PALCO (tile em destaque, cresce pra ocupar
+     quase tudo) e a FAIXA de miniaturas embaixo (fixa, alinhada à direita).
+     Separar em contêineres deixa o CSS simples e confiável — sem brigar com
+     flexbox numa lista chapada onde o expandido encolhia. */
+  const palco = document.createElement('div');
+  palco.className = 'palco';
+  const faixa = document.createElement('div');
+  faixa.className = 'miniaturas';
+
+  for (const fonte of fontes) {
+    const ehExpandido = fonte.sid === expandidoSid;
     const tile = document.createElement('div');
-    tile.className = 'tile' + (info.tipo === 'tela' ? ' tela' : '');
-    tile.appendChild(el);
+    tile.className = 'tile' + (ehExpandido ? ' expandido' : ' miniatura');
+    if (fonte.local) tile.className += ' local ' + (fonte.rotulo === 'tela' ? 'tela' : 'camera');
+    else if (rotuloReal(fonte.sid).tipo === 'tela') tile.className += ' tela';
+    tile.dataset.sid = fonte.sid;
+
+    let videoEl;
+    if (fonte.local) {
+      videoEl = document.createElement('video');
+      videoEl.autoplay = true; videoEl.playsInline = true; videoEl.muted = true;
+      videoEl.srcObject = fonte.stream;
+    } else {
+      videoEl = fonte.el; // reaproveita o elemento remoto (mantém o stream)
+    }
+    tile.appendChild(videoEl);
 
     const lab = document.createElement('span');
     lab.className = 'rotulo-tile';
-    lab.dataset.sid = sid;
+    if (!fonte.local) lab.dataset.sid = fonte.sid;
+    else lab.innerHTML = '<span class="mini-ic ok">●</span> Você · ' + fonte.rotulo;
     tile.appendChild(lab);
 
-    grade.appendChild(tile);
+    // clicar num tile expande ele e encolhe os outros
+    tile.addEventListener('click', () => expandirTile(fonte.sid));
+
+    (ehExpandido ? palco : faixa).appendChild(tile);
   }
+
+  grade.appendChild(palco);
+  if (faixa.children.length) grade.appendChild(faixa);
 
   desenharRotulos();
   atualizarMiniJanela();
   atualizarEstadoVideoDaFila();
+}
+
+/** Faz o tile clicado virar o principal e os outros virarem miniaturas:
+ *  troca as classes E move os elementos entre o palco e a faixa, porque o
+ *  tamanho é ditado pelo contêiner (palco cresce, faixa é fixa). */
+function expandirTile(sid) {
+  if (estado.tileExpandido === sid) return;
+  estado.tileExpandido = sid;
+  const grade = $('#grade-videos');
+  if (!grade) return;
+  const palco = grade.querySelector('.palco');
+  const faixa = grade.querySelector('.miniaturas');
+  if (!palco || !faixa) return;
+  for (const tile of grade.querySelectorAll('.tile')) {
+    const eh = tile.dataset.sid === sid;
+    tile.classList.toggle('expandido', eh);
+    tile.classList.toggle('miniatura', !eh);
+    const destino = eh ? palco : faixa;
+    if (tile.parentNode !== destino) destino.appendChild(tile);
+  }
 }
 
 function desenharRotulos() {

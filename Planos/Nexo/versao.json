@@ -1,9 +1,9 @@
 {
-  "versao": "1.12.3",
+  "versao": "1.12.4",
   "atualizadoEm": "2026-10-14",
   "download": null,
   "novidades": [
-    "Corrigido o convite da sala online: colar o convite COMPLETO (codigo@nexo-production-0b47.up.railway.app:443) dava \"Não foi possível conectar ao servidor\" porque o app tentava ws:// sem trava na porta 443 — agora ele reconhece a 443 e usa wss://, e a conexão passa",
-    "Continua valendo o jeito fácil: digitar só o código de 6 caracteres no campo de código, sem mexer no servidor"
+    "Transmissão não some mais do nada: se a conexão de vídeo cair no meio da chamada, o app tenta se reconectar sozinho (ICE restart) por até 3 vezes — não precisa mais sair da sala e entrar de novo",
+    "Nova galeria de transmissões: as telas aparecem como miniaturas clicáveis embaixo, e clicar numa delas expande para o tamanho grande (as duas transmissões lado a lado, sem se esconderem)"
   ]
 }
