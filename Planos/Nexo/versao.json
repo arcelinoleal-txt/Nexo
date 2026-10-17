@@ -1,9 +1,10 @@
 {
-  "versao": "1.12.4",
-  "atualizadoEm": "2026-10-14",
+  "versao": "1.12.5",
+  "atualizadoEm": "2026-10-17",
   "download": null,
   "novidades": [
-    "Transmissão não some mais do nada: se a conexão de vídeo cair no meio da chamada, o app tenta se reconectar sozinho (ICE restart) por até 3 vezes — não precisa mais sair da sala e entrar de novo",
-    "Nova galeria de transmissões: as telas aparecem como miniaturas clicáveis embaixo, e clicar numa delas expande para o tamanho grande (as duas transmissões lado a lado, sem se esconderem)"
+    "Corrigido: agora as duas telas aparecem juntas. Antes, quando alguém compartilhava a tela depois de entrar na chamada, ela sumia do lado de quem estava assistindo — problema de identificação do stream (troca de replaceTrack por addTrack). Agora a tela do amigo vira miniatura e dá pra abrir a transmissão dele.",
+    "Transmissão não some mais do nada: se a conexão de vídeo cair no meio da chamada, o app tenta se reconectar sozinho (ICE restart) por até 3 vezes — não precisa mais sair da sala e entrar de novo.",
+    "Nova galeria de transmissões: as telas aparecem como miniaturas clicáveis embaixo, e clicar numa delas expande para o tamanho grande."
   ]
 }

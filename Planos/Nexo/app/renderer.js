@@ -729,16 +729,14 @@ function anexarTrilhasFaltantes(pc) {
     // já existe uma linha desse tipo com minha mídia: não criar outra
     if ((pronto[trilha.kind] || 0) >= quero[trilha.kind]) continue;
 
-    const tx = pc.getTransceivers().find(t =>
-      !t.sender.track && t.receiver.track && t.receiver.track.kind === trilha.kind
-    );
-
-    if (tx) {
-      tx.sender.replaceTrack(trilha);
-      tx.direction = 'sendrecv';
-    } else {
-      pc.addTrack(trilha, stream);
-    }
+    /* Reusar a linha com replaceTrack() NÃO associa o MediaStream: o
+       receptor recebe a trilha "solta", calcula uma chave sintética
+       (remoto:par:video) que NUNCA bate com o id real anunciado na
+       presença, e aí sincronizarComPresenca derruba a tela remota — era
+       por isso que a transmissão do outro não aparecia. addTrack(trilha,
+       stream) associa o stream (o id real chega no receptor) e AINDA reusa
+       a linha livre sem criar m-line nova, mudando a direção sozinho. */
+    pc.addTrack(trilha, stream);
     pronto[trilha.kind] = (pronto[trilha.kind] || 0) + 1;
   }
 }
